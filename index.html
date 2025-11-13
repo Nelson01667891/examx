@@ -288,176 +288,206 @@
 
         /* 響應式設計 - 手機版 */
         @media screen and (max-width: 768px) {
+            * {
+                box-sizing: border-box;
+            }
+
             body {
-                padding: 2px;
+                padding: 0;
+                margin: 0;
             }
 
             .container {
-                height: 99vh;
-                border: 2px solid #666;
+                height: 100vh;
+                border: none;
+                max-width: 100vw;
             }
 
             .header {
-                flex-direction: row;
-                flex-wrap: wrap;
-                gap: 8px;
-                padding: 10px 8px;
-                font-size: 10px;
-                line-height: 1.3;
-            }
-
-            .header > div {
-                flex: 1 1 30%;
-                min-width: 100px;
-            }
-
-            .header > div:nth-child(2) {
-                flex: 1 1 100%;
-                order: 3;
-                text-align: center;
+                display: none; /* 手機版隱藏頂部標題欄，節省空間 */
             }
 
             .search-bar {
                 flex-direction: column;
-                gap: 8px;
-                padding: 8px 5px;
-            }
-
-            .search-bar > div:first-child {
-                flex-wrap: wrap;
-                justify-content: center;
                 gap: 5px;
-                font-size: 12px;
-                width: 100%;
+                padding: 5px;
+                background-color: #2a2a2a;
             }
 
-            .search-bar input {
-                width: 85px !important;
-                font-size: 11px;
-                padding: 5px 4px;
-            }
-
-            .search-bar label {
-                font-size: 12px;
-            }
-
-            /* 中間標題在手機版調整 */
+            /* 標題移到最上方 */
             .title-center {
                 position: static !important;
                 transform: none !important;
-                font-size: 14px;
+                font-size: 13px !important;
+                font-weight: bold;
                 text-align: center;
-                margin: 3px 0;
-                order: 1;
-            }
-
-            .date-range-group {
-                order: 2;
-            }
-
-            .button-group {
-                flex-wrap: nowrap;
-                gap: 5px;
-                justify-content: space-between;
+                margin: 0;
+                padding: 5px 0;
+                order: -1;
                 width: 100%;
-                order: 3;
+                background-color: #4a4a4a;
+            }
+
+            /* 日期區間區塊 */
+            .date-range-group {
+                flex-direction: row !important;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 3px !important;
+                font-size: 11px;
+                width: 100%;
+                padding: 3px;
+            }
+
+            .date-range-group label {
+                font-size: 11px !important;
+            }
+
+            .search-bar input {
+                width: 75px !important;
+                font-size: 10px !important;
+                padding: 4px 3px !important;
+            }
+
+            /* 按鈕組 */
+            .button-group {
+                display: flex;
+                flex-wrap: nowrap;
+                gap: 4px;
+                width: 100%;
+                padding: 0 3px;
             }
 
             .btn {
-                padding: 6px 12px;
-                font-size: 13px;
+                padding: 6px 8px !important;
+                font-size: 12px !important;
                 flex: 1;
-                min-width: 60px;
-                border: 2px solid;
-            }
-
-            /* 表格調整 */
-            .table-container {
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
-            }
-
-            table {
-                min-width: 650px;
-                font-size: 11px;
-            }
-
-            th {
-                padding: 8px 3px;
-                font-size: 11px;
+                min-width: 0;
+                border: 2px solid !important;
                 white-space: nowrap;
             }
 
+            .btn-select {
+                padding: 4px 8px !important;
+                font-size: 11px !important;
+            }
+
+            /* 表格區域 */
+            .table-container {
+                overflow-x: auto;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+                flex: 1;
+                width: 100%;
+            }
+
+            table {
+                width: 100%;
+                min-width: auto;
+                font-size: 10px;
+                table-layout: fixed;
+            }
+
+            /* 調整各欄寬度 */
+            th:nth-child(1), td:nth-child(1) { width: 30px; } /* checkbox */
+            th:nth-child(2), td:nth-child(2) { width: 70px; } /* 日期 */
+            th:nth-child(3), td:nth-child(3) { width: 60px; } /* 時間 */
+            th:nth-child(4), td:nth-child(4) { width: 85px; } /* 區域 */
+            th:nth-child(5), td:nth-child(5) { width: 70px; } /* 簽名 */
+            th:nth-child(6), td:nth-child(6) { width: 60px; } /* 單位 */
+            th:nth-child(7), td:nth-child(7) { width: 55px; } /* 陪同 */
+            th:nth-child(8), td:nth-child(8) { width: 45px; } /* 事由 */
+
+            th {
+                padding: 5px 2px;
+                font-size: 10px;
+                line-height: 1.2;
+                word-wrap: break-word;
+            }
+
             td {
-                padding: 6px 3px;
-                font-size: 11px;
+                padding: 4px 2px;
+                font-size: 9px;
+                line-height: 1.3;
+                word-wrap: break-word;
+                overflow: hidden;
             }
 
             /* 進入區域選項 */
             .access-options {
-                font-size: 11px;
-                padding: 3px;
+                font-size: 9px;
+                padding: 2px;
+                line-height: 1.2;
             }
 
             .access-options div {
-                line-height: 1.4;
-                white-space: nowrap;
+                line-height: 1.2;
+                margin: 1px 0;
             }
 
-            /* Checkbox大小 */
+            /* 簽名框 */
+            td div[style*="border"] {
+                height: 25px !important;
+                min-height: 25px !important;
+                font-size: 11px !important;
+                padding: 2px !important;
+            }
+
+            /* Checkbox */
             .checkbox {
-                width: 18px;
-                height: 18px;
+                width: 15px;
+                height: 15px;
+                margin: 0;
             }
 
-            /* 日曆彈窗調整 */
+            /* 表格行高 */
+            tbody tr {
+                height: auto;
+                min-height: 50px;
+            }
+
+            /* 日曆彈窗 */
+            .date-picker-modal {
+                padding: 10px;
+            }
+
             .date-picker-content {
-                padding: 20px 15px;
-                margin: 10px;
-                width: 90%;
-                max-width: 350px;
+                padding: 15px;
+                margin: 0;
+                width: 95%;
+                max-width: 320px;
             }
 
             .date-picker-content h3 {
                 font-size: 16px;
-                margin-bottom: 15px;
+                margin-bottom: 12px;
             }
 
             .date-input-group {
-                margin-bottom: 15px;
+                margin-bottom: 12px;
             }
 
             .date-input-group label {
-                font-size: 14px;
+                font-size: 13px;
                 margin-bottom: 5px;
             }
 
             .date-input-group input[type="date"] {
-                padding: 10px;
-                font-size: 16px;
+                padding: 8px;
+                font-size: 14px;
+                width: 100%;
             }
 
             .date-picker-buttons {
                 flex-direction: row;
-                gap: 10px;
-                margin-top: 20px;
+                gap: 8px;
+                margin-top: 15px;
             }
 
             .date-picker-buttons button {
-                width: 100%;
-                padding: 12px;
-                font-size: 15px;
-            }
-
-            /* 表格列高度調整 */
-            tbody tr {
-                height: auto;
-                min-height: 70px;
-            }
-
-            /* 隱藏部分欄位標題優化 */
-            th:first-child {
-                width: 35px;
+                flex: 1;
+                padding: 10px;
+                font-size: 14px;
             }
         }
 
