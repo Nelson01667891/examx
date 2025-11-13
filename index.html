@@ -3,118 +3,632 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>試卷連結</title>
-    <!-- 引入 Google Fonts 字體 -->
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <title>出入管制登記表</title>
     <style>
-        /* 整體樣式 */
         body {
+            font-family: "Microsoft JhengHei", Arial, sans-serif;
+            background-image: url('bg.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
             margin: 0;
-            padding: 0;
-            font-family: 'Noto Sans TC', sans-serif;
-            background: linear-gradient(135deg, #74ebd5, #acb6e5); /* 漸層背景 */
-            min-height: 100vh;
+            padding: 10px;
+        }
+
+        .container {
+            background-color: #1a1a1a;
+            border: 3px solid #666;
+            max-width: 100%;
+            margin: 0 auto;
+            height: 97vh;
             display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background-color: #4a4a4a;
+            color: white;
+            padding: 8px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+        }
+
+        .search-bar {
+            background-color: #3a3a3a;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+
+        .search-bar input {
+            background-color: #2a2a2a;
+            border: 1px solid #666;
+            color: white;
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+
+        /* 日曆彈窗樣式 */
+        .date-picker-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
             justify-content: center;
             align-items: center;
-            color: #333;
         }
 
-        /* 容器樣式 */
-        .container {
-            background: rgba(255, 255, 255, 0.9);
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-            text-align: center;
-            max-width: 600px;
-            width: 90%;
+        .date-picker-content {
+            background-color: #2a2a2a;
+            border: 3px solid #666;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
         }
 
-        /* 標題樣式 */
-        h1 {
-            font-family: 'Roboto', sans-serif;
-            font-size: 2.5em;
-            color: #2c3e50;
+        .date-picker-content h3 {
+            color: white;
             margin-bottom: 20px;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+            text-align: center;
         }
 
-        /* 提示文字樣式 */
-        p {
-            font-size: 1.2em;
-            color: #7f8c8d;
-            margin-bottom: 30px;
+        .date-input-group {
+            margin-bottom: 20px;
         }
 
-        /* 按鈕列表樣式 */
-        ul {
-            list-style: none;
-            padding: 0;
+        .date-input-group label {
+            color: white;
+            display: block;
+            margin-bottom: 8px;
+            font-size: 16px;
         }
 
-        li {
-            margin: 15px 0;
+        .date-input-group input[type="date"] {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #666;
+            background-color: #3a3a3a;
+            color: white;
+            border-radius: 5px;
         }
 
-        /* 按鈕樣式 */
-        a {
-            display: inline-block;
-            text-decoration: none;
-            font-size: 1.1em;
-            color: #fff;
-            background: #3498db;
-            padding: 12px 25px;
-            border-radius: 25px;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        .date-input-group input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
         }
 
-        a:hover {
-            background: #2980b9;
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        .date-picker-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 25px;
         }
 
-        /* 響應式設計 */
-        @media (max-width: 600px) {
-            h1 {
-                font-size: 2em;
-            }
+        .date-picker-buttons button {
+            padding: 10px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border: 2px solid;
+            cursor: pointer;
+            border-radius: 5px;
+        }
 
-            p {
-                font-size: 1em;
-            }
+        .btn-confirm {
+            background-color: #4169E1;
+            color: white;
+            border-color: #4169E1;
+        }
 
-            a {
-                font-size: 1em;
-                padding: 10px 20px;
-            }
+        .btn-confirm:hover {
+            background-color: #3155c7;
+        }
+
+        .btn-cancel {
+            background-color: #666;
+            color: white;
+            border-color: #666;
+        }
+
+        .btn-cancel:hover {
+            background-color: #555;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 25px;
+            font-size: 16px;
+            font-weight: bold;
+            border: 3px solid;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: white;
+            background-color: transparent;
+        }
+
+        .btn:hover {
+            opacity: 0.8;
+        }
+
+        /* 按钮未按下状态 */
+        .btn-select {
+            border-color: white;
+            background-color: transparent;
+        }
+
+        .btn-enter {
+            border-color: #4169E1;
+            background-color: transparent;
+        }
+
+        .btn-leave {
+            border-color: #DC143C;
+            background-color: transparent;
+        }
+
+        .btn-record {
+            border-color: #32CD32;
+            background-color: transparent;
+        }
+
+        /* 按钮按下状态 - 添加 active 类 */
+        .btn-select.active {
+            background-color: white;
+            color: black;
+            box-shadow: inset 0 3px 8px rgba(0,0,0,0.5);
+        }
+
+        .btn-enter.active {
+            background-color: #4169E1;
+            color: white;
+            box-shadow: inset 0 3px 8px rgba(0,0,0,0.5);
+        }
+
+        .btn-leave.active {
+            background-color: #DC143C;
+            color: white;
+            box-shadow: inset 0 3px 8px rgba(0,0,0,0.5);
+        }
+
+        .btn-record.active {
+            background-color: #32CD32;
+            color: white;
+            box-shadow: inset 0 3px 8px rgba(0,0,0,0.5);
+        }
+
+        .table-container {
+            overflow-x: auto;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            color: white;
+            height: 100%;
+        }
+
+        thead {
+            background-color: #1E90FF;
+        }
+
+        th {
+            padding: 8px;
+            text-align: center;
+            border: 1px solid #666;
+            font-size: 15px;
+        }
+
+        tbody tr {
+            background-color: #B0C4DE;
+            color: black;
+            height: calc((100vh - 180px) / 10);
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: #D3E3F0;
+        }
+
+        tbody tr:hover {
+            background-color: #9FB8D1;
+        }
+
+        td {
+            padding: 4px;
+            text-align: center;
+            border: 1px solid #666;
+            font-size: 14px;
+            vertical-align: middle;
+        }
+
+        .checkbox {
+            width: 20px;
+            height: 20px;
+        }
+
+        .access-options {
+            text-align: left;
+            font-size: 13px;
+            padding: 2px;
+        }
+
+        .access-options div {
+            margin: 1px 0;
+            line-height: 1.4;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .access-options div:hover {
+            background-color: rgba(200, 200, 200, 0.3);
+        }
+
+        .access-options .checked {
+            color: #228B22;
+            font-weight: bold;
+        }
+
+        .checked {
+            color: #32CD32;
         }
     </style>
-    <script>
-        function openAllLinks() {
-            window.open("https://reurl.cc/ae168G", "_blank"); // 聲音試卷
-            window.open("https://forms.gle/R4Fw36HxqTpr9Qdv9", "_blank"); // 影像試卷
-            window.open("https://reurl.cc/knq8kn", "_blank"); // 控制試卷
-            window.open("https://forms.gle/46eL6U1kjWV2jTBG7", "_blank"); // 網路試卷
-            window.open("https://forms.gle/qCEdxqJ6LPTGRswV9", "_blank"); // 專案試卷
-            window.open("https://forms.gle/cS4HJMxre9bif9kx8", "_blank"); // 綜合項目試卷
-        }
-    </script>
 </head>
-<body onload="openAllLinks()">
+<body>
     <div class="container">
-        <h1>2025圓方科技工程部初級試卷</h1>
-        <p>正在自動開啟所有試卷分頁...<br>如果沒有自動開啟，請點擊下方按鈕：</p>
-        <ul>
-            <li><a href="https://reurl.cc/ae168G" target="_blank">聲音試卷</a></li>
-            <li><a href="https://forms.gle/R4Fw36HxqTpr9Qdv9" target="_blank">影像試卷</a></li>
-            <li><a href="https://reurl.cc/knq8kn" target="_blank">控制試卷</a></li>
-            <li><a href="https://forms.gle/46eL6U1kjWV2jTBG7" target="_blank">網路試卷</a></li>
-            <li><a href="https://forms.gle/qCEdxqJ6LPTGRswV9" target="_blank">專案試卷</a></li>
-            <li><a href="https://forms.gle/cS4HJMxre9bif9kx8" target="_blank">綜合項目試卷</a></li>
-        </ul>
+        <!-- 标题栏 -->
+        <div class="header">
+            <div>
+                <div>文件等級：授權閱覽</div>
+                <div>文件名稱：出入管制登記表</div>
+            </div>
+            <div>114年 11月 13日 週四 04:25:18 下午</div>
+            <div>
+                <div>第 3 版</div>
+                <div>文件編號：03V00-4-00-060</div>
+            </div>
+        </div>
+
+        <!-- 搜索栏和按钮 -->
+        <div class="search-bar">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <label>瀏覽區間</label>
+                <input type="text" id="startDate" placeholder="__年__月__日" readonly style="width: 110px; cursor: pointer;">
+                <label>～</label>
+                <input type="text" id="endDate" placeholder="__年__月__日" readonly style="width: 110px; cursor: pointer;">
+                <button class="btn btn-select" id="btnSelect" onclick="openDatePicker()">選取</button>
+            </div>
+            <div style="position: absolute; left: 50%; transform: translateX(-50%); font-size: 18px; font-weight: bold; color: white;">
+                114年11月&nbsp;&nbsp;出入管制登記表
+            </div>
+            <div class="button-group">
+                <button class="btn btn-enter" id="btnEnter" onclick="toggleActionButton('btnEnter')">進入</button>
+                <button class="btn btn-leave" id="btnLeave" onclick="toggleActionButton('btnLeave')">離開</button>
+                <button class="btn btn-record" id="btnRecord" onclick="toggleActionButton('btnRecord')">紀錄</button>
+            </div>
+        </div>
+
+        <!-- 表格 -->
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 50px;"></th>
+                        <th style="width: 120px;">日期</th>
+                        <th style="width: 120px;">進入時間</th>
+                        <th style="width: 150px;">進入區域</th>
+                        <th style="width: 150px;">進入人員簽名</th>
+                        <th style="width: 130px;">進入人員單位</th>
+                        <th style="width: 130px;">陪同人員姓名</th>
+                        <th style="width: 100px;">事由</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><input type="checkbox" class="checkbox"></td>
+                        <td>2025-11-13</td>
+                        <td>14:41:05</td>
+                        <td>
+                            <div class="access-options">
+                                <div onclick="toggleCheck(this)"><span class="check-box">☐</span> 鑑識工作</div>
+                                <div onclick="toggleCheck(this)"><span class="check-box">☐</span> 設備存放</div>
+                                <div onclick="toggleCheck(this)"><span class="check-box">☐</span> 證物存放</div>
+                            </div>
+                        </td>
+                        <td><div style="border: 2px solid #333; height: 35px; background: white; display: flex; align-items: center; justify-content: center;"><span style="font-size: 16px; font-weight: bold;">吳宗瑾</span></div></td>
+                        <td>圓方科技</td>
+                        <td>陸之容</td>
+                        <td>洽公</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" class="checkbox"></td>
+                        <td>2025-11-13</td>
+                        <td>14:41:05</td>
+                        <td>
+                            <div class="access-options">
+                                <div onclick="toggleCheck(this)"><span class="check-box">☐</span> 鑑識工作</div>
+                                <div onclick="toggleCheck(this)"><span class="check-box">☐</span> 設備存放</div>
+                                <div onclick="toggleCheck(this)"><span class="check-box">☐</span> 證物存放</div>
+                            </div>
+                        </td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" class="checkbox"></td>
+                        <td>2025-11-13</td>
+                        <td>14:41:05</td>
+                        <td>
+                            <div class="access-options">
+                                <div onclick="toggleCheck(this)"><span class="check-box">☐</span> 鑑識工作</div>
+                                <div onclick="toggleCheck(this)"><span class="check-box">☐</span> 設備存放</div>
+                                <div onclick="toggleCheck(this)"><span class="check-box">☐</span> 證物存放</div>
+                            </div>
+                        </td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" class="checkbox"></td>
+                        <td>2025-11-13</td>
+                        <td>14:41:05</td>
+                        <td>
+                            <div class="access-options">
+                                <div onclick="toggleCheck(this)"><span class="check-box">☐</span> 鑑識工作</div>
+                                <div onclick="toggleCheck(this)"><span class="check-box">☐</span> 設備存放</div>
+                                <div onclick="toggleCheck(this)"><span class="check-box">☐</span> 證物存放</div>
+                            </div>
+                        </td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" class="checkbox"></td>
+                        <td>2025-11-13</td>
+                        <td>14:41:05</td>
+                        <td>
+                            <div class="access-options">
+                                <div onclick="toggleCheck(this)"><span class="check-box">☐</span> 鑑識工作</div>
+                                <div onclick="toggleCheck(this)"><span class="check-box">☐</span> 設備存放</div>
+                                <div onclick="toggleCheck(this)"><span class="check-box">☐</span> 證物存放</div>
+                            </div>
+                        </td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" class="checkbox"></td>
+                        <td>2025-11-13</td>
+                        <td>14:41:05</td>
+                        <td>
+                            <div class="access-options">
+                                <div onclick="toggleCheck(this)"><span class="check-box">☐</span> 鑑識工作</div>
+                                <div onclick="toggleCheck(this)"><span class="check-box">☐</span> 設備存放</div>
+                                <div onclick="toggleCheck(this)"><span class="check-box">☐</span> 證物存放</div>
+                            </div>
+                        </td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" class="checkbox"></td>
+                        <td>2025-11-13</td>
+                        <td>14:41:05</td>
+                        <td>
+                            <div class="access-options">
+                                <div onclick="toggleCheck(this)"><span class="check-box">☐</span> 鑑識工作</div>
+                                <div onclick="toggleCheck(this)"><span class="check-box">☐</span> 設備存放</div>
+                                <div onclick="toggleCheck(this)"><span class="check-box">☐</span> 證物存放</div>
+                            </div>
+                        </td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" class="checkbox"></td>
+                        <td>2025-11-13</td>
+                        <td>14:41:05</td>
+                        <td>
+                            <div class="access-options">
+                                <div onclick="toggleCheck(this)"><span class="check-box">☐</span> 鑑識工作</div>
+                                <div onclick="toggleCheck(this)"><span class="check-box">☐</span> 設備存放</div>
+                                <div onclick="toggleCheck(this)"><span class="check-box">☐</span> 證物存放</div>
+                            </div>
+                        </td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" class="checkbox"></td>
+                        <td>2025-11-13</td>
+                        <td>14:41:05</td>
+                        <td>
+                            <div class="access-options">
+                                <div onclick="toggleCheck(this)"><span class="check-box">☐</span> 鑑識工作</div>
+                                <div onclick="toggleCheck(this)"><span class="check-box">☐</span> 設備存放</div>
+                                <div onclick="toggleCheck(this)"><span class="check-box">☐</span> 證物存放</div>
+                            </div>
+                        </td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" class="checkbox"></td>
+                        <td>2025-11-13</td>
+                        <td>14:41:05</td>
+                        <td>
+                            <div class="access-options">
+                                <div onclick="toggleCheck(this)"><span class="check-box">☐</span> 鑑識工作</div>
+                                <div onclick="toggleCheck(this)"><span class="check-box">☐</span> 設備存放</div>
+                                <div onclick="toggleCheck(this)"><span class="check-box">☐</span> 證物存放</div>
+                            </div>
+                        </td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // 選取按鈕獨立切換
+        function toggleSelectButton() {
+            const button = document.getElementById('btnSelect');
+            button.classList.toggle('active');
+        }
+
+        // 進入/離開/紀錄三個按鈕互斥（同時只能選一個）
+        function toggleActionButton(buttonId) {
+            const actionButtons = ['btnEnter', 'btnLeave', 'btnRecord'];
+            const button = document.getElementById(buttonId);
+            
+            // 如果當前按鈕已經是 active 狀態，則取消
+            if (button.classList.contains('active')) {
+                button.classList.remove('active');
+            } else {
+                // 否則，先移除所有動作按鈕的 active 狀態
+                actionButtons.forEach(id => {
+                    document.getElementById(id).classList.remove('active');
+                });
+                // 然後激活當前按鈕
+                button.classList.add('active');
+            }
+        }
+
+        // 切換區域複選框的勾選狀態
+        function toggleCheck(element) {
+            const checkBox = element.querySelector('.check-box');
+            if (checkBox.textContent === '☐') {
+                checkBox.textContent = '☑';
+                element.classList.add('checked');
+            } else {
+                checkBox.textContent = '☐';
+                element.classList.remove('checked');
+            }
+        }
+
+        // 打開日曆選擇器
+        function openDatePicker() {
+            const modal = document.getElementById('datePickerModal');
+            modal.style.display = 'flex';
+            
+            // 設定預設日期為今天
+            const today = new Date();
+            const dateStr = today.toISOString().split('T')[0];
+            document.getElementById('pickerStartDate').value = dateStr;
+            document.getElementById('pickerEndDate').value = dateStr;
+            
+            // 切換選取按鈕狀態
+            const button = document.getElementById('btnSelect');
+            button.classList.add('active');
+        }
+
+        // 關閉日曆選擇器
+        function closeDatePicker() {
+            const modal = document.getElementById('datePickerModal');
+            modal.style.display = 'none';
+            
+            // 取消選取按鈕狀態
+            const button = document.getElementById('btnSelect');
+            button.classList.remove('active');
+        }
+
+        // 確認日期選擇
+        function confirmDateSelection() {
+            const startDate = document.getElementById('pickerStartDate').value;
+            const endDate = document.getElementById('pickerEndDate').value;
+            
+            if (!startDate || !endDate) {
+                alert('請選擇開始和結束日期');
+                return;
+            }
+            
+            if (new Date(startDate) > new Date(endDate)) {
+                alert('開始日期不能晚於結束日期');
+                return;
+            }
+            
+            // 轉換為民國年格式
+            const startFormatted = formatToROCDate(startDate);
+            const endFormatted = formatToROCDate(endDate);
+            
+            // 填充到輸入框
+            document.getElementById('startDate').value = startFormatted;
+            document.getElementById('endDate').value = endFormatted;
+            
+            // 關閉彈窗
+            closeDatePicker();
+        }
+
+        // 將西元年轉換為民國年格式
+        function formatToROCDate(dateStr) {
+            const date = new Date(dateStr);
+            const rocYear = date.getFullYear() - 1911;
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${rocYear}年${month}月${day}日`;
+        }
+
+        // 點擊彈窗外部關閉
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('datePickerModal');
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closeDatePicker();
+                }
+            });
+        });
+    </script>
+
+    <!-- 日曆選擇器彈窗 -->
+    <div class="date-picker-modal" id="datePickerModal">
+        <div class="date-picker-content">
+            <h3>選擇瀏覽區間</h3>
+            <div class="date-input-group">
+                <label>開始日期：</label>
+                <input type="date" id="pickerStartDate">
+            </div>
+            <div class="date-input-group">
+                <label>結束日期：</label>
+                <input type="date" id="pickerEndDate">
+            </div>
+            <div class="date-picker-buttons">
+                <button class="btn-confirm" onclick="confirmDateSelection()">確認</button>
+                <button class="btn-cancel" onclick="closeDatePicker()">取消</button>
+            </div>
+        </div>
     </div>
 </body>
 </html>
