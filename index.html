@@ -1,489 +1,299 @@
 <!DOCTYPE html>
-
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PM評估系統</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>木質面材 3D 視覺化</title>
     <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
-body {
-font-family: ‘Microsoft JhengHei’, sans-serif;
-background: #1a1d29;
-color: #e8eaf0;
-min-height: 100vh;
-padding: 20px;
-}
-
-.container {
-max-width: 900px;
-margin: 0 auto;
-background: #252936;
-border-radius: 15px;
-padding: 30px;
-box-shadow: 0 8px 30px rgba(0,0,0,0.5);
-}
-
-h1 {
-text-align: center;
-color: #4a9eff;
-margin-bottom: 10px;
-font-size: 2rem;
-}
-
-.subtitle {
-text-align: center;
-color: #9ba3b4;
-margin-bottom: 30px;
-}
-
-.hidden { display: none !important; }
-
-/* 輸入框 */
-input[type=“text”] {
-width: 100%;
-padding: 15px;
-font-size: 16px;
-background: #2f3444;
-border: 2px solid #4a9eff;
-border-radius: 8px;
-color: #e8eaf0;
-margin: 10px 0;
-}
-
-input[type=“text”]:focus {
-outline: none;
-border-color: #64b5f6;
-box-shadow: 0 0 15px rgba(74, 158, 255, 0.3);
-}
-
-/* 按鈕 */
-.btn {
-width: 100%;
-padding: 15px;
-margin: 10px 0;
-font-size: 1.1rem;
-font-weight: 600;
-border: none;
-border-radius: 8px;
-cursor: pointer;
-transition: all 0.3s;
-}
-
-.btn-primary {
-background: linear-gradient(135deg, #4a9eff, #64b5f6);
-color: #1a1d29;
-}
-
-.btn-primary:hover {
-background: linear-gradient(135deg, #64b5f6, #82c4ff);
-box-shadow: 0 0 20px rgba(74, 158, 255, 0.5);
-}
-
-.btn-secondary {
-background: #2f3444;
-color: #9ba3b4;
-border: 2px solid #4a9eff;
-}
-
-/* 評分區域 */
-.category {
-margin: 25px 0;
-padding: 20px;
-background: #2f3444;
-border-radius: 12px;
-}
-
-.category h3 {
-color: #4a9eff;
-margin-bottom: 15px;
-}
-
-.indicator {
-margin: 12px 0;
-padding: 12px;
-background: #252936;
-border-radius: 8px;
-}
-
-.indicator-name {
-color: #e8eaf0;
-margin-bottom: 10px;
-font-weight: 600;
-}
-
-.score-buttons {
-display: grid;
-grid-template-columns: repeat(5, 1fr);
-gap: 8px;
-}
-
-.score-btn {
-padding: 12px;
-font-size: 1.1rem;
-font-weight: bold;
-background: #2f3444;
-border: 2px solid #4a9eff;
-border-radius: 8px;
-color: #9ba3b4;
-cursor: pointer;
-transition: all 0.3s;
-}
-
-.score-btn:hover {
-border-color: #64b5f6;
-background: #1a1d29;
-color: #4a9eff;
-}
-
-.score-btn.active {
-background: linear-gradient(135deg, #4a9eff, #64b5f6);
-color: #1a1d29;
-border-color: #4a9eff;
-box-shadow: 0 0 15px rgba(74, 158, 255, 0.5);
-transform: scale(1.05);
-}
-
-/* 證照選擇 */
-.cert-list {
-margin: 20px 0;
-}
-
-.cert-item {
-display: flex;
-align-items: center;
-gap: 12px;
-padding: 12px;
-margin: 8px 0;
-background: #2f3444;
-border-radius: 8px;
-cursor: pointer;
-transition: all 0.3s;
-}
-
-.cert-item:hover {
-background: #1a1d29;
-border: 1px solid #4a9eff;
-}
-
-.cert-item input {
-width: 20px;
-height: 20px;
-cursor: pointer;
-}
-
-.cert-info {
-flex: 1;
-color: #e8eaf0;
-}
-
-.cert-bonus {
-background: #52c41a;
-color: white;
-padding: 4px 10px;
-border-radius: 12px;
-font-size: 0.85rem;
-margin-left: 10px;
-}
-
-.cert-summary {
-margin-top: 20px;
-padding: 15px;
-background: #2f3444;
-border: 2px solid #4a9eff;
-border-radius: 10px;
-}
-
-.cert-tag {
-display: inline-block;
-background: #4a9eff;
-color: #1a1d29;
-padding: 6px 12px;
-border-radius: 15px;
-margin: 4px;
-font-size: 0.85rem;
-}
-
-.total-bonus {
-color: #52c41a;
-font-size: 1.2rem;
-font-weight: 700;
-margin-top: 10px;
-}
-
-/* 結果 */
-.result-box {
-text-align: center;
-padding: 30px;
-}
-
-.total-score {
-font-size: 4rem;
-font-weight: bold;
-color: #4a9eff;
-text-shadow: 0 0 30px rgba(74, 158, 255, 0.5);
-margin: 20px 0;
-}
-
-.level {
-font-size: 1.5rem;
-color: #82c4ff;
-margin: 15px 0;
-}
-
-#radarChart {
-max-width: 450px;
-margin: 30px auto;
-}
-
-/* 手機版 */
-@media (max-width: 768px) {
-body { padding: 10px; }
-.container { padding: 20px; }
-h1 { font-size: 1.5rem; }
-.score-btn { padding: 10px; font-size: 1rem; }
-.total-score { font-size: 3rem; }
-}
-</style>
-
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Arial', sans-serif;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        canvas {
+            display: block;
+            margin: 0 auto;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .specs {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        .spec-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .spec-row:last-child {
+            border-bottom: none;
+        }
+        .ai-prompts {
+            margin-top: 30px;
+            padding: 20px;
+            background: #e3f2fd;
+            border-radius: 10px;
+            border-left: 4px solid #2196f3;
+        }
+        .prompt-section {
+            margin: 15px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+        }
+        .prompt-section h3 {
+            color: #1976d2;
+            margin-top: 0;
+        }
+        .prompt-text {
+            background: #f5f5f5;
+            padding: 12px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+    </style>
 </head>
 <body>
-<div class="container">
-    <h1>📊 PM 戰鬥力評估系統</h1>
-    <p class="subtitle">PM POWER ASSESSMENT SYSTEM</p>
-
-```
-<div id="step1">
-    <h2 style="color: #4a9eff; margin: 20px 0;">👤 評估對象</h2>
-    <input type="text" id="userName" placeholder="請輸入姓名">
-    <button class="btn btn-primary" onclick="goToStep2()">下一步：選擇證照 →</button>
-</div>
-
-<div id="step2" class="hidden">
-    <h2 style="color: #4a9eff; margin: 20px 0;">🏆 專業證照</h2>
-    <div class="cert-list" id="certList"></div>
-    <div id="certSummary" class="cert-summary hidden">
-        <div id="certTags"></div>
-        <div class="total-bonus" id="bonusDisplay"></div>
-    </div>
-    <button class="btn btn-secondary" onclick="backToStep1()">← 返回</button>
-    <button class="btn btn-primary" onclick="startAssessment()">開始評估 →</button>
-</div>
-
-<div id="step3" class="hidden">
-    <h2 style="color: #4a9eff; margin: 20px 0;" id="assessmentTitle"></h2>
-    <div id="assessmentArea"></div>
-    <button class="btn btn-primary" onclick="calculateResult()">🚀 計算結果</button>
-</div>
-
-<div id="step4" class="hidden">
-    <div class="result-box">
-        <h2 style="color: #4a9eff;">評估結果</h2>
-        <div class="total-score" id="finalScore">0</div>
-        <div class="level" id="finalLevel"></div>
-        <canvas id="radarChart"></canvas>
-    </div>
-    <button class="btn btn-primary" onclick="location.reload()">🔄 重新評估</button>
-</div>
-```
-
-</div>
-
-<script>
-const categories = [
-    { name: '溝通力', weight: 30, indicators: ['利害關係人溝通', '團隊溝通協調', '會議管理', '衝突管理', '資訊分享'] },
-    { name: '技術力', weight: 20, indicators: ['影像系統', '網路系統', '聲音系統', '環控/BA', '跨系統除錯'] },
-    { name: '執行管控力', weight: 20, indicators: ['進度追蹤', '成本預警', '品質管控', '變更管理', '交付驗收'] },
-    { name: '領導力', weight: 15, indicators: ['團隊激勵', '授權賦能', '決策判斷', '危機處理'] },
-    { name: '規劃力', weight: 10, indicators: ['專案規劃', '資源調配', '風險識別'] },
-    { name: '商業意識', weight: 5, indicators: ['成本效益', '客戶導向'] }
-];
-
-const certs = [
-    { id: 'pmp', name: 'PMP', bonus: 10 },
-    { id: 'capm', name: 'CAPM', bonus: 5 },
-    { id: 'ccna', name: 'CCNA', bonus: 6 },
-    { id: 'ccnp', name: 'CCNP', bonus: 10 },
-    { id: 'cissp', name: 'CISSP', bonus: 10 },
-    { id: 'cts', name: 'CTS', bonus: 8 }
-];
-
-let selectedCerts = [];
-let scores = {};
-let chart = null;
-
-function goToStep2() {
-    if (!document.getElementById('userName').value.trim()) {
-        alert('請輸入姓名！');
-        return;
-    }
-    document.getElementById('step1').classList.add('hidden');
-    document.getElementById('step2').classList.remove('hidden');
-    renderCerts();
-}
-
-function backToStep1() {
-    document.getElementById('step2').classList.add('hidden');
-    document.getElementById('step1').classList.remove('hidden');
-}
-
-function renderCerts() {
-    const list = document.getElementById('certList');
-    list.innerHTML = certs.map(c => `
-        <label class="cert-item">
-            <input type="checkbox" onchange="toggleCert('${c.id}', ${c.bonus}, '${c.name}')">
-            <div class="cert-info">
-                ${c.name}<span class="cert-bonus">+${c.bonus}分</span>
+    <div class="container">
+        <h1>🪵 木質面材 3D 渲染</h1>
+        <canvas id="canvas3d" width="1000" height="700"></canvas>
+        
+        <div class="specs">
+            <h2>📏 規格尺寸</h2>
+            <div class="spec-row">
+                <strong>外長 (Outer Length):</strong>
+                <span>51.0 cm</span>
             </div>
-        </label>
-    `).join('');
-}
+            <div class="spec-row">
+                <strong>外寬 (Outer Width):</strong>
+                <span>8.3 cm</span>
+            </div>
+            <div class="spec-row">
+                <strong>內長 (Inner Length):</strong>
+                <span>47.7 cm</span>
+            </div>
+            <div class="spec-row">
+                <strong>內寬 (Inner Width):</strong>
+                <span>5.2 cm</span>
+            </div>
+            <div class="spec-row">
+                <strong>厚度 (Thickness):</strong>
+                <span>0.5 cm</span>
+            </div>
+            <div class="spec-row">
+                <strong>邊框寬度 (Frame Width):</strong>
+                <span>1.65 cm (each side)</span>
+            </div>
+        </div>
 
-function toggleCert(id, bonus, name) {
-    const idx = selectedCerts.findIndex(c => c.id === id);
-    if (idx > -1) {
-        selectedCerts.splice(idx, 1);
-    } else {
-        selectedCerts.push({ id, bonus, name });
-    }
-    
-    const summary = document.getElementById('certSummary');
-    if (selectedCerts.length === 0) {
-        summary.classList.add('hidden');
-        return;
-    }
-    
-    summary.classList.remove('hidden');
-    document.getElementById('certTags').innerHTML = selectedCerts.map(c => 
-        `<span class="cert-tag">${c.name} (+${c.bonus})</span>`
-    ).join('');
-    document.getElementById('bonusDisplay').textContent = 
-        `總加分：${selectedCerts.reduce((s, c) => s + c.bonus, 0)} 分`;
-}
+        <div class="ai-prompts">
+            <h2>🎨 AI 繪圖指令 (適用於 Midjourney、DALL-E、Stable Diffusion)</h2>
+            
+            <div class="prompt-section">
+                <h3>1. 寫實風格提示詞 (Photorealistic)</h3>
+                <div class="prompt-text">A high-quality photorealistic render of a wooden rectangular panel frame, outer dimensions 51cm x 8.3cm, inner opening 47.7cm x 5.2cm, thickness 0.5cm, natural oak wood texture with visible grain patterns, warm honey brown color, smooth matte finish, studio lighting with soft shadows, professional product photography, 8K resolution, ultra detailed, --ar 16:9 --v 6</div>
+            </div>
 
-function startAssessment() {
-    document.getElementById('assessmentTitle').textContent = 
-        document.getElementById('userName').value + ' 的能力評估';
-    document.getElementById('step2').classList.add('hidden');
-    document.getElementById('step3').classList.remove('hidden');
-    renderAssessment();
-}
+            <div class="prompt-section">
+                <h3>2. 技術圖風格 (Technical Drawing)</h3>
+                <div class="prompt-text">Technical blueprint of wooden panel frame, precise dimensions labeled: outer 51cm x 8.3cm, inner 47.7cm x 5.2cm, 0.5cm thickness, isometric view, white background, professional CAD style, clean lines, measurement annotations in Chinese and English, scale 1:2, engineering drawing style, --ar 16:9</div>
+            </div>
 
-function renderAssessment() {
-    const area = document.getElementById('assessmentArea');
-    area.innerHTML = '';
-    
-    categories.forEach((cat, ci) => {
-        const div = document.createElement('div');
-        div.className = 'category';
-        div.innerHTML = `<h3>${cat.name}</h3>`;
-        
-        cat.indicators.forEach((ind, ii) => {
-            const key = `${ci}-${ii}`;
-            const indDiv = document.createElement('div');
-            indDiv.className = 'indicator';
-            indDiv.innerHTML = `
-                <div class="indicator-name">${ind}</div>
-                <div class="score-buttons">
-                    ${[1,2,3,4,5].map(s => 
-                        `<button class="score-btn" onclick="selectScore('${key}', ${s}, this)">${s}</button>`
-                    ).join('')}
-                </div>
-            `;
-            div.appendChild(indDiv);
-        });
-        
-        area.appendChild(div);
-    });
-}
+            <div class="prompt-section">
+                <h3>3. 3D 渲染風格 (3D Render)</h3>
+                <div class="prompt-text">3D rendered wooden frame panel, rectangular shape with hollow center, premium walnut wood material, PBR textures, realistic wood grain, beveled edges, ambient occlusion, global illumination, cinema 4D style, Octane render, product visualization, neutral gray background, studio setup, --quality 2 --ar 16:9</div>
+            </div>
 
-function selectScore(key, score, btn) {
-    scores[key] = score;
-    btn.parentElement.querySelectorAll('.score-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-}
+            <div class="prompt-section">
+                <h3>4. 情境應用風格 (Contextual)</h3>
+                <div class="prompt-text">Wooden decorative panel frame mounted on white wall, modern minimalist interior, Scandinavian design, natural light from window, oak wood finish, 51cm horizontal panel, elegant home decor, architectural photography, depth of field, f/2.8, professional interior design, --ar 16:9</div>
+            </div>
 
-function calculateResult() {
-    let total = 0;
-    categories.forEach(cat => total += cat.indicators.length);
-    
-    if (Object.keys(scores).length < total) {
-        alert('請完成所有評分！');
-        return;
-    }
-    
-    let base = 0;
-    const catScores = [];
-    
-    categories.forEach((cat, ci) => {
-        let sum = 0;
-        cat.indicators.forEach((ind, ii) => {
-            sum += scores[`${ci}-${ii}`];
-        });
-        const percent = (sum / (cat.indicators.length * 5)) * 100;
-        catScores.push(percent / 10);
-        base += percent * (cat.weight / 100);
-    });
-    
-    const certBonus = selectedCerts.reduce((s, c) => s + c.bonus, 0);
-    const final = Math.min(base + certBonus, 100);
-    
-    document.getElementById('step3').classList.add('hidden');
-    document.getElementById('step4').classList.remove('hidden');
-    document.getElementById('finalScore').textContent = final.toFixed(1);
-    
-    let level = '';
-    if (final >= 90) level = '🏆 神級PM候選';
-    else if (final >= 80) level = '⭐ 頂尖工程師';
-    else if (final >= 70) level = '🎯 資深可靠';
-    else if (final >= 60) level = '💪 中堅戰力';
-    else level = '🌱 成長中';
-    
-    document.getElementById('finalLevel').textContent = level;
-    drawChart(catScores);
-}
+            <div class="prompt-section">
+                <h3>5. 多角度展示 (Multiple Angles)</h3>
+                <div class="prompt-text">Product sheet showing wooden panel frame from multiple angles: front view, side view (0.5cm thickness visible), top view, 3/4 perspective, dimensions labeled, white background, professional product photography, high resolution, clean composition, studio lighting, --ar 16:9</div>
+            </div>
+        </div>
+    </div>
 
-function drawChart(data) {
-    const ctx = document.getElementById('radarChart');
-    if (chart) chart.destroy();
-    
-    chart = new Chart(ctx, {
-        type: 'radar',
-        data: {
-            labels: categories.map(c => c.name),
-            datasets: [{
-                label: '能力分數',
-                data: data,
-                backgroundColor: 'rgba(74, 158, 255, 0.2)',
-                borderColor: '#4a9eff',
-                borderWidth: 2,
-                pointBackgroundColor: '#4a9eff',
-                pointBorderColor: '#fff',
-                pointRadius: 4
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                r: {
-                    beginAtZero: true,
-                    max: 10,
-                    ticks: { stepSize: 2, color: '#9ba3b4' },
-                    grid: { color: '#2f3444' },
-                    pointLabels: { color: '#e8eaf0' }
-                }
-            },
-            plugins: {
-                legend: { labels: { color: '#e8eaf0' } }
+    <script>
+        const canvas = document.getElementById('canvas3d');
+        const ctx = canvas.getContext('2d');
+
+        // 繪製真實的3D木質面材
+        function draw3DPanel() {
+            // 清空畫布
+            ctx.fillStyle = '#f0f0f0';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 設定3D投影參數
+            const scale = 8;
+            const offsetX = 200;
+            const offsetY = 150;
+            const depth = 30;
+
+            // 尺寸
+            const outerLength = 51 * scale;
+            const outerWidth = 8.3 * scale;
+            const innerLength = 47.7 * scale;
+            const innerWidth = 5.2 * scale;
+            const thickness = 0.5 * scale;
+
+            // 計算邊框寬度
+            const frameWidthH = (outerLength - innerLength) / 2;
+            const frameWidthV = (outerWidth - innerWidth) / 2;
+
+            // 木紋紋理函數
+            function createWoodGradient(x, y, w, h, angle = 0) {
+                const gradient = ctx.createLinearGradient(x, y, x + w * Math.cos(angle), y + h);
+                gradient.addColorStop(0, '#8B4513');
+                gradient.addColorStop(0.3, '#A0522D');
+                gradient.addColorStop(0.5, '#CD853F');
+                gradient.addColorStop(0.7, '#A0522D');
+                gradient.addColorStop(1, '#8B4513');
+                return gradient;
             }
+
+            // 繪製陰影
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+            ctx.shadowBlur = 20;
+            ctx.shadowOffsetX = 10;
+            ctx.shadowOffsetY = 10;
+
+            // 繪製正面 - 外框
+            ctx.fillStyle = createWoodGradient(offsetX, offsetY, outerLength, outerWidth);
+            ctx.fillRect(offsetX, offsetY, outerLength, outerWidth);
+
+            // 重置陰影
+            ctx.shadowColor = 'transparent';
+
+            // 繪製內部挖空（黑色）
+            ctx.fillStyle = '#1a1a1a';
+            ctx.fillRect(
+                offsetX + frameWidthH,
+                offsetY + frameWidthV,
+                innerLength,
+                innerWidth
+            );
+
+            // 繪製木紋細節
+            ctx.strokeStyle = 'rgba(101, 67, 33, 0.3)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < 30; i++) {
+                ctx.beginPath();
+                const y = offsetY + Math.random() * outerWidth;
+                ctx.moveTo(offsetX, y);
+                ctx.lineTo(offsetX + outerLength, y);
+                ctx.stroke();
+            }
+
+            // 繪製3D側面效果
+            ctx.fillStyle = '#6B4423';
+            
+            // 頂部側面
+            ctx.beginPath();
+            ctx.moveTo(offsetX, offsetY);
+            ctx.lineTo(offsetX - depth, offsetY - depth);
+            ctx.lineTo(offsetX - depth + outerLength, offsetY - depth);
+            ctx.lineTo(offsetX + outerLength, offsetY);
+            ctx.closePath();
+            ctx.fill();
+
+            // 右側面
+            ctx.fillStyle = '#5A3A1A';
+            ctx.beginPath();
+            ctx.moveTo(offsetX + outerLength, offsetY);
+            ctx.lineTo(offsetX + outerLength - depth, offsetY - depth);
+            ctx.lineTo(offsetX + outerLength - depth, offsetY - depth + outerWidth);
+            ctx.lineTo(offsetX + outerLength, offsetY + outerWidth);
+            ctx.closePath();
+            ctx.fill();
+
+            // 繪製內框3D效果
+            ctx.fillStyle = '#3a3a3a';
+            ctx.beginPath();
+            ctx.moveTo(offsetX + frameWidthH, offsetY + frameWidthV);
+            ctx.lineTo(offsetX + frameWidthH - thickness * 3, offsetY + frameWidthV - thickness * 3);
+            ctx.lineTo(offsetX + frameWidthH - thickness * 3 + innerLength, offsetY + frameWidthV - thickness * 3);
+            ctx.lineTo(offsetX + frameWidthH + innerLength, offsetY + frameWidthV);
+            ctx.closePath();
+            ctx.fill();
+
+            // 繪製尺寸標註
+            ctx.strokeStyle = '#2196f3';
+            ctx.fillStyle = '#2196f3';
+            ctx.lineWidth = 2;
+            ctx.font = 'bold 16px Arial';
+
+            // 外長標註
+            drawDimension(offsetX, offsetY - 60, outerLength, 0, '外長 51 cm');
+
+            // 外寬標註
+            drawDimension(offsetX + outerLength + 40, offsetY, 0, outerWidth, '外寬 8.3 cm');
+
+            // 內長標註
+            drawDimension(offsetX + frameWidthH, offsetY + outerWidth + 40, innerLength, 0, '內長 47.7 cm');
+
+            // 厚度標註
+            ctx.fillText('厚度 0.5 cm', offsetX + outerLength + 100, offsetY + outerWidth / 2);
+
+            // 添加標題
+            ctx.font = 'bold 24px Arial';
+            ctx.fillStyle = '#333';
+            ctx.fillText('木質面材 3D 渲染圖', offsetX, offsetY - 100);
         }
-    });
-}
 
-console.log('✅ 系統已載入');
-</script>
+        function drawDimension(x, y, width, height, label) {
+            ctx.beginPath();
+            
+            if (width > 0) {
+                // 水平標註
+                ctx.moveTo(x, y);
+                ctx.lineTo(x + width, y);
+                // 箭頭
+                ctx.moveTo(x, y - 5);
+                ctx.lineTo(x, y + 5);
+                ctx.moveTo(x + width, y - 5);
+                ctx.lineTo(x + width, y + 5);
+            } else {
+                // 垂直標註
+                ctx.moveTo(x, y);
+                ctx.lineTo(x, y + height);
+                // 箭頭
+                ctx.moveTo(x - 5, y);
+                ctx.lineTo(x + 5, y);
+                ctx.moveTo(x - 5, y + height);
+                ctx.lineTo(x + 5, y + height);
+            }
+            
+            ctx.stroke();
+            
+            // 標籤
+            ctx.fillText(label, x + width / 2 - 40, y - 10);
+        }
 
+        // 執行繪製
+        draw3DPanel();
+    </script>
 </body>
 </html>
