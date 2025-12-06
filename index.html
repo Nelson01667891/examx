@@ -1,10 +1,13 @@
-
 <!DOCTYPE html>
 
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#1a1d29">
     <title>專案工程師戰鬥力評估系統 | PM Power Assessment</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -39,6 +42,12 @@
         min-height: 100vh;
         overflow-x: hidden;
         position: relative;
+        /* 手機版優化 */
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        -webkit-text-size-adjust: 100%;
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
     }
 
     /* 背景動畫網格 */
@@ -721,35 +730,318 @@
     }
 
     /* 響應式設計 */
+    
+    /* 平板尺寸優化 (768px - 1024px) */
+    @media (max-width: 1024px) and (min-width: 769px) {
+        .container {
+            max-width: 90%;
+            padding: 20px;
+        }
+
+        .cert-category {
+            padding: 15px;
+        }
+
+        #certificationList {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    /* 手機版優化 (≤768px) */
     @media (max-width: 768px) {
+        body {
+            font-size: 14px;
+        }
+
         h1 {
-            font-size: 1.8rem;
+            font-size: 1.5rem;
+            padding: 15px;
+            line-height: 1.3;
+        }
+
+        h2 {
+            font-size: 1.3rem;
+        }
+
+        h3 {
+            font-size: 1.1rem;
+        }
+
+        .container {
+            max-width: 100%;
+            padding: 15px;
+            margin: 10px auto;
         }
 
         .admin-btn {
             top: 10px;
             right: 10px;
-            padding: 8px 16px;
+            padding: 6px 12px;
             font-size: 0.7rem;
         }
 
-        .score-selector {
-            flex-wrap: wrap;
+        /* 姓名輸入優化 */
+        .name-input-section input {
+            font-size: 16px; /* 防止iOS自動縮放 */
+            padding: 15px;
         }
 
-        .score-btn {
-            width: 40px;
-            height: 40px;
+        /* 證照選擇優化 */
+        #certificationSection {
+            padding: 15px !important;
+        }
+
+        #certificationSection h2 {
+            font-size: 1.4rem !important;
+            margin-bottom: 15px !important;
+        }
+
+        #certificationSection p {
             font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+
+        #certificationList {
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        .cert-category {
+            padding: 15px;
+        }
+
+        .cert-category h3 {
+            font-size: 1rem;
+            margin-bottom: 12px;
+        }
+
+        .cert-item {
+            padding: 10px;
+            margin-bottom: 8px;
+        }
+
+        .cert-name {
+            font-size: 0.9rem;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+        }
+
+        .cert-bonus {
+            font-size: 0.7rem;
+            padding: 2px 6px;
+        }
+
+        .cert-desc {
+            font-size: 0.8rem;
+        }
+
+        .selected-certs-summary {
+            padding: 12px 15px;
+        }
+
+        .selected-cert-tag {
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            margin: 3px;
+        }
+
+        .total-bonus {
+            font-size: 1rem;
+        }
+
+        /* 評估區域優化 */
+        .category-assessment {
+            padding: 15px;
+            margin-bottom: 15px;
         }
 
         .indicator-row {
             grid-template-columns: 1fr;
+            gap: 12px;
+            padding: 12px;
+        }
+
+        .indicator-label {
+            font-size: 0.95rem;
+            margin-bottom: 8px;
+        }
+
+        .score-selector {
+            flex-wrap: nowrap;
+            justify-content: space-between;
+            gap: 6px;
+        }
+
+        .score-btn {
+            width: 50px;
+            height: 50px;
+            font-size: 1.1rem;
+            flex: 1;
+        }
+
+        /* 按鈕優化 */
+        .btn {
+            padding: 14px 20px;
+            font-size: 1rem;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .btn-secondary {
+            margin-right: 0 !important;
+        }
+
+        .action-buttons {
+            flex-direction: column;
             gap: 10px;
+        }
+
+        /* 結果頁面優化 */
+        .total-score {
+            font-size: 2.5rem;
+        }
+
+        .score-level {
+            font-size: 1.2rem;
+            padding: 12px 20px;
+        }
+
+        #radarChart {
+            max-height: 250px;
+        }
+
+        /* Tooltip 手機版優化 */
+        .tooltip {
+            max-width: calc(100vw - 40px);
+            min-width: auto;
+            font-size: 0.85rem;
+            padding: 12px 16px;
+            left: 20px !important;
+            right: 20px;
+            width: calc(100% - 40px);
+        }
+
+        .info-icon {
+            width: 18px;
+            height: 18px;
+            font-size: 11px;
+        }
+
+        /* 管理面板優化 */
+        .admin-panel {
+            width: 100%;
+            height: 100%;
+            padding: 15px;
+            overflow-y: auto;
+        }
+
+        .admin-content {
+            padding: 15px;
+        }
+
+        .category-editor {
+            padding: 15px;
+        }
+
+        .indicator-editor {
+            padding: 8px;
+        }
+
+        .indicator-editor input {
+            font-size: 14px;
+        }
+    }
+
+    /* 小手機優化 (≤480px) */
+    @media (max-width: 480px) {
+        h1 {
+            font-size: 1.3rem;
+            padding: 12px;
+        }
+
+        .container {
+            padding: 10px;
+            margin: 5px auto;
+        }
+
+        .score-btn {
+            width: 45px;
+            height: 45px;
+            font-size: 1rem;
+            gap: 4px;
+        }
+
+        .cert-item {
+            padding: 8px;
+        }
+
+        .cert-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
         }
 
         .total-score {
             font-size: 2rem;
+        }
+
+        .btn {
+            padding: 12px 16px;
+            font-size: 0.95rem;
+        }
+    }
+
+    /* 觸控優化 */
+    @media (hover: none) and (pointer: coarse) {
+        /* 增加可點擊區域 */
+        .score-btn {
+            min-height: 48px;
+            min-width: 48px;
+        }
+
+        .cert-item {
+            min-height: 60px;
+        }
+
+        .btn {
+            min-height: 48px;
+        }
+
+        /* 改進觸控回饋 */
+        .score-btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .cert-item:active {
+            background: var(--dark-surface);
+        }
+
+        /* 觸控時顯示tooltip */
+        .info-icon {
+            -webkit-tap-highlight-color: transparent;
+        }
+    }
+
+    /* 橫向模式優化 */
+    @media (max-width: 768px) and (orientation: landscape) {
+        .container {
+            max-width: 95%;
+        }
+
+        #radarChart {
+            max-height: 200px;
+        }
+
+        .total-score {
+            font-size: 2rem;
+        }
+
+        #certificationList {
+            grid-template-columns: repeat(2, 1fr);
         }
     }
 
@@ -1605,6 +1897,7 @@
 
     // 動態顯示 tooltip
     let tooltipElement = null;
+    let isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
     
     function showTooltip(event, description) {
         // 移除舊的 tooltip
@@ -1616,35 +1909,79 @@
         tooltipElement.style.visibility = 'visible';
         tooltipElement.style.opacity = '1';
         tooltipElement.innerHTML = `<strong style="color: var(--primary-neon); display: block; margin-bottom: 8px;">💡 評分說明</strong>${description}`;
+        
+        // 手機版增加關閉按鈕和半透明背景
+        if (isMobile || window.innerWidth <= 768) {
+            // 添加背景遮罩
+            const overlay = document.createElement('div');
+            overlay.id = 'tooltip-overlay';
+            overlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 9998;
+            `;
+            overlay.onclick = hideTooltip;
+            document.body.appendChild(overlay);
+            
+            tooltipElement.innerHTML += `
+                <div style="text-align: right; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--dark-elevated);">
+                    <button onclick="hideTooltip()" style="background: var(--primary-neon); color: var(--dark-bg); border: none; padding: 8px 16px; border-radius: 6px; font-size: 0.9rem; cursor: pointer; font-weight: 600;">
+                        知道了
+                    </button>
+                </div>
+            `;
+            tooltipElement.style.pointerEvents = 'auto';
+            tooltipElement.style.zIndex = '9999';
+        }
+        
         document.body.appendChild(tooltipElement);
         
         // 計算位置
         const iconRect = event.target.getBoundingClientRect();
         const tooltipRect = tooltipElement.getBoundingClientRect();
         
-        let left = iconRect.right + 15;
-        let top = iconRect.top + (iconRect.height / 2) - (tooltipRect.height / 2);
-        
-        // 防止超出右邊界
-        if (left + tooltipRect.width > window.innerWidth - 20) {
-            left = iconRect.left - tooltipRect.width - 15;
+        // 手機版置中顯示
+        if (isMobile || window.innerWidth <= 768) {
+            tooltipElement.style.left = '20px';
+            tooltipElement.style.right = '20px';
+            tooltipElement.style.top = '50%';
+            tooltipElement.style.transform = 'translateY(-50%)';
+            tooltipElement.style.width = 'calc(100% - 40px)';
+            tooltipElement.style.maxWidth = 'none';
+        } else {
+            let left = iconRect.right + 15;
+            let top = iconRect.top + (iconRect.height / 2) - (tooltipRect.height / 2);
+            
+            // 防止超出右邊界
+            if (left + tooltipRect.width > window.innerWidth - 20) {
+                left = iconRect.left - tooltipRect.width - 15;
+            }
+            
+            // 防止超出上下邊界
+            if (top < 20) {
+                top = 20;
+            } else if (top + tooltipRect.height > window.innerHeight - 20) {
+                top = window.innerHeight - tooltipRect.height - 20;
+            }
+            
+            tooltipElement.style.left = left + 'px';
+            tooltipElement.style.top = top + 'px';
         }
-        
-        // 防止超出上下邊界
-        if (top < 20) {
-            top = 20;
-        } else if (top + tooltipRect.height > window.innerHeight - 20) {
-            top = window.innerHeight - tooltipRect.height - 20;
-        }
-        
-        tooltipElement.style.left = left + 'px';
-        tooltipElement.style.top = top + 'px';
     }
     
     function hideTooltip() {
         if (tooltipElement) {
             tooltipElement.remove();
             tooltipElement = null;
+        }
+        // 移除背景遮罩
+        const overlay = document.getElementById('tooltip-overlay');
+        if (overlay) {
+            overlay.remove();
         }
     }
 
@@ -2193,4 +2530,4 @@ PMP知識體系，建立完整的專案管理思維框架。${certComment}`; } e
 ```
 
 </body>
-</html
+</html>
