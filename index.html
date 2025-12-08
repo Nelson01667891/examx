@@ -2,298 +2,1705 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>木質面材 3D 視覺化</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>專案工程師戰鬥力評估系統 | PM Power Assessment</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+TC:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
-        body {
+        * {
             margin: 0;
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            font-family: 'Arial', sans-serif;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
+
+        :root {
+            --primary-neon: #4a9eff;
+            --secondary-neon: #64b5f6;
+            --accent-neon: #82c4ff;
+            --dark-bg: #1a1d29;
+            --dark-surface: #252936;
+            --dark-elevated: #2f3444;
+            --text-primary: #e8eaf0;
+            --text-secondary: #9ba3b4;
+            --success: #52c41a;
+            --warning: #faad14;
+            --danger: #f5222d;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+            padding-bottom: 20px;
+        }
+
+        /* 背景動畫網格 - 手機優化 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(90deg, rgba(74, 158, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(rgba(74, 158, 255, 0.03) 1px, transparent 1px);
+            background-size: 30px 30px;
+            animation: gridMove 20s linear infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(30px, 30px); }
+        }
+
+        /* 減少粒子數量以提升手機性能 */
+        .particle {
+            position: fixed;
+            width: 2px;
+            height: 2px;
+            background: var(--primary-neon);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float 15s infinite;
+            opacity: 0.2;
+            box-shadow: 0 0 8px var(--primary-neon);
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0); opacity: 0; }
+            10% { opacity: 0.2; }
+            90% { opacity: 0.2; }
+            100% { transform: translateY(-100vh) translateX(30px); opacity: 0; }
+        }
+
         .container {
-            max-width: 1200px;
+            max-width: 100%;
             margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 10px;
+            position: relative;
+            z-index: 1;
         }
-        h1 {
+
+        /* Header - 手機優化 */
+        .header {
             text-align: center;
-            color: #333;
-            margin-bottom: 30px;
+            padding: 20px 15px;
+            background: linear-gradient(135deg, var(--dark-surface) 0%, var(--dark-elevated) 100%);
+            border-radius: 15px;
+            border: 2px solid var(--primary-neon);
+            box-shadow: 0 0 30px rgba(74, 158, 255, 0.3);
+            margin-bottom: 15px;
+            position: relative;
+            overflow: hidden;
         }
-        canvas {
-            display: block;
-            margin: 0 auto;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(74, 158, 255, 0.1), transparent);
+            animation: shimmer 3s infinite;
         }
-        .specs {
-            margin-top: 30px;
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(1.3rem, 5vw, 2.5rem);
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--primary-neon), var(--secondary-neon), var(--accent-neon));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(74, 158, 255, 0.5);
+            margin-bottom: 8px;
+            position: relative;
+            line-height: 1.2;
+        }
+
+        .subtitle {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--text-secondary);
+            font-size: clamp(0.7rem, 2.5vw, 0.9rem);
+            letter-spacing: 2px;
+        }
+
+        /* 管理按鈕 - 手機優化 */
+        .admin-btn {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: linear-gradient(135deg, var(--secondary-neon), var(--primary-neon));
+            color: var(--dark-bg);
+            border: none;
+            padding: 10px 16px;
+            border-radius: 20px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 0 15px rgba(100, 181, 246, 0.5);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            letter-spacing: 1px;
+        }
+
+        .admin-btn:active {
+            transform: scale(0.95);
+            box-shadow: 0 0 20px rgba(100, 181, 246, 0.8);
+        }
+
+        /* 登入面板 - 手機優化 */
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 26, 0.95);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
             padding: 20px;
-            background: #f8f9fa;
-            border-radius: 10px;
         }
-        .spec-row {
+
+        .login-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .login-box {
+            background: var(--dark-surface);
+            padding: 30px 20px;
+            border-radius: 15px;
+            border: 2px solid var(--primary-neon);
+            box-shadow: 0 0 40px rgba(74, 158, 255, 0.4);
+            max-width: 400px;
+            width: 100%;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .login-overlay.active .login-box {
+            transform: scale(1);
+        }
+
+        .login-box h2 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--primary-neon);
+            margin-bottom: 25px;
+            text-align: center;
+            font-size: clamp(1.3rem, 4vw, 1.8rem);
+        }
+
+        .input-group {
+            margin-bottom: 18px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--dark-bg);
+            border: 2px solid var(--dark-elevated);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--primary-neon);
+            box-shadow: 0 0 12px rgba(74, 158, 255, 0.3);
+        }
+
+        .login-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.85rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-neon), var(--secondary-neon));
+            color: var(--dark-bg);
+            box-shadow: 0 0 20px rgba(74, 158, 255, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(2px);
+            box-shadow: 0 0 15px rgba(74, 158, 255, 0.6);
+        }
+
+        .btn-secondary {
+            background: var(--dark-elevated);
+            color: var(--text-primary);
+            border: 2px solid var(--primary-neon);
+        }
+
+        .btn-secondary:active {
+            background: var(--dark-bg);
+        }
+
+        /* 管理面板 - 手機優化 */
+        .admin-panel {
+            background: var(--dark-surface);
+            padding: 20px 15px;
+            border-radius: 15px;
+            border: 2px solid var(--secondary-neon);
+            box-shadow: 0 0 30px rgba(100, 181, 246, 0.3);
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .admin-panel.active {
+            display: block;
+        }
+
+        .admin-panel h3 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--secondary-neon);
+            margin-bottom: 20px;
+            font-size: clamp(1.1rem, 3.5vw, 1.5rem);
+            text-align: center;
+        }
+
+        .admin-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* 評估卡片 - 手機優化 */
+        .assessment-card {
+            background: var(--dark-surface);
+            padding: 20px 15px;
+            border-radius: 15px;
+            border: 2px solid var(--dark-elevated);
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .assessment-card:hover {
+            border-color: var(--primary-neon);
+            box-shadow: 0 0 25px rgba(74, 158, 255, 0.2);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .card-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(1rem, 3.5vw, 1.3rem);
+            color: var(--primary-neon);
+        }
+
+        .card-number {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(0.8rem, 2.5vw, 1rem);
+            color: var(--text-secondary);
+            background: var(--dark-bg);
+            padding: 6px 12px;
+            border-radius: 20px;
+        }
+
+        /* 指標項目 - 手機優化 */
+        .indicator-item {
+            margin-bottom: 18px;
+            padding: 15px;
+            background: var(--dark-bg);
+            border-radius: 10px;
+            border-left: 3px solid var(--primary-neon);
+        }
+
+        .indicator-header {
             display: flex;
             justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid #dee2e6;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            gap: 10px;
         }
-        .spec-row:last-child {
-            border-bottom: none;
+
+        .indicator-name {
+            font-size: clamp(0.9rem, 2.8vw, 1rem);
+            color: var(--text-primary);
+            flex: 1;
+            line-height: 1.4;
         }
-        .ai-prompts {
-            margin-top: 30px;
-            padding: 20px;
-            background: #e3f2fd;
-            border-radius: 10px;
-            border-left: 4px solid #2196f3;
+
+        .indicator-score {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(0.85rem, 2.5vw, 0.95rem);
+            color: var(--accent-neon);
+            white-space: nowrap;
+            font-weight: 700;
         }
-        .prompt-section {
-            margin: 15px 0;
-            padding: 15px;
-            background: white;
-            border-radius: 8px;
+
+        /* 滑桿 - 手機優化 */
+        .slider-container {
+            position: relative;
+            padding: 8px 0;
         }
-        .prompt-section h3 {
-            color: #1976d2;
-            margin-top: 0;
-        }
-        .prompt-text {
-            background: #f5f5f5;
-            padding: 12px;
+
+        .slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
             border-radius: 5px;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
+            background: var(--dark-elevated);
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-neon), var(--secondary-neon));
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(74, 158, 255, 0.6);
+            transition: all 0.3s ease;
+        }
+
+        .slider::-webkit-slider-thumb:active {
+            width: 28px;
+            height: 28px;
+            box-shadow: 0 0 20px rgba(74, 158, 255, 0.8);
+        }
+
+        .slider::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-neon), var(--secondary-neon));
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 0 15px rgba(74, 158, 255, 0.6);
+        }
+
+        /* 證照選擇 - 手機優化 */
+        .cert-section {
+            background: var(--dark-surface);
+            padding: 20px 15px;
+            border-radius: 15px;
+            border: 2px solid var(--dark-elevated);
+            margin-bottom: 15px;
+        }
+
+        .cert-section h3 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--primary-neon);
+            margin-bottom: 15px;
+            font-size: clamp(1rem, 3.5vw, 1.3rem);
+        }
+
+        .cert-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+        }
+
+        .cert-item {
+            background: var(--dark-bg);
+            padding: 12px;
+            border-radius: 10px;
+            border: 2px solid var(--dark-elevated);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .cert-item:active {
+            transform: scale(0.98);
+        }
+
+        .cert-item.selected {
+            border-color: var(--success);
+            background: linear-gradient(135deg, rgba(82, 196, 26, 0.1), rgba(82, 196, 26, 0.05));
+            box-shadow: 0 0 15px rgba(82, 196, 26, 0.3);
+        }
+
+        .cert-name {
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+            font-size: clamp(0.85rem, 2.5vw, 0.95rem);
+        }
+
+        .cert-bonus {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--success);
+            font-size: clamp(0.75rem, 2.2vw, 0.85rem);
+        }
+
+        /* 計算按鈕 - 手機優化 */
+        .calculate-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, var(--success), #73d13d);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            font-size: clamp(1rem, 3vw, 1.2rem);
+            cursor: pointer;
+            box-shadow: 0 0 30px rgba(82, 196, 26, 0.4);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 20px 0;
+        }
+
+        .calculate-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 0 20px rgba(82, 196, 26, 0.6);
+        }
+
+        /* 結果面板 - 手機優化 */
+        .results-panel {
+            background: var(--dark-surface);
+            padding: 20px 15px;
+            border-radius: 15px;
+            border: 2px solid var(--primary-neon);
+            box-shadow: 0 0 40px rgba(74, 158, 255, 0.3);
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .results-panel.active {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .score-display {
+            text-align: center;
+            margin-bottom: 25px;
+            padding: 25px 15px;
+            background: linear-gradient(135deg, var(--dark-bg), var(--dark-elevated));
+            border-radius: 15px;
+            border: 2px solid var(--primary-neon);
+        }
+
+        .score-label {
+            font-size: clamp(0.9rem, 2.8vw, 1rem);
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .score-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(2.5rem, 10vw, 4rem);
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--primary-neon), var(--secondary-neon), var(--accent-neon));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            line-height: 1;
+        }
+
+        .level-badge {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, var(--warning), #ffc53d);
+            color: var(--dark-bg);
+            border-radius: 25px;
+            font-weight: 700;
+            font-size: clamp(0.9rem, 2.8vw, 1.1rem);
+            margin-top: 10px;
+        }
+
+        /* 圖表容器 - 手機優化 */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: auto;
+            min-height: 280px;
+            max-height: 400px;
+            margin: 20px 0;
+            padding: 15px;
+            background: var(--dark-bg);
+            border-radius: 15px;
+        }
+
+        .chart-container canvas {
+            max-width: 100%;
+            height: auto !important;
+        }
+
+        /* 詳細報告 - 手機優化 */
+        .details-section {
+            margin-top: 20px;
+        }
+
+        .details-section h4 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--primary-neon);
+            margin-bottom: 15px;
+            font-size: clamp(1rem, 3.2vw, 1.2rem);
+        }
+
+        .category-detail {
+            background: var(--dark-bg);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            border-left: 4px solid var(--primary-neon);
+        }
+
+        .category-name {
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            font-size: clamp(0.95rem, 2.8vw, 1.05rem);
+        }
+
+        .category-stats {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+            font-size: clamp(0.85rem, 2.5vw, 0.9rem);
+            color: var(--text-secondary);
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* 動作按鈕組 - 手機優化 */
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: clamp(0.9rem, 2.8vw, 1rem);
+        }
+
+        .btn-download {
+            background: linear-gradient(135deg, var(--primary-neon), var(--secondary-neon));
+            color: var(--dark-bg);
+            box-shadow: 0 0 20px rgba(74, 158, 255, 0.3);
+        }
+
+        .btn-download:active {
+            transform: translateY(2px);
+        }
+
+        .btn-reset {
+            background: var(--dark-elevated);
+            color: var(--text-primary);
+            border: 2px solid var(--danger);
+        }
+
+        .btn-reset:active {
+            background: var(--dark-bg);
+        }
+
+        /* 提示文字 */
+        .hint-text {
+            color: var(--text-secondary);
+            font-size: clamp(0.8rem, 2.3vw, 0.85rem);
+            text-align: center;
+            margin: 15px 0;
             line-height: 1.6;
-            white-space: pre-wrap;
+        }
+
+        /* 加載動畫 */
+        .loading {
+            text-align: center;
+            padding: 30px;
+            color: var(--primary-neon);
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+
+        /* 響應式調整 */
+        @media (max-width: 480px) {
+            .container {
+                padding: 8px;
+            }
+
+            .header {
+                padding: 15px 10px;
+                margin-bottom: 12px;
+            }
+
+            .assessment-card {
+                padding: 15px 12px;
+            }
+
+            .indicator-item {
+                padding: 12px;
+            }
+
+            .cert-grid {
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+                gap: 10px;
+            }
+
+            .chart-container {
+                min-height: 250px;
+                padding: 10px;
+            }
+        }
+
+        /* 超小螢幕優化 */
+        @media (max-width: 360px) {
+            .cert-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .slider::-webkit-slider-thumb {
+                width: 20px;
+                height: 20px;
+            }
+        }
+
+        /* 橫屏模式優化 */
+        @media (orientation: landscape) and (max-height: 500px) {
+            .header {
+                padding: 12px 10px;
+            }
+
+            .admin-btn {
+                padding: 8px 12px;
+                font-size: 0.65rem;
+            }
+
+            .chart-container {
+                min-height: 200px;
+                max-height: 300px;
+            }
+        }
+
+        /* 觸控優化 */
+        @media (hover: none) and (pointer: coarse) {
+            .btn, .action-btn, .cert-item, .admin-btn {
+                min-height: 44px;
+            }
+
+            .slider::-webkit-slider-thumb {
+                width: 28px;
+                height: 28px;
+            }
+
+            .slider::-moz-range-thumb {
+                width: 28px;
+                height: 28px;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- 背景粒子 -->
+    <div id="particles"></div>
+
+    <!-- 管理按鈕 -->
+    <button class="admin-btn" onclick="toggleLogin()">管理</button>
+
+    <!-- 登入面板 -->
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-box">
+            <h2>🔐 管理員登入</h2>
+            <div class="input-group">
+                <label>使用者名稱</label>
+                <input type="text" id="username" placeholder="請輸入使用者名稱">
+            </div>
+            <div class="input-group">
+                <label>密碼</label>
+                <input type="password" id="password" placeholder="請輸入密碼">
+            </div>
+            <div class="login-buttons">
+                <button class="btn btn-primary" onclick="login()">登入</button>
+                <button class="btn btn-secondary" onclick="toggleLogin()">取消</button>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
-        <h1>🪵 木質面材 3D 渲染</h1>
-        <canvas id="canvas3d" width="1000" height="700"></canvas>
-        
-        <div class="specs">
-            <h2>📏 規格尺寸</h2>
-            <div class="spec-row">
-                <strong>外長 (Outer Length):</strong>
-                <span>51.0 cm</span>
-            </div>
-            <div class="spec-row">
-                <strong>外寬 (Outer Width):</strong>
-                <span>8.3 cm</span>
-            </div>
-            <div class="spec-row">
-                <strong>內長 (Inner Length):</strong>
-                <span>47.7 cm</span>
-            </div>
-            <div class="spec-row">
-                <strong>內寬 (Inner Width):</strong>
-                <span>5.2 cm</span>
-            </div>
-            <div class="spec-row">
-                <strong>厚度 (Thickness):</strong>
-                <span>0.5 cm</span>
-            </div>
-            <div class="spec-row">
-                <strong>邊框寬度 (Frame Width):</strong>
-                <span>1.65 cm (each side)</span>
+        <!-- Header -->
+        <div class="header">
+            <h1>PM POWER</h1>
+            <p class="subtitle">PROJECT MANAGER ASSESSMENT SYSTEM</p>
+        </div>
+
+        <!-- 管理面板 -->
+        <div class="admin-panel" id="adminPanel">
+            <h3>⚙️ 管理控制台</h3>
+            <div class="admin-controls">
+                <button class="btn btn-primary" onclick="exportData()">📥 匯出所有資料</button>
+                <button class="btn btn-secondary" onclick="viewStats()">📊 查看統計資料</button>
+                <button class="btn btn-secondary" onclick="logout()">🚪 登出</button>
             </div>
         </div>
 
-        <div class="ai-prompts">
-            <h2>🎨 AI 繪圖指令 (適用於 Midjourney、DALL-E、Stable Diffusion)</h2>
+        <!-- 姓名輸入 -->
+        <div class="assessment-card">
+            <div class="card-header">
+                <h3 class="card-title">👤 評估對象</h3>
+            </div>
+            <div class="input-group">
+                <label>姓名</label>
+                <input type="text" id="nameInput" placeholder="請輸入受評估者姓名" style="font-size: 1rem;">
+            </div>
+        </div>
+
+        <!-- 能力評估卡片 -->
+        <div class="assessment-card">
+            <div class="card-header">
+                <h3 class="card-title">💬 溝通力</h3>
+                <span class="card-number">Category 1/6</span>
+            </div>
             
-            <div class="prompt-section">
-                <h3>1. 寫實風格提示詞 (Photorealistic)</h3>
-                <div class="prompt-text">A high-quality photorealistic render of a wooden rectangular panel frame, outer dimensions 51cm x 8.3cm, inner opening 47.7cm x 5.2cm, thickness 0.5cm, natural oak wood texture with visible grain patterns, warm honey brown color, smooth matte finish, studio lighting with soft shadows, professional product photography, 8K resolution, ultra detailed, --ar 16:9 --v 6</div>
+            <div class="indicator-item">
+                <div class="indicator-header">
+                    <span class="indicator-name">客戶溝通能力</span>
+                    <span class="indicator-score" id="score-1-1">5</span>
+                </div>
+                <div class="slider-container">
+                    <input type="range" min="0" max="10" value="5" class="slider" 
+                           oninput="updateScore(1, 1, this.value)">
+                </div>
             </div>
 
-            <div class="prompt-section">
-                <h3>2. 技術圖風格 (Technical Drawing)</h3>
-                <div class="prompt-text">Technical blueprint of wooden panel frame, precise dimensions labeled: outer 51cm x 8.3cm, inner 47.7cm x 5.2cm, 0.5cm thickness, isometric view, white background, professional CAD style, clean lines, measurement annotations in Chinese and English, scale 1:2, engineering drawing style, --ar 16:9</div>
+            <div class="indicator-item">
+                <div class="indicator-header">
+                    <span class="indicator-name">團隊溝通與協調</span>
+                    <span class="indicator-score" id="score-1-2">5</span>
+                </div>
+                <div class="slider-container">
+                    <input type="range" min="0" max="10" value="5" class="slider" 
+                           oninput="updateScore(1, 2, this.value)">
+                </div>
             </div>
 
-            <div class="prompt-section">
-                <h3>3. 3D 渲染風格 (3D Render)</h3>
-                <div class="prompt-text">3D rendered wooden frame panel, rectangular shape with hollow center, premium walnut wood material, PBR textures, realistic wood grain, beveled edges, ambient occlusion, global illumination, cinema 4D style, Octane render, product visualization, neutral gray background, studio setup, --quality 2 --ar 16:9</div>
+            <div class="indicator-item">
+                <div class="indicator-header">
+                    <span class="indicator-name">會議主持與簡報</span>
+                    <span class="indicator-score" id="score-1-3">5</span>
+                </div>
+                <div class="slider-container">
+                    <input type="range" min="0" max="10" value="5" class="slider" 
+                           oninput="updateScore(1, 3, this.value)">
+                </div>
             </div>
 
-            <div class="prompt-section">
-                <h3>4. 情境應用風格 (Contextual)</h3>
-                <div class="prompt-text">Wooden decorative panel frame mounted on white wall, modern minimalist interior, Scandinavian design, natural light from window, oak wood finish, 51cm horizontal panel, elegant home decor, architectural photography, depth of field, f/2.8, professional interior design, --ar 16:9</div>
+            <div class="indicator-item">
+                <div class="indicator-header">
+                    <span class="indicator-name">衝突管理能力</span>
+                    <span class="indicator-score" id="score-1-4">5</span>
+                </div>
+                <div class="slider-container">
+                    <input type="range" min="0" max="10" value="5" class="slider" 
+                           oninput="updateScore(1, 4, this.value)">
+                </div>
             </div>
 
-            <div class="prompt-section">
-                <h3>5. 多角度展示 (Multiple Angles)</h3>
-                <div class="prompt-text">Product sheet showing wooden panel frame from multiple angles: front view, side view (0.5cm thickness visible), top view, 3/4 perspective, dimensions labeled, white background, professional product photography, high resolution, clean composition, studio lighting, --ar 16:9</div>
+            <div class="indicator-item">
+                <div class="indicator-header">
+                    <span class="indicator-name">跨部門協作</span>
+                    <span class="indicator-score" id="score-1-5">5</span>
+                </div>
+                <div class="slider-container">
+                    <input type="range" min="0" max="10" value="5" class="slider" 
+                           oninput="updateScore(1, 5, this.value)">
+                </div>
+            </div>
+        </div>
+
+        <div class="assessment-card">
+            <div class="card-header">
+                <h3 class="card-title">🔧 技術力</h3>
+                <span class="card-number">Category 2/6</span>
+            </div>
+            
+            <div class="indicator-item">
+                <div class="indicator-header">
+                    <span class="indicator-name">影音系統規劃與設計</span>
+                    <span class="indicator-score" id="score-2-1">5</span>
+                </div>
+                <div class="slider-container">
+                    <input type="range" min="0" max="10" value="5" class="slider" 
+                           oninput="updateScore(2, 1, this.value)">
+                </div>
+            </div>
+
+            <div class="indicator-item">
+                <div class="indicator-header">
+                    <span class="indicator-name">網路架構知識</span>
+                    <span class="indicator-score" id="score-2-2">5</span>
+                </div>
+                <div class="slider-container">
+                    <input type="range" min="0" max="10" value="5" class="slider" 
+                           oninput="updateScore(2, 2, this.value)">
+                </div>
+            </div>
+
+            <div class="indicator-item">
+                <div class="indicator-header">
+                    <span class="indicator-name">硬體設備熟悉度</span>
+                    <span class="indicator-score" id="score-2-3">5</span>
+                </div>
+                <div class="slider-container">
+                    <input type="range" min="0" max="10" value="5" class="slider" 
+                           oninput="updateScore(2, 3, this.value)">
+                </div>
+            </div>
+
+            <div class="indicator-item">
+                <div class="indicator-header">
+                    <span class="indicator-name">問題診斷與排除</span>
+                    <span class="indicator-score" id="score-2-4">5</span>
+                </div>
+                <div class="slider-container">
+                    <input type="range" min="0" max="10" value="5" class="slider" 
+                           oninput="updateScore(2, 4, this.value)">
+                </div>
+            </div>
+
+            <div class="indicator-item">
+                <div class="indicator-header">
+                    <span class="indicator-name">新技術學習與應用</span>
+                    <span class="indicator-score" id="score-2-5">5</span>
+                </div>
+                <div class="slider-container">
+                    <input type="range" min="0" max="10" value="5" class="slider" 
+                           oninput="updateScore(2, 5, this.value)">
+                </div>
+            </div>
+        </div>
+
+        <div class="assessment-card">
+            <div class="card-header">
+                <h3 class="card-title">⚡ 執行與管控力</h3>
+                <span class="card-number">Category 3/6</span>
+            </div>
+            
+            <div class="indicator-item">
+                <div class="indicator-header">
+                    <span class="indicator-name">進度追蹤與控制</span>
+                    <span class="indicator-score" id="score-3-1">5</span>
+                </div>
+                <div class="slider-container">
+                    <input type="range" min="0" max="10" value="5" class="slider" 
+                           oninput="updateScore(3, 1, this.value)">
+                </div>
+            </div>
+
+            <div class="indicator-item">
+                <div class="indicator-header">
+                    <span class="indicator-name">品質管理與驗收</span>
+                    <span class="indicator-score" id="score-3-2">5</span>
+                </div>
+                <div class="slider-container">
+                    <input type="range" min="0" max="10" value="5" class="slider" 
+                           oninput="updateScore(3, 2, this.value)">
+                </div>
+            </div>
+
+            <div class="indicator-item">
+                <div class="indicator-header">
+                    <span class="indicator-name">變更管理能力</span>
+                    <span class="indicator-score" id="score-3-3">5</span>
+                </div>
+                <div class="slider-container">
+                    <input type="range" min="0" max="10" value="5" class="slider" 
+                           oninput="updateScore(3, 3, this.value)">
+                </div>
+            </div>
+
+            <div class="indicator-item">
+                <div class="indicator-header">
+                    <span class="indicator-name">危機處理與應變</span>
+                    <span class="indicator-score" id="score-3-4">5</span>
+                </div>
+                <div class="slider-container">
+                    <input type="range" min="0" max="10" value="5" class="slider" 
+                           oninput="updateScore(3, 4, this.value)">
+                </div>
+            </div>
+
+            <div class="indicator-item">
+                <div class="indicator-header">
+                    <span class="indicator-name">文件管理與紀錄</span>
+                    <span class="indicator-score" id="score-3-5">5</span>
+                </div>
+                <div class="slider-container">
+                    <input type="range" min="0" max="10" value="5" class="slider" 
+                           oninput="updateScore(3, 5, this.value)">
+                </div>
+            </div>
+        </div>
+
+        <div class="assessment-card">
+            <div class="card-header">
+                <h3 class="card-title">👑 領導力</h3>
+                <span class="card-number">Category 4/6</span>
+            </div>
+            
+            <div class="indicator-item">
+                <div class="indicator-header">
+                    <span class="indicator-name">團隊激勵與士氣管理</span>
+                    <span class="indicator-score" id="score-4-1">5</span>
+                </div>
+                <div class="slider-container">
+                    <input type="range" min="0" max="10" value="5" class="slider" 
+                           oninput="updateScore(4, 1, this.value)">
+                </div>
+            </div>
+
+            <div class="indicator-item">
+                <div class="indicator-header">
+                    <span class="indicator-name">決策能力</span>
+                    <span class="indicator-score" id="score-4-2">5</span>
+                </div>
+                <div class="slider-container">
+                    <input type="range" min="0" max="10" value="5" class="slider" 
+                           oninput="updateScore(4, 2, this.value)">
+                </div>
+            </div>
+
+            <div class="indicator-item">
+                <div class="indicator-header">
+                    <span class="indicator-name">資源調度能力</span>
+                    <span class="indicator-score" id="score-4-3">5</span>
+                </div>
+                <div class="slider-container">
+                    <input type="range" min="0" max="10" value="5" class="slider" 
+                           oninput="updateScore(4, 3, this.value)">
+                </div>
+            </div>
+
+            <div class="indicator-item">
+                <div class="indicator-header">
+                    <span class="indicator-name">責任承擔與當責</span>
+                    <span class="indicator-score" id="score-4-4">5</span>
+                </div>
+                <div class="slider-container">
+                    <input type="range" min="0" max="10" value="5" class="slider" 
+                           oninput="updateScore(4, 4, this.value)">
+                </div>
+            </div>
+
+            <div class="indicator-item">
+                <div class="indicator-header">
+                    <span class="indicator-name">授權與培養人才</span>
+                    <span class="indicator-score" id="score-4-5">5</span>
+                </div>
+                <div class="slider-container">
+                    <input type="range" min="0" max="10" value="5" class="slider" 
+                           oninput="updateScore(4, 5, this.value)">
+                </div>
+            </div>
+        </div>
+
+        <div class="assessment-card">
+            <div class="card-header">
+                <h3 class="card-title">📋 規劃力</h3>
+                <span class="card-number">Category 5/6</span>
+            </div>
+            
+            <div class="indicator-item">
+                <div class="indicator-header">
+                    <span class="indicator-name">需求分析與規劃</span>
+                    <span class="indicator-score" id="score-5-1">5</span>
+                </div>
+                <div class="slider-container">
+                    <input type="range" min="0" max="10" value="5" class="slider" 
+                           oninput="updateScore(5, 1, this.value)">
+                </div>
+            </div>
+
+            <div class="indicator-item">
+                <div class="indicator-header">
+                    <span class="indicator-name">時程規劃與管理</span>
+                    <span class="indicator-score" id="score-5-2">5</span>
+                </div>
+                <div class="slider-container">
+                    <input type="range" min="0" max="10" value="5" class="slider" 
+                           oninput="updateScore(5, 2, this.value)">
+                </div>
+            </div>
+
+            <div class="indicator-item">
+                <div class="indicator-header">
+                    <span class="indicator-name">風險評估與管理</span>
+                    <span class="indicator-score" id="score-5-3">5</span>
+                </div>
+                <div class="slider-container">
+                    <input type="range" min="0" max="10" value="5" class="slider" 
+                           oninput="updateScore(5, 3, this.value)">
+                </div>
+            </div>
+
+            <div class="indicator-item">
+                <div class="indicator-header">
+                    <span class="indicator-name">資源規劃與分配</span>
+                    <span class="indicator-score" id="score-5-4">5</span>
+                </div>
+                <div class="slider-container">
+                    <input type="range" min="0" max="10" value="5" class="slider" 
+                           oninput="updateScore(5, 4, this.value)">
+                </div>
+            </div>
+
+            <div class="indicator-item">
+                <div class="indicator-header">
+                    <span class="indicator-name">應變計畫制定</span>
+                    <span class="indicator-score" id="score-5-5">5</span>
+                </div>
+                <div class="slider-container">
+                    <input type="range" min="0" max="10" value="5" class="slider" 
+                           oninput="updateScore(5, 5, this.value)">
+                </div>
+            </div>
+        </div>
+
+        <div class="assessment-card">
+            <div class="card-header">
+                <h3 class="card-title">💰 商業與成本意識</h3>
+                <span class="card-number">Category 6/6</span>
+            </div>
+            
+            <div class="indicator-item">
+                <div class="indicator-header">
+                    <span class="indicator-name">預算編列與控制</span>
+                    <span class="indicator-score" id="score-6-1">5</span>
+                </div>
+                <div class="slider-container">
+                    <input type="range" min="0" max="10" value="5" class="slider" 
+                           oninput="updateScore(6, 1, this.value)">
+                </div>
+            </div>
+
+            <div class="indicator-item">
+                <div class="indicator-header">
+                    <span class="indicator-name">成本效益分析</span>
+                    <span class="indicator-score" id="score-6-2">5</span>
+                </div>
+                <div class="slider-container">
+                    <input type="range" min="0" max="10" value="5" class="slider" 
+                           oninput="updateScore(6, 2, this.value)">
+                </div>
+            </div>
+
+            <div class="indicator-item">
+                <div class="indicator-header">
+                    <span class="indicator-name">採購與合約管理</span>
+                    <span class="indicator-score" id="score-6-3">5</span>
+                </div>
+                <div class="slider-container">
+                    <input type="range" min="0" max="10" value="5" class="slider" 
+                           oninput="updateScore(6, 3, this.value)">
+                </div>
+            </div>
+
+            <div class="indicator-item">
+                <div class="indicator-header">
+                    <span class="indicator-name">利潤與價值創造</span>
+                    <span class="indicator-score" id="score-6-4">5</span>
+                </div>
+                <div class="slider-container">
+                    <input type="range" min="0" max="10" value="5" class="slider" 
+                           oninput="updateScore(6, 4, this.value)">
+                </div>
+            </div>
+
+            <div class="indicator-item">
+                <div class="indicator-header">
+                    <span class="indicator-name">商業談判能力</span>
+                    <span class="indicator-score" id="score-6-5">5</span>
+                </div>
+                <div class="slider-container">
+                    <input type="range" min="0" max="10" value="5" class="slider" 
+                           oninput="updateScore(6, 5, this.value)">
+                </div>
+            </div>
+        </div>
+
+        <!-- 證照選擇 -->
+        <div class="cert-section">
+            <h3>🏆 專業證照加分</h3>
+            <p class="hint-text">點選已取得的證照，系統將自動加分</p>
+            <div class="cert-grid" id="certGrid"></div>
+        </div>
+
+        <!-- 計算按鈕 -->
+        <button class="calculate-btn" onclick="calculateScore()">🚀 計算我的戰鬥力</button>
+
+        <!-- 結果面板 -->
+        <div class="results-panel" id="resultsPanel">
+            <div class="score-display">
+                <div class="score-label">總戰鬥力</div>
+                <div class="score-value" id="totalScore">0</div>
+                <div class="level-badge" id="levelBadge">未評估</div>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="radarChart"></canvas>
+            </div>
+
+            <div class="details-section">
+                <h4>📊 能力分析</h4>
+                <div id="categoryDetails"></div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="action-btn btn-download" onclick="downloadReport()">
+                    📥 下載完整報告
+                </button>
+                <button class="action-btn btn-reset" onclick="resetAssessment()">
+                    🔄 重新評估
+                </button>
             </div>
         </div>
     </div>
 
     <script>
-        const canvas = document.getElementById('canvas3d');
-        const ctx = canvas.getContext('2d');
+        // 數據結構
+        const categories = [
+            { name: '溝通力', indicators: 5, weight: 0.18 },
+            { name: '技術力', indicators: 5, weight: 0.16 },
+            { name: '執行與管控力', indicators: 5, weight: 0.18 },
+            { name: '領導力', indicators: 5, weight: 0.16 },
+            { name: '規劃力', indicators: 5, weight: 0.16 },
+            { name: '商業與成本意識', indicators: 5, weight: 0.16 }
+        ];
 
-        // 繪製真實的3D木質面材
-        function draw3DPanel() {
-            // 清空畫布
-            ctx.fillStyle = '#f0f0f0';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        const certifications = [
+            { name: 'PMP', bonus: 10 },
+            { name: 'CAPM', bonus: 5 },
+            { name: 'PMI-ACP', bonus: 8 },
+            { name: 'PRINCE2', bonus: 7 },
+            { name: 'Scrum Master', bonus: 6 },
+            { name: 'CCNA', bonus: 6 },
+            { name: 'CCNP', bonus: 8 },
+            { name: 'CTS', bonus: 8 },
+            { name: 'CTS-D', bonus: 10 },
+            { name: 'CTS-I', bonus: 9 },
+            { name: 'Dante', bonus: 7 },
+            { name: 'Crestron', bonus: 8 },
+            { name: 'Extron', bonus: 7 },
+            { name: 'CompTIA A+', bonus: 4 },
+            { name: 'CompTIA Network+', bonus: 5 },
+            { name: 'CompTIA Security+', bonus: 5 },
+            { name: 'ITIL', bonus: 6 }
+        ];
 
-            // 設定3D投影參數
-            const scale = 8;
-            const offsetX = 200;
-            const offsetY = 150;
-            const depth = 30;
+        let scores = {};
+        let selectedCerts = new Set();
+        let isLoggedIn = false;
+        let radarChart = null;
 
-            // 尺寸
-            const outerLength = 51 * scale;
-            const outerWidth = 8.3 * scale;
-            const innerLength = 47.7 * scale;
-            const innerWidth = 5.2 * scale;
-            const thickness = 0.5 * scale;
-
-            // 計算邊框寬度
-            const frameWidthH = (outerLength - innerLength) / 2;
-            const frameWidthV = (outerWidth - innerWidth) / 2;
-
-            // 木紋紋理函數
-            function createWoodGradient(x, y, w, h, angle = 0) {
-                const gradient = ctx.createLinearGradient(x, y, x + w * Math.cos(angle), y + h);
-                gradient.addColorStop(0, '#8B4513');
-                gradient.addColorStop(0.3, '#A0522D');
-                gradient.addColorStop(0.5, '#CD853F');
-                gradient.addColorStop(0.7, '#A0522D');
-                gradient.addColorStop(1, '#8B4513');
-                return gradient;
+        // 初始化
+        function init() {
+            // 初始化分數
+            for (let i = 1; i <= 6; i++) {
+                for (let j = 1; j <= 5; j++) {
+                    scores[`${i}-${j}`] = 5;
+                }
             }
 
-            // 繪製陰影
-            ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
-            ctx.shadowBlur = 20;
-            ctx.shadowOffsetX = 10;
-            ctx.shadowOffsetY = 10;
-
-            // 繪製正面 - 外框
-            ctx.fillStyle = createWoodGradient(offsetX, offsetY, outerLength, outerWidth);
-            ctx.fillRect(offsetX, offsetY, outerLength, outerWidth);
-
-            // 重置陰影
-            ctx.shadowColor = 'transparent';
-
-            // 繪製內部挖空（黑色）
-            ctx.fillStyle = '#1a1a1a';
-            ctx.fillRect(
-                offsetX + frameWidthH,
-                offsetY + frameWidthV,
-                innerLength,
-                innerWidth
-            );
-
-            // 繪製木紋細節
-            ctx.strokeStyle = 'rgba(101, 67, 33, 0.3)';
-            ctx.lineWidth = 1;
-            for (let i = 0; i < 30; i++) {
-                ctx.beginPath();
-                const y = offsetY + Math.random() * outerWidth;
-                ctx.moveTo(offsetX, y);
-                ctx.lineTo(offsetX + outerLength, y);
-                ctx.stroke();
-            }
-
-            // 繪製3D側面效果
-            ctx.fillStyle = '#6B4423';
+            // 渲染證照選項
+            renderCertifications();
             
-            // 頂部側面
-            ctx.beginPath();
-            ctx.moveTo(offsetX, offsetY);
-            ctx.lineTo(offsetX - depth, offsetY - depth);
-            ctx.lineTo(offsetX - depth + outerLength, offsetY - depth);
-            ctx.lineTo(offsetX + outerLength, offsetY);
-            ctx.closePath();
-            ctx.fill();
+            // 創建背景粒子（減少數量以優化手機性能）
+            createParticles(5);
 
-            // 右側面
-            ctx.fillStyle = '#5A3A1A';
-            ctx.beginPath();
-            ctx.moveTo(offsetX + outerLength, offsetY);
-            ctx.lineTo(offsetX + outerLength - depth, offsetY - depth);
-            ctx.lineTo(offsetX + outerLength - depth, offsetY - depth + outerWidth);
-            ctx.lineTo(offsetX + outerLength, offsetY + outerWidth);
-            ctx.closePath();
-            ctx.fill();
-
-            // 繪製內框3D效果
-            ctx.fillStyle = '#3a3a3a';
-            ctx.beginPath();
-            ctx.moveTo(offsetX + frameWidthH, offsetY + frameWidthV);
-            ctx.lineTo(offsetX + frameWidthH - thickness * 3, offsetY + frameWidthV - thickness * 3);
-            ctx.lineTo(offsetX + frameWidthH - thickness * 3 + innerLength, offsetY + frameWidthV - thickness * 3);
-            ctx.lineTo(offsetX + frameWidthH + innerLength, offsetY + frameWidthV);
-            ctx.closePath();
-            ctx.fill();
-
-            // 繪製尺寸標註
-            ctx.strokeStyle = '#2196f3';
-            ctx.fillStyle = '#2196f3';
-            ctx.lineWidth = 2;
-            ctx.font = 'bold 16px Arial';
-
-            // 外長標註
-            drawDimension(offsetX, offsetY - 60, outerLength, 0, '外長 51 cm');
-
-            // 外寬標註
-            drawDimension(offsetX + outerLength + 40, offsetY, 0, outerWidth, '外寬 8.3 cm');
-
-            // 內長標註
-            drawDimension(offsetX + frameWidthH, offsetY + outerWidth + 40, innerLength, 0, '內長 47.7 cm');
-
-            // 厚度標註
-            ctx.fillText('厚度 0.5 cm', offsetX + outerLength + 100, offsetY + outerWidth / 2);
-
-            // 添加標題
-            ctx.font = 'bold 24px Arial';
-            ctx.fillStyle = '#333';
-            ctx.fillText('木質面材 3D 渲染圖', offsetX, offsetY - 100);
+            // 檢查登入狀態
+            checkLoginStatus();
         }
 
-        function drawDimension(x, y, width, height, label) {
-            ctx.beginPath();
-            
-            if (width > 0) {
-                // 水平標註
-                ctx.moveTo(x, y);
-                ctx.lineTo(x + width, y);
-                // 箭頭
-                ctx.moveTo(x, y - 5);
-                ctx.lineTo(x, y + 5);
-                ctx.moveTo(x + width, y - 5);
-                ctx.lineTo(x + width, y + 5);
+        // 創建背景粒子
+        function createParticles(count) {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < count; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 15 + 's';
+                particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+                container.appendChild(particle);
+            }
+        }
+
+        // 更新分數
+        function updateScore(category, indicator, value) {
+            const key = `${category}-${indicator}`;
+            scores[key] = parseInt(value);
+            document.getElementById(`score-${key}`).textContent = value;
+        }
+
+        // 渲染證照選項
+        function renderCertifications() {
+            const grid = document.getElementById('certGrid');
+            certifications.forEach((cert, index) => {
+                const item = document.createElement('div');
+                item.className = 'cert-item';
+                item.innerHTML = `
+                    <div class="cert-name">${cert.name}</div>
+                    <div class="cert-bonus">+${cert.bonus}分</div>
+                `;
+                item.onclick = () => toggleCert(index, item);
+                grid.appendChild(item);
+            });
+        }
+
+        // 切換證照選擇
+        function toggleCert(index, element) {
+            if (selectedCerts.has(index)) {
+                selectedCerts.delete(index);
+                element.classList.remove('selected');
             } else {
-                // 垂直標註
-                ctx.moveTo(x, y);
-                ctx.lineTo(x, y + height);
-                // 箭頭
-                ctx.moveTo(x - 5, y);
-                ctx.lineTo(x + 5, y);
-                ctx.moveTo(x - 5, y + height);
-                ctx.lineTo(x + 5, y + height);
+                selectedCerts.add(index);
+                element.classList.add('selected');
             }
-            
-            ctx.stroke();
-            
-            // 標籤
-            ctx.fillText(label, x + width / 2 - 40, y - 10);
         }
 
-        // 執行繪製
-        draw3DPanel();
+        // 計算分數
+        function calculateScore() {
+            const name = document.getElementById('nameInput').value.trim();
+            if (!name) {
+                alert('請輸入姓名！');
+                return;
+            }
+
+            // 計算各類別分數
+            let totalScore = 0;
+            const categoryScores = [];
+
+            categories.forEach((cat, catIndex) => {
+                let catScore = 0;
+                for (let i = 1; i <= cat.indicators; i++) {
+                    catScore += scores[`${catIndex + 1}-${i}`];
+                }
+                const avgScore = catScore / cat.indicators;
+                const weightedScore = avgScore * cat.weight * 10;
+                totalScore += weightedScore;
+                
+                categoryScores.push({
+                    name: cat.name,
+                    score: avgScore,
+                    percentage: (avgScore / 10 * 100).toFixed(1),
+                    weighted: weightedScore.toFixed(2)
+                });
+            });
+
+            // 加入證照加分
+            let certBonus = 0;
+            selectedCerts.forEach(index => {
+                certBonus += certifications[index].bonus;
+            });
+
+            const finalScore = Math.min(100, totalScore + certBonus);
+
+            // 顯示結果
+            displayResults(name, finalScore, categoryScores, certBonus);
+
+            // 保存評估記錄
+            saveAssessment(name, finalScore, categoryScores, certBonus);
+
+            // 滾動到結果
+            document.getElementById('resultsPanel').scrollIntoView({ 
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+
+        // 顯示結果
+        function displayResults(name, score, categoryScores, certBonus) {
+            // 更新分數顯示
+            document.getElementById('totalScore').textContent = score.toFixed(2);
+            
+            // 判定等級
+            const level = getLevel(score);
+            const badge = document.getElementById('levelBadge');
+            badge.textContent = level;
+            badge.style.background = getLevelColor(level);
+
+            // 繪製雷達圖
+            drawRadarChart(categoryScores);
+
+            // 顯示詳細分析
+            displayCategoryDetails(categoryScores, certBonus);
+
+            // 顯示結果面板
+            document.getElementById('resultsPanel').classList.add('active');
+        }
+
+        // 判定等級
+        function getLevel(score) {
+            if (score >= 90) return 'S級 - 傳奇PM';
+            if (score >= 85) return 'A+級 - 卓越PM';
+            if (score >= 80) return 'A級 - 優秀PM';
+            if (score >= 75) return 'B+級 - 良好PM';
+            if (score >= 70) return 'B級 - 稱職PM';
+            if (score >= 65) return 'C+級 - 合格PM';
+            if (score >= 60) return 'C級 - 基礎PM';
+            if (score >= 55) return 'D級 - 成長中';
+            if (score >= 50) return 'E級 - 入門者';
+            return 'F級 - 新手';
+        }
+
+        // 獲取等級顏色
+        function getLevelColor(level) {
+            if (level.startsWith('S')) return 'linear-gradient(135deg, #f5222d, #ff4d4f)';
+            if (level.startsWith('A')) return 'linear-gradient(135deg, #faad14, #ffc53d)';
+            if (level.startsWith('B')) return 'linear-gradient(135deg, #52c41a, #73d13d)';
+            if (level.startsWith('C')) return 'linear-gradient(135deg, #1890ff, #40a9ff)';
+            return 'linear-gradient(135deg, #8c8c8c, #bfbfbf)';
+        }
+
+        // 繪製雷達圖
+        function drawRadarChart(categoryScores) {
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            
+            if (radarChart) {
+                radarChart.destroy();
+            }
+
+            radarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: categoryScores.map(c => c.name),
+                    datasets: [{
+                        label: '能力分數',
+                        data: categoryScores.map(c => c.score),
+                        backgroundColor: 'rgba(74, 158, 255, 0.2)',
+                        borderColor: '#4a9eff',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#4a9eff',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#4a9eff',
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 10,
+                            min: 0,
+                            ticks: {
+                                stepSize: 2,
+                                color: '#9ba3b4',
+                                backdropColor: 'transparent',
+                                font: {
+                                    size: window.innerWidth < 480 ? 10 : 12
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(74, 158, 255, 0.1)'
+                            },
+                            pointLabels: {
+                                color: '#e8eaf0',
+                                font: {
+                                    size: window.innerWidth < 480 ? 11 : 13,
+                                    weight: '500'
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        // 顯示類別詳情
+        function displayCategoryDetails(categoryScores, certBonus) {
+            const container = document.getElementById('categoryDetails');
+            container.innerHTML = '';
+
+            categoryScores.forEach(cat => {
+                const detail = document.createElement('div');
+                detail.className = 'category-detail';
+                detail.innerHTML = `
+                    <div class="category-name">${cat.name}</div>
+                    <div class="category-stats">
+                        <span class="stat-item">💯 平均分數: ${cat.score.toFixed(2)}</span>
+                        <span class="stat-item">📊 達成率: ${cat.percentage}%</span>
+                        <span class="stat-item">⚖️ 加權分數: ${cat.weighted}</span>
+                    </div>
+                `;
+                container.appendChild(detail);
+            });
+
+            if (certBonus > 0) {
+                const certDetail = document.createElement('div');
+                certDetail.className = 'category-detail';
+                certDetail.style.borderLeftColor = 'var(--success)';
+                certDetail.innerHTML = `
+                    <div class="category-name">🏆 證照加分</div>
+                    <div class="category-stats">
+                        <span class="stat-item">已取得證照: ${selectedCerts.size} 張</span>
+                        <span class="stat-item">總加分: +${certBonus} 分</span>
+                    </div>
+                `;
+                container.appendChild(certDetail);
+            }
+        }
+
+        // 下載報告
+        function downloadReport() {
+            const name = document.getElementById('nameInput').value.trim();
+            const score = parseFloat(document.getElementById('totalScore').textContent);
+            const level = document.getElementById('levelBadge').textContent;
+
+            // 生成報告文字
+            let report = `
+╔════════════════════════════════════════════════════════════════╗
+║          PM POWER ASSESSMENT REPORT                           ║
+╚════════════════════════════════════════════════════════════════╝
+
+【基本資訊】
+評估對象：${name}
+評估日期：${new Date().toLocaleDateString('zh-TW')}
+總戰鬥力：${score.toFixed(2)} / 100
+評估等級：${level}
+
+【六大能力分析】
+`;
+
+            categories.forEach((cat, index) => {
+                let catScore = 0;
+                for (let i = 1; i <= 5; i++) {
+                    catScore += scores[`${index + 1}-${i}`];
+                }
+                const avg = catScore / 5;
+                const percentage = (avg / 10 * 100).toFixed(1);
+                report += `${cat.name}: ${avg.toFixed(2)}/10 (${percentage}%)\n`;
+            });
+
+            if (selectedCerts.size > 0) {
+                report += `\n【證照加分】\n`;
+                selectedCerts.forEach(index => {
+                    const cert = certifications[index];
+                    report += `✓ ${cert.name} (+${cert.bonus}分)\n`;
+                });
+            }
+
+            report += `
+\n【評估建議】
+持續精進專業能力，定期參與訓練與認證
+建立個人專案管理知識庫
+積極參與專案管理社群交流
+
+報告產生時間：${new Date().toLocaleString('zh-TW')}
+評估系統版本：Mobile v1.0
+            `;
+
+            // 下載檔案
+            const blob = new Blob([report], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${name}_PM戰鬥力評估_${new Date().toISOString().split('T')[0]}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // 重置評估
+        function resetAssessment() {
+            if (confirm('確定要重新評估嗎？所有資料將被清除。')) {
+                // 重置所有分數
+                for (let key in scores) {
+                    scores[key] = 5;
+                }
+
+                // 重置所有滑桿
+                document.querySelectorAll('.slider').forEach(slider => {
+                    slider.value = 5;
+                });
+
+                // 重置分數顯示
+                document.querySelectorAll('.indicator-score').forEach(score => {
+                    score.textContent = '5';
+                });
+
+                // 清除證照選擇
+                selectedCerts.clear();
+                document.querySelectorAll('.cert-item').forEach(item => {
+                    item.classList.remove('selected');
+                });
+
+                // 清除姓名
+                document.getElementById('nameInput').value = '';
+
+                // 隱藏結果面板
+                document.getElementById('resultsPanel').classList.remove('active');
+
+                // 滾動到頂部
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        // 登入相關函數
+        function toggleLogin() {
+            const overlay = document.getElementById('loginOverlay');
+            overlay.classList.toggle('active');
+        }
+
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (username === 'admin' && password === 'pm2024') {
+                isLoggedIn = true;
+                localStorage.setItem('pmAdminLogin', 'true');
+                document.getElementById('adminPanel').classList.add('active');
+                toggleLogin();
+                alert('登入成功！');
+            } else {
+                alert('帳號或密碼錯誤！');
+            }
+        }
+
+        function logout() {
+            isLoggedIn = false;
+            localStorage.removeItem('pmAdminLogin');
+            document.getElementById('adminPanel').classList.remove('active');
+            alert('已登出！');
+        }
+
+        function checkLoginStatus() {
+            if (localStorage.getItem('pmAdminLogin') === 'true') {
+                isLoggedIn = true;
+                document.getElementById('adminPanel').classList.add('active');
+            }
+        }
+
+        function exportData() {
+            const data = localStorage.getItem('pmAssessments') || '[]';
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `PM評估資料_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function viewStats() {
+            const assessments = JSON.parse(localStorage.getItem('pmAssessments') || '[]');
+            if (assessments.length === 0) {
+                alert('目前沒有評估記錄');
+                return;
+            }
+
+            const avgScore = assessments.reduce((sum, a) => sum + a.score, 0) / assessments.length;
+            alert(`統計資料：\n總評估人數：${assessments.length}\n平均戰鬥力：${avgScore.toFixed(2)}`);
+        }
+
+        function saveAssessment(name, score, categories, certBonus) {
+            const assessments = JSON.parse(localStorage.getItem('pmAssessments') || '[]');
+            assessments.push({
+                name,
+                score,
+                categories,
+                certBonus,
+                date: new Date().toISOString()
+            });
+            localStorage.setItem('pmAssessments', JSON.stringify(assessments));
+        }
+
+        // 頁面載入時初始化
+        window.onload = init;
     </script>
 </body>
 </html>
