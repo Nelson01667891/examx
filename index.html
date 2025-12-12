@@ -1,11 +1,10 @@
 <!DOCTYPE html>
+
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PM戰鬥力評估系統</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+TC:wght@300;400;700&display=swap" rel="stylesheet">
+    <title>職業轉盤選擇器</title>
     <style>
         * {
             margin: 0;
@@ -14,1292 +13,516 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        :root {
-            --primary: #4a9eff;
-            --secondary: #64b5f6;
-            --bg-dark: #1a1d29;
-            --surface: #252936;
-            --elevated: #2f3444;
-            --text-primary: #e8eaf0;
-            --text-secondary: #9ba3b4;
-            --success: #52c41a;
-            --warning: #faad14;
-            --danger: #f5222d;
-        }
+```
+    body {
+        font-family: 'Microsoft JhengHei', 'PingFang TC', Arial, sans-serif;
+        background: #0a0e27;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        overflow: hidden;
+        position: relative;
+    }
 
-        body {
-            font-family: 'Noto Sans TC', sans-serif;
-            background: var(--bg-dark);
-            color: var(--text-primary);
-            min-height: 100vh;
-            padding: 10px;
-            overflow-x: hidden;
-        }
+    /* 科技感背景動畫 */
+    body::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: 
+            radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(99, 102, 241, 0.3) 0%, transparent 50%),
+            radial-gradient(circle at 40% 20%, rgba(168, 85, 247, 0.2) 0%, transparent 50%);
+        animation: bgPulse 8s ease-in-out infinite;
+    }
 
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                linear-gradient(90deg, rgba(74, 158, 255, 0.03) 1px, transparent 1px),
-                linear-gradient(rgba(74, 158, 255, 0.03) 1px, transparent 1px);
-            background-size: 30px 30px;
-            animation: gridMove 20s linear infinite;
-            pointer-events: none;
-            z-index: 0;
-        }
+    @keyframes bgPulse {
+        0%, 100% { opacity: 0.5; }
+        50% { opacity: 0.8; }
+    }
 
-        @keyframes gridMove {
-            0% { transform: translate(0, 0); }
-            100% { transform: translate(30px, 30px); }
-        }
+    .container {
+        position: relative;
+        z-index: 1;
+        text-align: center;
+        width: 100%;
+        max-width: 500px;
+    }
 
+    h1 {
+        color: #fff;
+        margin-bottom: 15px;
+        font-size: clamp(24px, 6vw, 32px);
+        text-shadow: 0 0 20px rgba(99, 102, 241, 0.8);
+        letter-spacing: 2px;
+        animation: titleGlow 2s ease-in-out infinite;
+    }
+
+    @keyframes titleGlow {
+        0%, 100% { text-shadow: 0 0 20px rgba(99, 102, 241, 0.8); }
+        50% { text-shadow: 0 0 30px rgba(168, 85, 247, 1); }
+    }
+
+    .stage-indicator {
+        margin-bottom: 20px;
+        padding: 12px 24px;
+        background: rgba(99, 102, 241, 0.2);
+        border: 2px solid rgba(99, 102, 241, 0.5);
+        border-radius: 50px;
+        backdrop-filter: blur(10px);
+        display: inline-block;
+    }
+
+    .stage-indicator span {
+        color: #a5b4fc;
+        font-size: clamp(14px, 3.5vw, 18px);
+        font-weight: bold;
+        text-shadow: 0 0 10px rgba(165, 180, 252, 0.5);
+    }
+
+    .wheel-container {
+        position: relative;
+        width: 100%;
+        max-width: 400px;
+        margin: 0 auto 30px;
+        aspect-ratio: 1;
+    }
+
+    #wheelCanvas {
+        width: 100%;
+        height: 100%;
+        filter: drop-shadow(0 0 30px rgba(99, 102, 241, 0.6));
+        transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+    }
+
+    .pointer {
+        position: absolute;
+        top: -15px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 0;
+        height: 0;
+        border-left: 15px solid transparent;
+        border-right: 15px solid transparent;
+        border-top: 35px solid #f43f5e;
+        z-index: 10;
+        filter: drop-shadow(0 0 10px rgba(244, 63, 94, 0.8));
+        animation: pointerPulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pointerPulse {
+        0%, 100% { transform: translateX(-50%) scale(1); }
+        50% { transform: translateX(-50%) scale(1.1); }
+    }
+
+    .center-circle {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: clamp(50px, 15vw, 70px);
+        height: clamp(50px, 15vw, 70px);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        z-index: 5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: white;
+        font-size: clamp(14px, 3.5vw, 18px);
+        box-shadow: 
+            0 0 20px rgba(102, 126, 234, 0.6),
+            inset 0 0 20px rgba(255, 255, 255, 0.1);
+        animation: centerGlow 2s ease-in-out infinite;
+    }
+
+    @keyframes centerGlow {
+        0%, 100% { box-shadow: 0 0 20px rgba(102, 126, 234, 0.6), inset 0 0 20px rgba(255, 255, 255, 0.1); }
+        50% { box-shadow: 0 0 40px rgba(118, 75, 162, 0.8), inset 0 0 20px rgba(255, 255, 255, 0.2); }
+    }
+
+    button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        padding: 15px 50px;
+        font-size: clamp(16px, 4vw, 20px);
+        font-weight: bold;
+        border-radius: 50px;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 
+            0 5px 25px rgba(102, 126, 234, 0.4),
+            inset 0 0 20px rgba(255, 255, 255, 0.1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    button::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+
+    button:active::before {
+        width: 300px;
+        height: 300px;
+    }
+
+    button:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 
+            0 8px 35px rgba(102, 126, 234, 0.6),
+            inset 0 0 20px rgba(255, 255, 255, 0.2);
+    }
+
+    button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .result {
+        margin-top: 30px;
+        padding: 20px 30px;
+        background: linear-gradient(135deg, rgba(244, 63, 94, 0.2) 0%, rgba(249, 115, 22, 0.2) 100%);
+        border: 2px solid rgba(244, 63, 94, 0.5);
+        border-radius: 20px;
+        backdrop-filter: blur(10px);
+        color: white;
+        font-size: clamp(18px, 4.5vw, 24px);
+        font-weight: bold;
+        display: none;
+        animation: resultSlideIn 0.5s ease-out;
+        box-shadow: 0 0 30px rgba(244, 63, 94, 0.4);
+    }
+
+    .result.show {
+        display: block;
+    }
+
+    @keyframes resultSlideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-30px) scale(0.8);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .result strong {
+        color: #fbbf24;
+        text-shadow: 0 0 10px rgba(251, 191, 36, 0.8);
+        font-size: 1.1em;
+    }
+
+    /* 粒子效果 */
+    .particle {
+        position: fixed;
+        width: 4px;
+        height: 4px;
+        background: rgba(99, 102, 241, 0.6);
+        border-radius: 50%;
+        pointer-events: none;
+        animation: particleFloat 3s ease-in-out infinite;
+    }
+
+    @keyframes particleFloat {
+        0%, 100% { transform: translateY(0) translateX(0); opacity: 0; }
+        50% { opacity: 1; }
+        100% { transform: translateY(-100vh) translateX(50px); opacity: 0; }
+    }
+
+    @media (max-width: 480px) {
         .container {
-            max-width: 600px;
-            margin: 0 auto;
-            position: relative;
-            z-index: 1;
+            padding: 10px;
         }
-
-        .header {
-            text-align: center;
-            padding: 20px 15px;
-            background: linear-gradient(135deg, var(--surface), var(--elevated));
-            border-radius: 15px;
-            border: 2px solid var(--primary);
-            box-shadow: 0 0 30px rgba(74, 158, 255, 0.3);
-            margin-bottom: 15px;
-        }
-
+        
         h1 {
-            font-family: 'Orbitron', sans-serif;
-            font-size: clamp(1.5rem, 6vw, 2.5rem);
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
-
-        .subtitle {
-            font-family: 'Orbitron', sans-serif;
-            color: var(--text-secondary);
-            font-size: clamp(0.7rem, 2.5vw, 0.9rem);
-            letter-spacing: 2px;
-        }
-
-        /* 步驟指示器 */
-        .steps {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-            padding: 0 10px;
-        }
-
-        .step {
-            flex: 1;
-            text-align: center;
-            padding: 10px 5px;
-            background: var(--surface);
-            border: 2px solid var(--elevated);
-            border-radius: 10px;
-            margin: 0 3px;
-            transition: all 0.3s;
-            font-size: clamp(0.7rem, 2.5vw, 0.85rem);
-        }
-
-        .step.active {
-            border-color: var(--primary);
-            background: linear-gradient(135deg, rgba(74, 158, 255, 0.2), rgba(100, 181, 246, 0.1));
-            color: var(--primary);
-            font-weight: 700;
-        }
-
-        .step.completed {
-            border-color: var(--success);
-            background: rgba(82, 196, 26, 0.1);
-            color: var(--success);
-        }
-
-        /* 區塊 */
-        .section {
-            background: var(--surface);
-            border-radius: 15px;
-            border: 2px solid var(--elevated);
-            padding: 20px 15px;
+        
+        .stage-indicator {
             margin-bottom: 15px;
-            display: none;
-        }
-
-        .section.active {
-            display: block;
-            animation: fadeIn 0.3s;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .section-title {
-            font-family: 'Orbitron', sans-serif;
-            color: var(--primary);
-            font-size: clamp(1.2rem, 4vw, 1.5rem);
-            margin-bottom: 15px;
-            text-align: center;
-        }
-
-        /* 輸入框 */
-        .input-group {
-            margin-bottom: 20px;
-        }
-
-        .input-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-        }
-
-        .input-group input[type="text"] {
-            width: 100%;
-            padding: 14px 16px;
-            background: var(--bg-dark);
-            border: 2px solid var(--elevated);
-            border-radius: 10px;
-            color: var(--text-primary);
-            font-size: 1rem;
-            transition: all 0.3s;
-        }
-
-        .input-group input[type="text"]:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 15px rgba(74, 158, 255, 0.3);
-        }
-
-        /* 證照選擇 */
-        .cert-category {
-            margin-bottom: 20px;
-        }
-
-        .cert-category h3 {
-            color: var(--primary);
-            font-size: 1rem;
-            margin-bottom: 10px;
-            padding-left: 5px;
-            border-left: 3px solid var(--primary);
-        }
-
-        .cert-item {
-            background: var(--bg-dark);
-            border: 2px solid var(--elevated);
-            border-radius: 10px;
-            padding: 12px;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .cert-item:active {
-            transform: scale(0.98);
-        }
-
-        .cert-item.selected {
-            border-color: var(--success);
-            background: linear-gradient(135deg, rgba(82, 196, 26, 0.15), rgba(82, 196, 26, 0.05));
-        }
-
-        .cert-item input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
-            margin-top: 2px;
-            cursor: pointer;
-            flex-shrink: 0;
-        }
-
-        .cert-info {
-            flex: 1;
-        }
-
-        .cert-name-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 4px;
-        }
-
-        .cert-name {
-            font-weight: 600;
-            font-size: 0.95rem;
-        }
-
-        .cert-bonus {
-            color: var(--success);
-            font-family: 'Orbitron', sans-serif;
-            font-weight: 700;
-            font-size: 0.85rem;
-        }
-
-        .cert-desc {
-            color: var(--text-secondary);
-            font-size: 0.8rem;
-            line-height: 1.4;
-        }
-
-        .cert-summary {
-            background: linear-gradient(135deg, rgba(82, 196, 26, 0.1), rgba(82, 196, 26, 0.05));
-            border: 2px solid var(--success);
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 15px;
-            text-align: center;
-        }
-
-        .cert-summary h4 {
-            color: var(--success);
-            margin-bottom: 10px;
-            font-size: 1rem;
-        }
-
-        .total-bonus {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1.5rem;
-            color: var(--success);
-            font-weight: 900;
-        }
-
-        /* 評分區域 */
-        .category-block {
-            background: var(--bg-dark);
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 15px;
-            border: 1px solid var(--elevated);
-        }
-
-        .category-block h3 {
-            color: var(--primary);
-            font-size: 1.1rem;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid var(--elevated);
-        }
-
-        .indicator-item {
-            margin-bottom: 18px;
-            padding: 12px;
-            background: var(--surface);
-            border-radius: 10px;
-            border-left: 3px solid var(--primary);
-        }
-
-        .indicator-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            gap: 8px;
-        }
-
-        .indicator-name {
-            flex: 1;
-            font-size: 0.95rem;
-            font-weight: 500;
-        }
-
-        .info-icon {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            background: var(--primary);
-            color: var(--bg-dark);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 0.85rem;
-            cursor: pointer;
-            flex-shrink: 0;
-            transition: all 0.3s;
-        }
-
-        .info-icon:active {
-            transform: scale(1.1);
-            box-shadow: 0 0 15px rgba(74, 158, 255, 0.5);
-        }
-
-        .indicator-desc {
-            background: rgba(74, 158, 255, 0.1);
-            border: 1px solid var(--primary);
-            border-radius: 8px;
-            padding: 10px;
-            margin-bottom: 10px;
-            font-size: 0.85rem;
-            line-height: 1.5;
-            color: var(--text-secondary);
-            display: none;
-        }
-
-        .indicator-desc.show {
-            display: block;
-            animation: slideDown 0.3s;
-        }
-
-        @keyframes slideDown {
-            from { opacity: 0; max-height: 0; }
-            to { opacity: 1; max-height: 200px; }
-        }
-
-        .score-buttons {
-            display: flex;
-            gap: 6px;
-            justify-content: center;
-        }
-
-        .score-btn {
-            width: 48px;
-            height: 48px;
-            border: 2px solid var(--elevated);
-            background: var(--elevated);
-            color: var(--text-secondary);
-            border-radius: 10px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1.2rem;
-        }
-
-        .score-btn:active {
-            transform: scale(0.95);
-        }
-
-        .score-btn.active {
-            transform: scale(1.05);
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
-        }
-
-        .score-btn[data-score="1"].active {
-            background: linear-gradient(135deg, #ff5252, #ff1744);
-            border-color: #ff5252;
-            color: white;
-        }
-
-        .score-btn[data-score="2"].active {
-            background: linear-gradient(135deg, #ffab40, #ff9100);
-            border-color: #ffab40;
-            color: white;
-        }
-
-        .score-btn[data-score="3"].active {
-            background: linear-gradient(135deg, #ffee58, #ffd600);
-            border-color: #ffee58;
-            color: #1a1d29;
-        }
-
-        .score-btn[data-score="4"].active {
-            background: linear-gradient(135deg, #66bb6a, #4caf50);
-            border-color: #66bb6a;
-            color: white;
-        }
-
-        .score-btn[data-score="5"].active {
-            background: linear-gradient(135deg, #00e676, #00c853);
-            border-color: #00e676;
-            color: white;
-        }
-
-        /* 評分標準說明 */
-        .score-guide {
-            background: linear-gradient(135deg, rgba(74, 158, 255, 0.1), rgba(100, 181, 246, 0.05));
-            border: 2px solid var(--primary);
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .score-guide h4 {
-            color: var(--primary);
-            font-family: 'Orbitron', sans-serif;
-            margin-bottom: 12px;
-            font-size: 1rem;
-        }
-
-        .score-guide-items {
-            display: flex;
-            justify-content: space-around;
-            gap: 5px;
-        }
-
-        .score-guide-item {
-            padding: 8px 6px;
-            border-radius: 8px;
-            font-size: 0.75rem;
-            min-width: 50px;
-        }
-
-        .score-guide-item .number {
-            font-size: 1.2rem;
-            font-weight: bold;
-            margin-bottom: 2px;
-        }
-
-        .guide-1 { background: rgba(255, 82, 82, 0.2); border: 1px solid #ff5252; }
-        .guide-1 .number { color: #ff5252; }
-
-        .guide-2 { background: rgba(255, 171, 64, 0.2); border: 1px solid #ffab40; }
-        .guide-2 .number { color: #ffab40; }
-
-        .guide-3 { background: rgba(255, 238, 88, 0.2); border: 1px solid #ffee58; }
-        .guide-3 .number { color: #ffee58; }
-
-        .guide-4 { background: rgba(102, 187, 106, 0.2); border: 1px solid #66bb6a; }
-        .guide-4 .number { color: #66bb6a; }
-
-        .guide-5 { background: rgba(0, 230, 118, 0.2); border: 1px solid #00e676; }
-        .guide-5 .number { color: #00e676; }
-
-        /* 結果顯示 */
-        .result-score {
-            text-align: center;
-            padding: 25px 15px;
-            background: linear-gradient(135deg, var(--bg-dark), var(--elevated));
-            border-radius: 15px;
-            border: 2px solid var(--primary);
-            margin-bottom: 20px;
-        }
-
-        .result-score .label {
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-            margin-bottom: 8px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
-
-        .result-score .value {
-            font-family: 'Orbitron', sans-serif;
-            font-size: clamp(3rem, 12vw, 4.5rem);
-            font-weight: 900;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            line-height: 1;
-            margin-bottom: 10px;
-        }
-
-        .level-badge {
-            display: inline-block;
             padding: 10px 20px;
-            background: linear-gradient(135deg, var(--warning), #ffc53d);
-            color: var(--bg-dark);
-            border-radius: 25px;
-            font-weight: 700;
-            font-size: 1rem;
         }
-
-        .chart-container {
-            position: relative;
-            width: 100%;
-            height: 300px;
-            margin: 20px 0;
-            padding: 10px;
-            background: var(--bg-dark);
-            border-radius: 15px;
+        
+        .wheel-container {
+            margin-bottom: 20px;
         }
+    }
+</style>
+```
 
-        .chart-container canvas {
-            max-width: 100%;
-            height: auto !important;
-        }
-
-        /* 按鈕 */
-        .btn {
-            width: 100%;
-            padding: 16px;
-            border: none;
-            border-radius: 12px;
-            font-family: 'Orbitron', sans-serif;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-transform: uppercase;
-            font-size: clamp(0.9rem, 3vw, 1rem);
-            letter-spacing: 1px;
-            margin-bottom: 10px;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: var(--bg-dark);
-            box-shadow: 0 0 20px rgba(74, 158, 255, 0.4);
-        }
-
-        .btn-primary:active {
-            transform: translateY(2px);
-            box-shadow: 0 0 15px rgba(74, 158, 255, 0.6);
-        }
-
-        .btn-secondary {
-            background: var(--elevated);
-            color: var(--text-primary);
-            border: 2px solid var(--primary);
-        }
-
-        .btn-secondary:active {
-            background: var(--bg-dark);
-        }
-
-        .btn-success {
-            background: linear-gradient(135deg, var(--success), #73d13d);
-            color: white;
-            box-shadow: 0 0 20px rgba(82, 196, 26, 0.4);
-        }
-
-        .btn-success:active {
-            transform: translateY(2px);
-        }
-
-        .btn-danger {
-            background: var(--elevated);
-            color: var(--danger);
-            border: 2px solid var(--danger);
-        }
-
-        .button-group {
-            display: flex;
-            gap: 10px;
-        }
-
-        .button-group .btn {
-            flex: 1;
-            margin-bottom: 0;
-        }
-
-        /* 提示文字 */
-        .hint {
-            text-align: center;
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-            margin: 15px 0;
-            line-height: 1.5;
-        }
-
-        /* 隱藏 */
-        .hidden {
-            display: none !important;
-        }
-
-        /* 載入動畫 */
-        .loading {
-            text-align: center;
-            padding: 30px;
-            color: var(--primary);
-            font-family: 'Orbitron', sans-serif;
-        }
-
-        .loading::after {
-            content: '...';
-            animation: dots 1.5s infinite;
-        }
-
-        @keyframes dots {
-            0%, 20% { content: '.'; }
-            40% { content: '..'; }
-            60%, 100% { content: '...'; }
-        }
-
-        /* 響應式 */
-        @media (max-width: 480px) {
-            .score-btn {
-                width: 44px;
-                height: 44px;
-                font-size: 1.1rem;
-            }
-
-            .score-guide-items {
-                gap: 3px;
-            }
-
-            .score-guide-item {
-                padding: 6px 4px;
-                min-width: 45px;
-            }
-        }
-
-        @media (max-width: 360px) {
-            .score-btn {
-                width: 40px;
-                height: 40px;
-                font-size: 1rem;
-            }
-        }
-    </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <h1>PM POWER</h1>
-            <p class="subtitle">戰鬥力評估系統</p>
-        </div>
+    <!-- 粒子效果 -->
+    <div id="particles"></div>
 
-        <!-- 步驟指示器 -->
-        <div class="steps">
-            <div class="step active" id="step1">1.姓名</div>
-            <div class="step" id="step2">2.證照</div>
-            <div class="step" id="step3">3.評分</div>
-            <div class="step" id="step4">4.結果</div>
-        </div>
-
-        <!-- 步驟 1: 輸入姓名 -->
-        <div class="section active" id="section1">
-            <h2 class="section-title">👤 評估對象</h2>
-            <div class="input-group">
-                <label>請輸入受評估者姓名</label>
-                <input type="text" id="personName" placeholder="例如：王小明">
-            </div>
-            <p class="hint">💡 輸入姓名後，開始進行能力評估</p>
-            <button class="btn btn-primary" onclick="goToStep(2)">下一步 →</button>
-        </div>
-
-        <!-- 步驟 2: 選擇證照 -->
-        <div class="section" id="section2">
-            <h2 class="section-title">🏆 專業證照</h2>
-            <p class="hint">請選擇已取得的專業證照（可複選）</p>
-            
-            <div id="certificationList"></div>
-
-            <div class="cert-summary" id="certSummary" style="display:none;">
-                <h4>✅ 已選擇證照</h4>
-                <div id="selectedCertsList"></div>
-                <div class="total-bonus" id="totalBonus">+0 分</div>
-            </div>
-
-            <div class="button-group">
-                <button class="btn btn-secondary" onclick="goToStep(1)">← 上一步</button>
-                <button class="btn btn-primary" onclick="goToStep(3)">下一步 →</button>
-            </div>
-        </div>
-
-        <!-- 步驟 3: 能力評分 -->
-        <div class="section" id="section3">
-            <h2 class="section-title">📊 能力評估</h2>
-            
-            <div class="score-guide">
-                <h4>評分標準</h4>
-                <div class="score-guide-items">
-                    <div class="score-guide-item guide-1">
-                        <div class="number">1</div>
-                        <div>差</div>
-                    </div>
-                    <div class="score-guide-item guide-2">
-                        <div class="number">2</div>
-                        <div>一般</div>
-                    </div>
-                    <div class="score-guide-item guide-3">
-                        <div class="number">3</div>
-                        <div>好</div>
-                    </div>
-                    <div class="score-guide-item guide-4">
-                        <div class="number">4</div>
-                        <div>很好</div>
-                    </div>
-                    <div class="score-guide-item guide-5">
-                        <div class="number">5</div>
-                        <div>非常好</div>
-                    </div>
-                </div>
-            </div>
-
-            <p class="hint">💡 點擊 <span style="color:var(--primary);">ⓘ</span> 圖示查看詳細說明</p>
-
-            <div id="assessmentCategories"></div>
-
-            <div class="button-group">
-                <button class="btn btn-secondary" onclick="goToStep(2)">← 上一步</button>
-                <button class="btn btn-success" onclick="calculatePower()">🚀 計算戰鬥力</button>
-            </div>
-        </div>
-
-        <!-- 步驟 4: 結果顯示 -->
-        <div class="section" id="section4">
-            <h2 class="section-title" id="resultTitle"></h2>
-            
-            <div class="result-score">
-                <div class="label">總戰鬥力</div>
-                <div class="value" id="totalScore">0</div>
-                <div class="level-badge" id="levelBadge">未評估</div>
-            </div>
-
-            <div class="chart-container">
-                <canvas id="radarChart"></canvas>
-            </div>
-
-            <button class="btn btn-primary" onclick="downloadReport()">📥 匯出詳細報告</button>
-            <button class="btn btn-secondary" onclick="viewDetails()">📊 查看詳細分析</button>
-            <button class="btn btn-danger" onclick="resetAssessment()">🔄 重新評估</button>
-        </div>
+```
+<div class="container">
+    <h1>⚔️ 職業轉盤</h1>
+    <div class="stage-indicator" id="stageIndicator">
+        <span>第一階段：選擇基礎職業</span>
     </div>
+    
+    <div class="wheel-container">
+        <div class="pointer"></div>
+        <canvas id="wheelCanvas"></canvas>
+        <div class="center-circle">轉！</div>
+    </div>
+    
+    <button id="spinBtn" onclick="spin()">開始轉動</button>
+    
+    <div class="result" id="result"></div>
+</div>
 
-    <script>
-        // 資料結構
-        const categories = [
-            {
-                name: '溝通力',
-                weight: 30,
-                indicators: [
-                    { name: '利害關係人溝通', description: '能識別並有效管理專案利害關係人期望，運用適當的溝通策略與頻率，確保資訊透明度與參與度。符合PMP溝通管理知識領域。' },
-                    { name: '團隊溝通協調', description: '建立有效的團隊溝通機制，促進跨職能協作，確保團隊成員理解目標、任務與責任分工。' },
-                    { name: '會議管理', description: '能規劃與主持高效會議，制定議程、掌控時間、引導討論、記錄決議並追蹤行動項目。' },
-                    { name: '衝突管理', description: '識別潛在衝突並採取適當策略（妥協、合作、迴避等）解決團隊或利害關係人間的分歧，維持專案進度。' },
-                    { name: '資訊分享與報告', description: '定期產出清晰、準確的專案報告，包含進度、風險、議題等關鍵資訊，確保利害關係人掌握專案狀態。' }
-                ]
-            },
-            {
-                name: '技術力',
-                weight: 20,
-                indicators: [
-                    { name: '影像系統', description: '具備影像監控、視訊會議、數位看板等系統的設計、安裝、整合與故障排除能力。' },
-                    { name: '網路系統', description: '熟悉網路架構規劃、VLAN配置、IP管理、QoS設定、網路安全與備援機制設計。' },
-                    { name: '聲音系統', description: '掌握音響擴聲、會議音訊、背景音樂等系統的設計、調校與整合能力，包含EQ、延遲、迴授處理。' },
-                    { name: '環控/BA', description: '了解樓宇自動化系統、環境監控、HVAC控制、照明控制與能源管理系統的整合與程式邏輯。' },
-                    { name: '跨系統除錯', description: '具備系統性問題分析能力，能快速定位跨系統整合問題，閱讀Log、追蹤訊號流並提出解決方案。' }
-                ]
-            },
-            {
-                name: '執行與管控力',
-                weight: 15,
-                indicators: [
-                    { name: '進度追蹤', description: '運用進度管理工具監控專案里程碑與關鍵路徑，及時發現偏差並採取糾正措施。符合PMP進度管理。' },
-                    { name: '成本預警', description: '監控專案預算執行狀況，使用EVM（實獲值管理）等方法預測成本偏差，提前預警超支風險。' },
-                    { name: '品質管控', description: '建立品質標準與查核機制，執行過程稽核與測試驗收，確保交付成果符合規格要求。符合PMP品質管理。' },
-                    { name: '變更處理', description: '依循變更管理流程，評估變更影響（範疇、時程、成本），記錄並追蹤變更執行狀況。' },
-                    { name: '危機應變', description: '面對突發狀況能迅速評估影響、啟動應變計畫、協調資源，在壓力下做出有效決策。' }
-                ]
-            },
-            {
-                name: '領導力',
-                weight: 15,
-                indicators: [
-                    { name: '帶人意願', description: '願意培養團隊成員、分享知識，能激勵士氣並建立團隊向心力，讓成員願意追隨並投入專案。' },
-                    { name: '資源爭取', description: '能向上爭取專案所需的人力、設備與預算資源，善於溝通資源需求的合理性與緊急性。' },
-                    { name: '決策果斷', description: '在資訊不完整的情況下，能評估風險並做出及時決策，承擔決策責任，避免專案停滯。' },
-                    { name: '衝突解決', description: '運用談判與調解技巧，平衡各方利益，化解團隊內部或跨部門衝突，維持合作關係。' },
-                    { name: '培養下屬', description: '主動指導與培育團隊成員，建立知識傳承機制，協助成員職涯發展，打造高效能團隊。' }
-                ]
-            },
-            {
-                name: '規劃力',
-                weight: 15,
-                indicators: [
-                    { name: 'WBS時程', description: '能建立完整的工作分解結構（WBS），制定合理的時程規劃，運用P6或MS Project等工具進行排程。符合PMP範疇與時程管理。' },
-                    { name: '資源預測', description: '準確預估專案所需人力、物料與設備，繪製資源負荷曲線，避免資源衝突與瓶頸。' },
-                    { name: '風險識別', description: '主動識別專案風險，建立風險登錄表（Risk Register），評估機率與影響，制定應對策略。符合PMP風險管理。' },
-                    { name: '關鍵路徑', description: '識別並嚴密監控專案關鍵路徑，掌握浮時（Float）概念，優先管控影響專案交期的關鍵任務。' }
-                ]
-            },
-            {
-                name: '商業與成本意識',
-                weight: 5,
-                indicators: [
-                    { name: '報價審核', description: '能審查供應商報價合理性，進行比價議價，在維持品質前提下爭取最佳採購條件。' },
-                    { name: '變更機會', description: '識別專案變更中的索賠機會，依據合約條款爭取合理補償，保護公司權益。' },
-                    { name: '合約條款', description: '熟悉專案合約關鍵條款（付款、罰則、保固、驗收標準），確保執行符合合約要求。' },
-                    { name: '成本優化', description: '主動提出價值工程（VE）或價值分析（VA）方案，在不影響功能前提下降低專案成本。' }
-                ]
-            }
-        ];
-
-        const certifications = {
-            projectManagement: {
-                title: '專案管理證照',
-                certs: [
-                    { id: 'pmp', name: 'PMP', bonus: 10, description: '專案管理師認證，PMI最權威的專案管理證照' },
-                    { id: 'capm', name: 'CAPM', bonus: 5, description: '助理專案管理師，適合初階PM' },
-                    { id: 'prince2', name: 'PRINCE2', bonus: 8, description: '英國政府開發的專案管理方法論證照' },
-                    { id: 'pmi_acp', name: 'PMI-ACP', bonus: 8, description: '敏捷專案管理認證' },
-                    { id: 'pmi_rmp', name: 'PMI-RMP', bonus: 6, description: '風險管理專業人士' },
-                    { id: 'pgmp', name: 'PgMP', bonus: 12, description: '項目集管理專業人士（高階）' }
-                ]
-            },
-            networking: {
-                title: '網路技術證照',
-                certs: [
-                    { id: 'ccna', name: 'CCNA', bonus: 6, description: 'Cisco網路工程師認證（基礎）' },
-                    { id: 'ccnp', name: 'CCNP', bonus: 10, description: 'Cisco網路專家認證（進階）' },
-                    { id: 'ccie', name: 'CCIE', bonus: 15, description: 'Cisco網路專家認證（專家級）' },
-                    { id: 'comptia_network', name: 'CompTIA Network+', bonus: 4, description: '網路基礎認證' }
-                ]
-            },
-            security: {
-                title: '資訊安全證照',
-                certs: [
-                    { id: 'cissp', name: 'CISSP', bonus: 10, description: '資訊系統安全專家' },
-                    { id: 'ceh', name: 'CEH', bonus: 8, description: '道德駭客認證' },
-                    { id: 'comptia_security', name: 'CompTIA Security+', bonus: 5, description: '資安基礎認證' }
-                ]
-            },
-            audioVisual: {
-                title: '影音整合證照',
-                certs: [
-                    { id: 'cts', name: 'CTS', bonus: 8, description: 'AVIXA影音技術專家' },
-                    { id: 'cts_d', name: 'CTS-D', bonus: 10, description: 'AVIXA影音系統設計專家' },
-                    { id: 'cts_i', name: 'CTS-I', bonus: 10, description: 'AVIXA影音系統安裝專家' },
-                    { id: 'dante_cert', name: 'Dante認證', bonus: 6, description: 'Dante數位音訊網路認證' }
-                ]
-            },
-            buildingAutomation: {
-                title: '控制系統認證',
-                certs: [
-                    { id: 'amx_programmer', name: 'AMX Programmer', bonus: 8, description: 'AMX系統程式設計師認證' },
-                    { id: 'amx_designer', name: 'AMX Designer', bonus: 10, description: 'AMX系統設計師認證' },
-                    { id: 'crestron_dmcp', name: 'Crestron DMCP', bonus: 8, description: 'Crestron數位媒體認證程式設計師' },
-                    { id: 'crestron_dtsp', name: 'Crestron DTSP', bonus: 10, description: 'Crestron數位技術專家（進階）' },
-                    { id: 'crestron_dmc', name: 'Crestron DMC', bonus: 12, description: 'Crestron大師級認證（最高階）' }
-                ]
-            },
-            itGeneral: {
-                title: '資訊技術證照',
-                certs: [
-                    { id: 'comptia_a', name: 'CompTIA A+', bonus: 3, description: 'IT技術人員基礎認證' },
-                    { id: 'microsoft_azure', name: 'Microsoft Azure', bonus: 7, description: '微軟雲端平台認證' },
-                    { id: 'aws', name: 'AWS認證', bonus: 7, description: 'Amazon雲端服務認證' },
-                    { id: 'itil', name: 'ITIL Foundation', bonus: 5, description: 'IT服務管理最佳實務' }
-                ]
-            }
-        };
-
-        let selectedCertifications = [];
-        let assessmentData = {};
-        let radarChart = null;
-
-        // 初始化
-        function init() {
-            renderCertifications();
-            renderAssessmentCategories();
+<script>
+    // 創建粒子效果
+    function createParticles() {
+        const particles = document.getElementById('particles');
+        for (let i = 0; i < 20; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 3 + 's';
+            particle.style.animationDuration = (Math.random() * 2 + 2) + 's';
+            particles.appendChild(particle);
         }
+    }
+    createParticles();
 
-        // 步驟切換
-        function goToStep(step) {
-            // 驗證
-            if (step === 2) {
-                const name = document.getElementById('personName').value.trim();
-                if (!name) {
-                    alert('請輸入姓名！');
-                    return;
-                }
-            }
-
-            if (step === 3) {
-                // 可選：驗證是否選擇證照
-            }
-
-            // 更新步驟指示器
-            for (let i = 1; i <= 4; i++) {
-                const stepEl = document.getElementById(`step${i}`);
-                const sectionEl = document.getElementById(`section${i}`);
-                
-                if (i < step) {
-                    stepEl.classList.add('completed');
-                    stepEl.classList.remove('active');
-                } else if (i === step) {
-                    stepEl.classList.add('active');
-                    stepEl.classList.remove('completed');
-                    sectionEl.classList.add('active');
-                } else {
-                    stepEl.classList.remove('active', 'completed');
-                    sectionEl.classList.remove('active');
-                }
-
-                if (i !== step) {
-                    sectionEl.classList.remove('active');
-                }
-            }
-
-            // 滾動到頂部
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+    // 定義基礎職業和進階職業
+    const baseClasses = [
+        { 
+            name: '遊俠', 
+            color: '#2ecc71', 
+            advanced: [
+                { name: '銳眼', color: '#16a085' },
+                { name: '追獵者', color: '#27ae60' }
+            ]
+        },
+        { 
+            name: '女獵人', 
+            color: '#e74c3c', 
+            advanced: [
+                { name: '亞馬遜', color: '#c0392b' },
+                { name: '儀式行者', color: '#e67e22' }
+            ]
+        },
+        { 
+            name: '憎呂', 
+            color: '#3498db', 
+            advanced: [
+                { name: '祈求者', color: '#2980b9' },
+                { name: '夏烏拉憎呂', color: '#5dade2' }
+            ]
+        },
+        { 
+            name: '女巫', 
+            color: '#9b59b6', 
+            advanced: [
+                { name: '獄火師', color: '#8e44ad' },
+                { name: '血法師', color: '#9b59b6' },
+                { name: '巫妖', color: '#af7ac5' },
+                { name: '深淵巫妖', color: '#bb8fce' }
+            ]
+        },
+        { 
+            name: '女術者', 
+            color: '#f39c12', 
+            advanced: [
+                { name: '風暴編織者', color: '#d68910' },
+                { name: '時空術士', color: '#f1c40f' }
+            ]
+        },
+        { 
+            name: '戰士', 
+            color: '#e67e22', 
+            advanced: [
+                { name: '泰坦', color: '#d35400' },
+                { name: '戰爭使者', color: '#e67e22' },
+                { name: '奇塔佛工匠', color: '#f39c12' }
+            ]
+        },
+        { 
+            name: '傭兵', 
+            color: '#1abc9c', 
+            advanced: [
+                { name: '智勇軍師', color: '#16a085' },
+                { name: '女巫獵人', color: '#1abc9c' },
+                { name: '古靈軍團', color: '#48c9b0' }
+            ]
+        },
+        { 
+            name: '德魯伊', 
+            color: '#27ae60', 
+            advanced: [
+                { name: '業火薩滿', color: '#229954' },
+                { name: '天啟先知', color: '#2ecc71' }
+            ]
         }
+    ];
 
-        // 渲染證照列表
-        function renderCertifications() {
-            const container = document.getElementById('certificationList');
-            container.innerHTML = '';
+    let currentStage = 1;
+    let selectedBaseClass = null;
+    let isSpinning = false;
+    let currentRotation = 0;
 
-            Object.keys(certifications).forEach(categoryKey => {
-                const category = certifications[categoryKey];
-                const categoryDiv = document.createElement('div');
-                categoryDiv.className = 'cert-category';
-                
-                let html = `<h3>${category.title}</h3>`;
-                
-                category.certs.forEach(cert => {
-                    html += `
-                        <div class="cert-item" onclick="toggleCert('${cert.id}', this)">
-                            <input type="checkbox" id="cert-${cert.id}" onclick="event.stopPropagation()">
-                            <div class="cert-info">
-                                <div class="cert-name-row">
-                                    <span class="cert-name">${cert.name}</span>
-                                    <span class="cert-bonus">+${cert.bonus}分</span>
-                                </div>
-                                <div class="cert-desc">${cert.description}</div>
-                            </div>
-                        </div>
-                    `;
-                });
-                
-                categoryDiv.innerHTML = html;
-                container.appendChild(categoryDiv);
-            });
-        }
+    const canvas = document.getElementById('wheelCanvas');
+    const ctx = canvas.getContext('2d');
 
-        // 切換證照選擇
-        function toggleCert(certId, element) {
-            const checkbox = document.getElementById(`cert-${certId}`);
-            checkbox.checked = !checkbox.checked;
+    // 設置canvas尺寸
+    function resizeCanvas() {
+        const container = document.querySelector('.wheel-container');
+        const size = Math.min(container.offsetWidth, container.offsetHeight);
+        canvas.width = size;
+        canvas.height = size;
+        drawWheel(currentStage === 1 ? baseClasses : baseClasses.find(c => c.name === selectedBaseClass).advanced);
+    }
+
+    // 繪製轉盤
+    function drawWheel(classes) {
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const radius = canvas.width / 2 - 10;
+        
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        const segmentAngle = (2 * Math.PI) / classes.length;
+        
+        classes.forEach((cls, index) => {
+            const startAngle = index * segmentAngle - Math.PI / 2;
+            const endAngle = startAngle + segmentAngle;
             
-            if (checkbox.checked) {
-                element.classList.add('selected');
-                selectedCertifications.push(certId);
+            // 繪製扇形
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+            ctx.closePath();
+            
+            // 填充顏色
+            ctx.fillStyle = cls.color;
+            ctx.fill();
+            
+            // 繪製邊框
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // 添加漸變效果
+            const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
+            gradient.addColorStop(0, 'rgba(255, 255, 255, 0.1)');
+            gradient.addColorStop(1, 'rgba(0, 0, 0, 0.2)');
+            ctx.fillStyle = gradient;
+            ctx.fill();
+            
+            // 繪製文字
+            ctx.save();
+            ctx.translate(centerX, centerY);
+            ctx.rotate(startAngle + segmentAngle / 2);
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = '#ffffff';
+            ctx.font = `bold ${canvas.width * 0.04}px Microsoft JhengHei, Arial`;
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+            ctx.shadowBlur = 4;
+            ctx.fillText(cls.name, radius * 0.65, 0);
+            ctx.restore();
+        });
+    }
+
+    // 初始化
+    window.addEventListener('load', resizeCanvas);
+    window.addEventListener('resize', resizeCanvas);
+
+    function spin() {
+        if (isSpinning) return;
+        
+        isSpinning = true;
+        const spinBtn = document.getElementById('spinBtn');
+        const result = document.getElementById('result');
+        
+        spinBtn.disabled = true;
+        result.classList.remove('show');
+        
+        // 根據當前階段選擇職業列表
+        let classes = currentStage === 1 ? baseClasses : 
+                      baseClasses.find(c => c.name === selectedBaseClass).advanced;
+        
+        // 隨機選擇結果
+        const selectedIndex = Math.floor(Math.random() * classes.length);
+        const segmentAngle = 360 / classes.length;
+        
+        // 計算旋轉角度
+        const spins = 5;
+        const targetAngle = 360 - (segmentAngle * selectedIndex) - (segmentAngle / 2);
+        const totalRotation = (360 * spins) + targetAngle;
+        
+        currentRotation += totalRotation;
+        canvas.style.transform = `rotate(${currentRotation}deg)`;
+        
+        // 4秒後顯示結果
+        setTimeout(() => {
+            const selectedClass = classes[selectedIndex].name;
+            
+            if (currentStage === 1) {
+                selectedBaseClass = selectedClass;
+                result.innerHTML = `✨ 抽中基礎職業：<strong>${selectedClass}</strong><br><br>準備進入進階職業選擇！`;
+                result.classList.add('show');
+                
+                setTimeout(() => {
+                    currentStage = 2;
+                    document.getElementById('stageIndicator').innerHTML = 
+                        `<span>第二階段：選擇 ${selectedBaseClass} 的進階職業</span>`;
+                    
+                    drawWheel(baseClasses.find(c => c.name === selectedBaseClass).advanced);
+                    result.classList.remove('show');
+                    spinBtn.disabled = false;
+                    isSpinning = false;
+                }, 2500);
             } else {
-                element.classList.remove('selected');
-                const index = selectedCertifications.indexOf(certId);
-                if (index > -1) {
-                    selectedCertifications.splice(index, 1);
-                }
-            }
-
-            updateCertSummary();
-        }
-
-        // 更新證照摘要
-        function updateCertSummary() {
-            const summary = document.getElementById('certSummary');
-            const list = document.getElementById('selectedCertsList');
-            const bonusEl = document.getElementById('totalBonus');
-
-            if (selectedCertifications.length === 0) {
-                summary.style.display = 'none';
-                return;
-            }
-
-            summary.style.display = 'block';
-
-            let totalBonus = 0;
-            let certNames = [];
-
-            selectedCertifications.forEach(certId => {
-                Object.keys(certifications).forEach(categoryKey => {
-                    const cert = certifications[categoryKey].certs.find(c => c.id === certId);
-                    if (cert) {
-                        totalBonus += cert.bonus;
-                        certNames.push(cert.name);
-                    }
-                });
-            });
-
-            list.innerHTML = certNames.join(', ');
-            bonusEl.textContent = `+${totalBonus} 分`;
-        }
-
-        // 渲染評分區域
-        function renderAssessmentCategories() {
-            const container = document.getElementById('assessmentCategories');
-            container.innerHTML = '';
-
-            categories.forEach((category, catIndex) => {
-                const categoryDiv = document.createElement('div');
-                categoryDiv.className = 'category-block';
+                result.innerHTML = `🎉 恭喜你決定遊玩<br><strong>${selectedClass}</strong> 職業！`;
+                result.classList.add('show');
                 
-                let html = `<h3>${category.name}</h3>`;
-                
-                category.indicators.forEach((indicator, indIndex) => {
-                    const key = `${catIndex}-${indIndex}`;
-                    html += `
-                        <div class="indicator-item">
-                            <div class="indicator-header">
-                                <span class="indicator-name">${indicator.name}</span>
-                                <div class="info-icon" onclick="toggleInfo('${key}')">ⓘ</div>
-                            </div>
-                            <div class="indicator-desc" id="desc-${key}">${indicator.description}</div>
-                            <div class="score-buttons">
-                                ${[1,2,3,4,5].map(score => 
-                                    `<button class="score-btn" data-score="${score}" onclick="selectScore('${key}', ${score}, this)">${score}</button>`
-                                ).join('')}
-                            </div>
-                        </div>
-                    `;
-                });
-                
-                categoryDiv.innerHTML = html;
-                container.appendChild(categoryDiv);
-            });
-        }
-
-        // 切換說明顯示
-        function toggleInfo(key) {
-            const desc = document.getElementById(`desc-${key}`);
-            desc.classList.toggle('show');
-        }
-
-        // 選擇分數
-        function selectScore(key, score, button) {
-            // 移除同組的 active
-            const parent = button.parentElement;
-            parent.querySelectorAll('.score-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
-            // 添加 active
-            button.classList.add('active');
-            
-            // 儲存分數
-            assessmentData[key] = score;
-        }
-
-        // 計算戰鬥力
-        function calculatePower() {
-            const name = document.getElementById('personName').value.trim();
-
-            // 檢查是否所有項目都已評分
-            let totalIndicators = 0;
-            categories.forEach(cat => {
-                totalIndicators += cat.indicators.length;
-            });
-
-            if (Object.keys(assessmentData).length < totalIndicators) {
-                alert('請完成所有項目的評分！');
-                return;
+                setTimeout(() => {
+                    resetGame();
+                }, 5000);
             }
+        }, 4000);
+    }
 
-            // 計算分數
-            let totalScore = 0;
-            const categoryScores = [];
+    function resetGame() {
+        currentStage = 1;
+        selectedBaseClass = null;
+        isSpinning = false;
+        currentRotation = 0;
+        
+        document.getElementById('stageIndicator').innerHTML = 
+            '<span>第一階段：選擇基礎職業</span>';
+        document.getElementById('result').classList.remove('show');
+        canvas.style.transform = 'rotate(0deg)';
+        document.getElementById('spinBtn').disabled = false;
+        
+        drawWheel(baseClasses);
+    }
+</script>
+```
 
-            categories.forEach((category, catIndex) => {
-                let categorySum = 0;
-                category.indicators.forEach((indicator, indIndex) => {
-                    const key = `${catIndex}-${indIndex}`;
-                    categorySum += assessmentData[key] || 0;
-                });
-                
-                const categoryAvg = categorySum / category.indicators.length;
-                const categoryWeighted = (categoryAvg / 5) * category.weight;
-                totalScore += categoryWeighted;
-
-                categoryScores.push({
-                    name: category.name,
-                    score: categoryAvg,
-                    percentage: ((categoryAvg / 5) * 100).toFixed(1)
-                });
-            });
-
-            // 加入證照加分
-            let certBonus = 0;
-            selectedCertifications.forEach(certId => {
-                Object.keys(certifications).forEach(categoryKey => {
-                    const cert = certifications[categoryKey].certs.find(c => c.id === certId);
-                    if (cert) certBonus += cert.bonus;
-                });
-            });
-
-            const finalScore = Math.min(100, totalScore + certBonus);
-
-            // 顯示結果
-            displayResult(name, finalScore, categoryScores, certBonus);
-            goToStep(4);
-        }
-
-        // 顯示結果
-        function displayResult(name, score, categoryScores, certBonus) {
-            document.getElementById('resultTitle').textContent = `${name} 的評估結果`;
-            document.getElementById('totalScore').textContent = score.toFixed(2);
-            
-            const level = getLevel(score);
-            const badge = document.getElementById('levelBadge');
-            badge.textContent = level;
-            badge.style.background = getLevelColor(level);
-
-            drawRadarChart(categoryScores);
-        }
-
-        // 判定等級
-        function getLevel(score) {
-            if (score >= 90) return 'S級 - 傳奇PM';
-            if (score >= 85) return 'A+級 - 卓越PM';
-            if (score >= 80) return 'A級 - 優秀PM';
-            if (score >= 75) return 'B+級 - 良好PM';
-            if (score >= 70) return 'B級 - 稱職PM';
-            if (score >= 65) return 'C+級 - 合格PM';
-            if (score >= 60) return 'C級 - 基礎PM';
-            if (score >= 55) return 'D級 - 成長中';
-            if (score >= 50) return 'E級 - 入門者';
-            return 'F級 - 新手';
-        }
-
-        function getLevelColor(level) {
-            if (level.startsWith('S')) return 'linear-gradient(135deg, #f5222d, #ff4d4f)';
-            if (level.startsWith('A')) return 'linear-gradient(135deg, #faad14, #ffc53d)';
-            if (level.startsWith('B')) return 'linear-gradient(135deg, #52c41a, #73d13d)';
-            if (level.startsWith('C')) return 'linear-gradient(135deg, #1890ff, #40a9ff)';
-            return 'linear-gradient(135deg, #8c8c8c, #bfbfbf)';
-        }
-
-        // 繪製雷達圖
-        function drawRadarChart(categoryScores) {
-            const ctx = document.getElementById('radarChart').getContext('2d');
-            
-            if (radarChart) {
-                radarChart.destroy();
-            }
-
-            radarChart = new Chart(ctx, {
-                type: 'radar',
-                data: {
-                    labels: categoryScores.map(c => c.name),
-                    datasets: [{
-                        label: '能力分數',
-                        data: categoryScores.map(c => c.score),
-                        backgroundColor: 'rgba(74, 158, 255, 0.2)',
-                        borderColor: '#4a9eff',
-                        borderWidth: 2,
-                        pointBackgroundColor: '#4a9eff',
-                        pointBorderColor: '#fff',
-                        pointHoverBackgroundColor: '#fff',
-                        pointHoverBorderColor: '#4a9eff',
-                        pointRadius: 4,
-                        pointHoverRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    scales: {
-                        r: {
-                            beginAtZero: true,
-                            max: 5,
-                            min: 0,
-                            ticks: {
-                                stepSize: 1,
-                                color: '#9ba3b4',
-                                backdropColor: 'transparent',
-                                font: { size: 10 }
-                            },
-                            grid: {
-                                color: 'rgba(74, 158, 255, 0.1)'
-                            },
-                            pointLabels: {
-                                color: '#e8eaf0',
-                                font: {
-                                    size: window.innerWidth < 480 ? 10 : 12,
-                                    weight: '500'
-                                }
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: { display: false }
-                    }
-                }
-            });
-        }
-
-        // 下載報告
-        function downloadReport() {
-            const name = document.getElementById('personName').value.trim();
-            const score = parseFloat(document.getElementById('totalScore').textContent);
-            const level = document.getElementById('levelBadge').textContent;
-
-            let report = `
-╔════════════════════════════════════════════════════════════════╗
-║          PM POWER ASSESSMENT REPORT                           ║
-╚════════════════════════════════════════════════════════════════╝
-
-【基本資訊】
-評估對象：${name}
-評估日期：${new Date().toLocaleDateString('zh-TW')}
-總戰鬥力：${score.toFixed(2)} / 100
-評估等級：${level}
-
-【六大能力分析】
-`;
-
-            categories.forEach((cat, catIndex) => {
-                let catScore = 0;
-                cat.indicators.forEach((ind, indIndex) => {
-                    const key = `${catIndex}-${indIndex}`;
-                    catScore += assessmentData[key] || 0;
-                });
-                const avg = catScore / cat.indicators.length;
-                report += `${cat.name}: ${avg.toFixed(2)}/5 (${((avg/5)*100).toFixed(1)}%)\n`;
-            });
-
-            if (selectedCertifications.length > 0) {
-                report += `\n【已取得證照】\n`;
-                selectedCertifications.forEach(certId => {
-                    Object.keys(certifications).forEach(categoryKey => {
-                        const cert = certifications[categoryKey].certs.find(c => c.id === certId);
-                        if (cert) {
-                            report += `✓ ${cert.name} (+${cert.bonus}分)\n`;
-                        }
-                    });
-                });
-            }
-
-            report += `
-\n報告產生時間：${new Date().toLocaleString('zh-TW')}
-評估系統版本：Mobile v2.0
-            `;
-
-            const blob = new Blob([report], { type: 'text/plain;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${name}_PM戰鬥力評估_${new Date().toISOString().split('T')[0]}.txt`;
-            a.click();
-            URL.revokeObjectURL(url);
-        }
-
-        // 查看詳細分析
-        function viewDetails() {
-            alert('詳細分析功能開發中...');
-        }
-
-        // 重置評估
-        function resetAssessment() {
-            if (confirm('確定要重新評估嗎？所有資料將被清除。')) {
-                document.getElementById('personName').value = '';
-                selectedCertifications = [];
-                assessmentData = {};
-                
-                // 重置證照選擇
-                document.querySelectorAll('.cert-item').forEach(item => {
-                    item.classList.remove('selected');
-                });
-                document.querySelectorAll('.cert-item input[type="checkbox"]').forEach(cb => {
-                    cb.checked = false;
-                });
-
-                // 重置評分按鈕
-                document.querySelectorAll('.score-btn').forEach(btn => {
-                    btn.classList.remove('active');
-                });
-
-                goToStep(1);
-            }
-        }
-
-        // 初始化
-        window.onload = init;
-    </script>
 </body>
 </html>
