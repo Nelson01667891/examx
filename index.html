@@ -1,528 +1,1125 @@
 <!DOCTYPE html>
-
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>職業轉盤選擇器</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>雙向媒合平台 - 人才與工作配對</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
         }
 
-```
-    body {
-        font-family: 'Microsoft JhengHei', 'PingFang TC', Arial, sans-serif;
-        background: #0a0e27;
-        min-height: 100vh;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 20px;
-        overflow: hidden;
-        position: relative;
-    }
-
-    /* 科技感背景動畫 */
-    body::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: 
-            radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-            radial-gradient(circle at 80% 80%, rgba(99, 102, 241, 0.3) 0%, transparent 50%),
-            radial-gradient(circle at 40% 20%, rgba(168, 85, 247, 0.2) 0%, transparent 50%);
-        animation: bgPulse 8s ease-in-out infinite;
-    }
-
-    @keyframes bgPulse {
-        0%, 100% { opacity: 0.5; }
-        50% { opacity: 0.8; }
-    }
-
-    .container {
-        position: relative;
-        z-index: 1;
-        text-align: center;
-        width: 100%;
-        max-width: 500px;
-    }
-
-    h1 {
-        color: #fff;
-        margin-bottom: 15px;
-        font-size: clamp(24px, 6vw, 32px);
-        text-shadow: 0 0 20px rgba(99, 102, 241, 0.8);
-        letter-spacing: 2px;
-        animation: titleGlow 2s ease-in-out infinite;
-    }
-
-    @keyframes titleGlow {
-        0%, 100% { text-shadow: 0 0 20px rgba(99, 102, 241, 0.8); }
-        50% { text-shadow: 0 0 30px rgba(168, 85, 247, 1); }
-    }
-
-    .stage-indicator {
-        margin-bottom: 20px;
-        padding: 12px 24px;
-        background: rgba(99, 102, 241, 0.2);
-        border: 2px solid rgba(99, 102, 241, 0.5);
-        border-radius: 50px;
-        backdrop-filter: blur(10px);
-        display: inline-block;
-    }
-
-    .stage-indicator span {
-        color: #a5b4fc;
-        font-size: clamp(14px, 3.5vw, 18px);
-        font-weight: bold;
-        text-shadow: 0 0 10px rgba(165, 180, 252, 0.5);
-    }
-
-    .wheel-container {
-        position: relative;
-        width: 100%;
-        max-width: 400px;
-        margin: 0 auto 30px;
-        aspect-ratio: 1;
-    }
-
-    #wheelCanvas {
-        width: 100%;
-        height: 100%;
-        filter: drop-shadow(0 0 30px rgba(99, 102, 241, 0.6));
-        transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
-    }
-
-    .pointer {
-        position: absolute;
-        top: -15px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 0;
-        height: 0;
-        border-left: 15px solid transparent;
-        border-right: 15px solid transparent;
-        border-top: 35px solid #f43f5e;
-        z-index: 10;
-        filter: drop-shadow(0 0 10px rgba(244, 63, 94, 0.8));
-        animation: pointerPulse 1.5s ease-in-out infinite;
-    }
-
-    @keyframes pointerPulse {
-        0%, 100% { transform: translateX(-50%) scale(1); }
-        50% { transform: translateX(-50%) scale(1.1); }
-    }
-
-    .center-circle {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: clamp(50px, 15vw, 70px);
-        height: clamp(50px, 15vw, 70px);
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 50%;
-        border: 3px solid rgba(255, 255, 255, 0.3);
-        z-index: 5;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-        color: white;
-        font-size: clamp(14px, 3.5vw, 18px);
-        box-shadow: 
-            0 0 20px rgba(102, 126, 234, 0.6),
-            inset 0 0 20px rgba(255, 255, 255, 0.1);
-        animation: centerGlow 2s ease-in-out infinite;
-    }
-
-    @keyframes centerGlow {
-        0%, 100% { box-shadow: 0 0 20px rgba(102, 126, 234, 0.6), inset 0 0 20px rgba(255, 255, 255, 0.1); }
-        50% { box-shadow: 0 0 40px rgba(118, 75, 162, 0.8), inset 0 0 20px rgba(255, 255, 255, 0.2); }
-    }
-
-    button {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: 2px solid rgba(255, 255, 255, 0.3);
-        padding: 15px 50px;
-        font-size: clamp(16px, 4vw, 20px);
-        font-weight: bold;
-        border-radius: 50px;
-        cursor: pointer;
-        transition: all 0.3s;
-        box-shadow: 
-            0 5px 25px rgba(102, 126, 234, 0.4),
-            inset 0 0 20px rgba(255, 255, 255, 0.1);
-        position: relative;
-        overflow: hidden;
-    }
-
-    button::before {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 0;
-        height: 0;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.3);
-        transform: translate(-50%, -50%);
-        transition: width 0.6s, height 0.6s;
-    }
-
-    button:active::before {
-        width: 300px;
-        height: 300px;
-    }
-
-    button:hover:not(:disabled) {
-        transform: translateY(-2px);
-        box-shadow: 
-            0 8px 35px rgba(102, 126, 234, 0.6),
-            inset 0 0 20px rgba(255, 255, 255, 0.2);
-    }
-
-    button:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-
-    .result {
-        margin-top: 30px;
-        padding: 20px 30px;
-        background: linear-gradient(135deg, rgba(244, 63, 94, 0.2) 0%, rgba(249, 115, 22, 0.2) 100%);
-        border: 2px solid rgba(244, 63, 94, 0.5);
-        border-radius: 20px;
-        backdrop-filter: blur(10px);
-        color: white;
-        font-size: clamp(18px, 4.5vw, 24px);
-        font-weight: bold;
-        display: none;
-        animation: resultSlideIn 0.5s ease-out;
-        box-shadow: 0 0 30px rgba(244, 63, 94, 0.4);
-    }
-
-    .result.show {
-        display: block;
-    }
-
-    @keyframes resultSlideIn {
-        from {
-            opacity: 0;
-            transform: translateY(-30px) scale(0.8);
+        body {
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
         }
-        to {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-        }
-    }
 
-    .result strong {
-        color: #fbbf24;
-        text-shadow: 0 0 10px rgba(251, 191, 36, 0.8);
-        font-size: 1.1em;
-    }
-
-    /* 粒子效果 */
-    .particle {
-        position: fixed;
-        width: 4px;
-        height: 4px;
-        background: rgba(99, 102, 241, 0.6);
-        border-radius: 50%;
-        pointer-events: none;
-        animation: particleFloat 3s ease-in-out infinite;
-    }
-
-    @keyframes particleFloat {
-        0%, 100% { transform: translateY(0) translateX(0); opacity: 0; }
-        50% { opacity: 1; }
-        100% { transform: translateY(-100vh) translateX(50px); opacity: 0; }
-    }
-
-    @media (max-width: 480px) {
         .container {
-            padding: 10px;
+            max-width: 1400px;
+            margin: 0 auto;
         }
-        
-        h1 {
-            margin-bottom: 10px;
+
+        .header {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
-        
-        .stage-indicator {
-            margin-bottom: 15px;
+
+        .header h1 {
+            color: #667eea;
+            font-size: 28px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .balance {
+            background: #f0f4ff;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            color: #667eea;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .balance:hover {
+            background: #667eea;
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .btn {
             padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s;
         }
-        
-        .wheel-container {
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #38a169;
+        }
+
+        .btn-danger {
+            background: #f56565;
+            color: white;
+        }
+
+        .btn-warning {
+            background: #ed8936;
+            color: white;
+        }
+
+        .btn-logout {
+            background: #e2e8f0;
+            color: #2d3748;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-content h2 {
+            margin-bottom: 20px;
+            color: #2d3748;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #4a5568;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .form-actions button {
+            flex: 1;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
             margin-bottom: 20px;
         }
-    }
-</style>
-```
 
+        .tab-btn {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            background: white;
+            cursor: pointer;
+            border-radius: 5px;
+            font-weight: bold;
+            color: #718096;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .tab-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .tab-btn:hover {
+            border-color: #667eea;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .section {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .section-header h2 {
+            color: #2d3748;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .search-box {
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .card {
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+
+        .card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 10px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2d3748;
+        }
+
+        .card-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .badge-job {
+            background: #bee3f8;
+            color: #2c5282;
+        }
+
+        .badge-talent {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .card-author {
+            color: #718096;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .card-category {
+            display: inline-block;
+            background: #edf2f7;
+            color: #4a5568;
+            padding: 4px 10px;
+            border-radius: 5px;
+            font-size: 13px;
+            margin-top: 10px;
+        }
+
+        .card-content {
+            color: #4a5568;
+            line-height: 1.6;
+            margin: 15px 0;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .card-time {
+            color: #a0aec0;
+            font-size: 13px;
+        }
+
+        .replies-count {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .replies-section {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid #e2e8f0;
+        }
+
+        .reply-item {
+            background: white;
+            padding: 15px;
+            border-left: 3px solid #667eea;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+
+        .reply-author {
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .reply-content {
+            color: #4a5568;
+            line-height: 1.5;
+        }
+
+        .reply-time {
+            color: #a0aec0;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .no-items {
+            text-align: center;
+            padding: 40px;
+            color: #a0aec0;
+        }
+
+        .guest-notice {
+            background: #fef5e7;
+            border: 2px solid #f39c12;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #d68910;
+        }
+
+        .payment-notice {
+            background: #fff5f5;
+            border: 2px solid #fc8181;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .payment-notice strong {
+            color: #c53030;
+            font-size: 18px;
+        }
+
+        .recharge-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .recharge-card {
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .recharge-card:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+            transform: scale(1.05);
+        }
+
+        .recharge-card.selected {
+            border-color: #667eea;
+            background: #f0f4ff;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+
+        .recharge-amount {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .recharge-label {
+            color: #718096;
+            font-size: 14px;
+        }
+
+        .recharge-bonus {
+            background: #48bb78;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 5px;
+            font-size: 12px;
+            margin-top: 8px;
+            display: inline-block;
+        }
+
+        .transaction-history {
+            margin-top: 20px;
+        }
+
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .transaction-type {
+            font-weight: bold;
+        }
+
+        .transaction-type.income {
+            color: #48bb78;
+        }
+
+        .transaction-type.expense {
+            color: #f56565;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .user-info {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .recharge-options {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
-    <!-- 粒子效果 -->
-    <div id="particles"></div>
-
-```
-<div class="container">
-    <h1>⚔️ 職業轉盤</h1>
-    <div class="stage-indicator" id="stageIndicator">
-        <span>第一階段：選擇基礎職業</span>
-    </div>
-    
-    <div class="wheel-container">
-        <div class="pointer"></div>
-        <canvas id="wheelCanvas"></canvas>
-        <div class="center-circle">轉！</div>
-    </div>
-    
-    <button id="spinBtn" onclick="spin()">開始轉動</button>
-    
-    <div class="result" id="result"></div>
-</div>
-
-<script>
-    // 創建粒子效果
-    function createParticles() {
-        const particles = document.getElementById('particles');
-        for (let i = 0; i < 20; i++) {
-            const particle = document.createElement('div');
-            particle.className = 'particle';
-            particle.style.left = Math.random() * 100 + '%';
-            particle.style.animationDelay = Math.random() * 3 + 's';
-            particle.style.animationDuration = (Math.random() * 2 + 2) + 's';
-            particles.appendChild(particle);
-        }
-    }
-    createParticles();
-
-    // 定義基礎職業和進階職業
-    const baseClasses = [
-        { 
-            name: '遊俠', 
-            color: '#2ecc71', 
-            advanced: [
-                { name: '銳眼', color: '#16a085' },
-                { name: '追獵者', color: '#27ae60' }
-            ]
-        },
-        { 
-            name: '女獵人', 
-            color: '#e74c3c', 
-            advanced: [
-                { name: '亞馬遜', color: '#c0392b' },
-                { name: '儀式行者', color: '#e67e22' }
-            ]
-        },
-        { 
-            name: '憎呂', 
-            color: '#3498db', 
-            advanced: [
-                { name: '祈求者', color: '#2980b9' },
-                { name: '夏烏拉憎呂', color: '#5dade2' }
-            ]
-        },
-        { 
-            name: '女巫', 
-            color: '#9b59b6', 
-            advanced: [
-                { name: '獄火師', color: '#8e44ad' },
-                { name: '血法師', color: '#9b59b6' },
-                { name: '巫妖', color: '#af7ac5' },
-                { name: '深淵巫妖', color: '#bb8fce' }
-            ]
-        },
-        { 
-            name: '女術者', 
-            color: '#f39c12', 
-            advanced: [
-                { name: '風暴編織者', color: '#d68910' },
-                { name: '時空術士', color: '#f1c40f' }
-            ]
-        },
-        { 
-            name: '戰士', 
-            color: '#e67e22', 
-            advanced: [
-                { name: '泰坦', color: '#d35400' },
-                { name: '戰爭使者', color: '#e67e22' },
-                { name: '奇塔佛工匠', color: '#f39c12' }
-            ]
-        },
-        { 
-            name: '傭兵', 
-            color: '#1abc9c', 
-            advanced: [
-                { name: '智勇軍師', color: '#16a085' },
-                { name: '女巫獵人', color: '#1abc9c' },
-                { name: '古靈軍團', color: '#48c9b0' }
-            ]
-        },
-        { 
-            name: '德魯伊', 
-            color: '#27ae60', 
-            advanced: [
-                { name: '業火薩滿', color: '#229954' },
-                { name: '天啟先知', color: '#2ecc71' }
-            ]
-        }
-    ];
-
-    let currentStage = 1;
-    let selectedBaseClass = null;
-    let isSpinning = false;
-    let currentRotation = 0;
-
-    const canvas = document.getElementById('wheelCanvas');
-    const ctx = canvas.getContext('2d');
-
-    // 設置canvas尺寸
-    function resizeCanvas() {
-        const container = document.querySelector('.wheel-container');
-        const size = Math.min(container.offsetWidth, container.offsetHeight);
-        canvas.width = size;
-        canvas.height = size;
-        drawWheel(currentStage === 1 ? baseClasses : baseClasses.find(c => c.name === selectedBaseClass).advanced);
-    }
-
-    // 繪製轉盤
-    function drawWheel(classes) {
-        const centerX = canvas.width / 2;
-        const centerY = canvas.height / 2;
-        const radius = canvas.width / 2 - 10;
-        
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        const segmentAngle = (2 * Math.PI) / classes.length;
-        
-        classes.forEach((cls, index) => {
-            const startAngle = index * segmentAngle - Math.PI / 2;
-            const endAngle = startAngle + segmentAngle;
-            
-            // 繪製扇形
-            ctx.beginPath();
-            ctx.moveTo(centerX, centerY);
-            ctx.arc(centerX, centerY, radius, startAngle, endAngle);
-            ctx.closePath();
-            
-            // 填充顏色
-            ctx.fillStyle = cls.color;
-            ctx.fill();
-            
-            // 繪製邊框
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-            ctx.lineWidth = 2;
-            ctx.stroke();
-            
-            // 添加漸變效果
-            const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
-            gradient.addColorStop(0, 'rgba(255, 255, 255, 0.1)');
-            gradient.addColorStop(1, 'rgba(0, 0, 0, 0.2)');
-            ctx.fillStyle = gradient;
-            ctx.fill();
-            
-            // 繪製文字
-            ctx.save();
-            ctx.translate(centerX, centerY);
-            ctx.rotate(startAngle + segmentAngle / 2);
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillStyle = '#ffffff';
-            ctx.font = `bold ${canvas.width * 0.04}px Microsoft JhengHei, Arial`;
-            ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
-            ctx.shadowBlur = 4;
-            ctx.fillText(cls.name, radius * 0.65, 0);
-            ctx.restore();
-        });
-    }
-
-    // 初始化
-    window.addEventListener('load', resizeCanvas);
-    window.addEventListener('resize', resizeCanvas);
-
-    function spin() {
-        if (isSpinning) return;
-        
-        isSpinning = true;
-        const spinBtn = document.getElementById('spinBtn');
-        const result = document.getElementById('result');
-        
-        spinBtn.disabled = true;
-        result.classList.remove('show');
-        
-        // 根據當前階段選擇職業列表
-        let classes = currentStage === 1 ? baseClasses : 
-                      baseClasses.find(c => c.name === selectedBaseClass).advanced;
-        
-        // 隨機選擇結果
-        const selectedIndex = Math.floor(Math.random() * classes.length);
-        const segmentAngle = 360 / classes.length;
-        
-        // 計算旋轉角度
-        const spins = 5;
-        const targetAngle = 360 - (segmentAngle * selectedIndex) - (segmentAngle / 2);
-        const totalRotation = (360 * spins) + targetAngle;
-        
-        currentRotation += totalRotation;
-        canvas.style.transform = `rotate(${currentRotation}deg)`;
-        
-        // 4秒後顯示結果
-        setTimeout(() => {
-            const selectedClass = classes[selectedIndex].name;
-            
-            if (currentStage === 1) {
-                selectedBaseClass = selectedClass;
-                result.innerHTML = `✨ 抽中基礎職業：<strong>${selectedClass}</strong><br><br>準備進入進階職業選擇！`;
-                result.classList.add('show');
+    <div class="container">
+        <!-- 登入/註冊 Modal -->
+        <div id="loginModal" class="modal">
+            <div class="modal-content">
+                <h2>🎯 雙向媒合平台</h2>
+                <div class="tab-buttons">
+                    <button class="tab-btn active" onclick="switchAuthTab('login')">登入</button>
+                    <button class="tab-btn" onclick="switchAuthTab('register')">註冊</button>
+                </div>
                 
-                setTimeout(() => {
-                    currentStage = 2;
-                    document.getElementById('stageIndicator').innerHTML = 
-                        `<span>第二階段：選擇 ${selectedBaseClass} 的進階職業</span>`;
-                    
-                    drawWheel(baseClasses.find(c => c.name === selectedBaseClass).advanced);
-                    result.classList.remove('show');
-                    spinBtn.disabled = false;
-                    isSpinning = false;
-                }, 2500);
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label>帳號</label>
+                        <input type="text" id="loginUsername" required>
+                    </div>
+                    <div class="form-group">
+                        <label>密碼</label>
+                        <input type="password" id="loginPassword" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">登入</button>
+                    <button type="button" class="btn btn-logout" style="width: 100%; margin-top: 10px;" onclick="closeLoginModal()">取消</button>
+                </form>
+
+                <form id="registerForm" style="display: none;">
+                    <div class="form-group">
+                        <label>帳號</label>
+                        <input type="text" id="registerUsername" required>
+                    </div>
+                    <div class="form-group">
+                        <label>密碼</label>
+                        <input type="password" id="registerPassword" required>
+                    </div>
+                    <div class="form-group">
+                        <label>確認密碼</label>
+                        <input type="password" id="registerPasswordConfirm" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">註冊 (送 NT$ 500)</button>
+                    <button type="button" class="btn btn-logout" style="width: 100%; margin-top: 10px;" onclick="closeLoginModal()">取消</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 儲值 Modal -->
+        <div id="rechargeModal" class="modal">
+            <div class="modal-content">
+                <h2>💰 儲值中心</h2>
+                <p style="color: #718096; margin-bottom: 20px;">選擇儲值金額，享受更多服務</p>
+                
+                <div class="recharge-options">
+                    <div class="recharge-card" onclick="selectRecharge(500)">
+                        <div class="recharge-amount">$500</div>
+                        <div class="recharge-label">基礎方案</div>
+                    </div>
+                    <div class="recharge-card" onclick="selectRecharge(1000)">
+                        <div class="recharge-amount">$1000</div>
+                        <div class="recharge-label">熱門方案</div>
+                        <div class="recharge-bonus">送 $100</div>
+                    </div>
+                    <div class="recharge-card" onclick="selectRecharge(2000)">
+                        <div class="recharge-amount">$2000</div>
+                        <div class="recharge-label">超值方案</div>
+                        <div class="recharge-bonus">送 $300</div>
+                    </div>
+                    <div class="recharge-card" onclick="selectRecharge(5000)">
+                        <div class="recharge-amount">$5000</div>
+                        <div class="recharge-label">尊榮方案</div>
+                        <div class="recharge-bonus">送 $1000</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>自訂金額</label>
+                    <input type="number" id="customAmount" placeholder="輸入自訂金額" min="100">
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-logout" onclick="closeRechargeModal()">取消</button>
+                    <button type="button" class="btn btn-secondary" onclick="confirmRecharge()">確認儲值</button>
+                </div>
+
+                <div class="transaction-history">
+                    <h3 style="margin-bottom: 15px; color: #2d3748;">交易記錄</h3>
+                    <div id="transactionList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 發布 Modal -->
+        <div id="postModal" class="modal">
+            <div class="modal-content">
+                <h2 id="postModalTitle">發布內容</h2>
+                <form id="postForm">
+                    <div class="form-group">
+                        <label>類型</label>
+                        <select id="postType" required>
+                            <option value="job">🏢 我要找人才（發布工作）</option>
+                            <option value="talent">👔 我要找工作（專業人才）</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>領域分類</label>
+                        <select id="postCategory" required>
+                            <option value="">請選擇領域</option>
+                            <option value="程式開發">💻 程式開發</option>
+                            <option value="設計美術">🎨 設計美術</option>
+                            <option value="行銷企劃">📊 行銷企劃</option>
+                            <option value="文字編輯">✍️ 文字編輯</option>
+                            <option value="影音製作">🎬 影音製作</option>
+                            <option value="翻譯語言">🌐 翻譯語言</option>
+                            <option value="顧問諮詢">💼 顧問諮詢</option>
+                            <option value="其他">📌 其他</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>標題</label>
+                        <input type="text" id="postTitle" required placeholder="例：尋找資深前端工程師 或 5年經驗平面設計師找案">
+                    </div>
+                    <div class="form-group">
+                        <label>詳細內容</label>
+                        <textarea id="postContent" required placeholder="詳細描述您的需求或專長..."></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-logout" onclick="closePostModal()">取消</button>
+                        <button type="submit" class="btn btn-secondary">發布</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 回覆 Modal -->
+        <div id="replyModal" class="modal">
+            <div class="modal-content">
+                <h2>回覆內容</h2>
+                <div class="payment-notice">
+                    <strong>⚠️ 回覆需支付 NT$ 100</strong>
+                    <p style="margin-top: 10px; color: #718096;">此費用將從您的帳戶餘額扣除</p>
+                    <p style="margin-top: 5px; color: #718096;">目前餘額: NT$ <span id="currentBalanceInModal">0</span></p>
+                </div>
+                <form id="replyForm">
+                    <div class="form-group">
+                        <label>您的回覆</label>
+                        <textarea id="replyContent" required placeholder="輸入您的回覆內容..."></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-logout" onclick="closeReplyModal()">取消</button>
+                        <button type="submit" class="btn btn-primary">支付 NT$ 100 並回覆</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 主畫面 -->
+        <div id="mainScreen">
+            <div class="header">
+                <h1>🎯 雙向媒合平台</h1>
+                <div class="user-info" id="userInfoSection">
+                    <!-- 訪客模式 -->
+                    <div id="guestButtons">
+                        <button class="btn btn-primary" onclick="showLoginModal()">登入</button>
+                        <button class="btn btn-secondary" onclick="showRegisterModal()">註冊</button>
+                    </div>
+                    <!-- 登入模式 -->
+                    <div id="loggedInButtons" style="display: none;">
+                        <div class="balance" onclick="openRechargeModal()" title="點擊儲值">
+                            💰 餘額: NT$ <span id="userBalance">0</span>
+                        </div>
+                        <span id="userName">使用者</span>
+                        <button class="btn btn-logout" onclick="logout()">登出</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 訪客提示 -->
+            <div id="guestNotice" class="guest-notice" style="display: none;">
+                <strong>👋 您目前是訪客模式</strong>
+                <p>可以瀏覽所有內容，但需要登入才能發布和回覆</p>
+                <button class="btn btn-primary" onclick="showLoginModal()">立即登入</button>
+                <button class="btn btn-secondary" onclick="showRegisterModal()">免費註冊</button>
+            </div>
+
+            <div class="main-content">
+                <!-- 找人才區（雇主發布工作） -->
+                <div class="section">
+                    <div class="section-header">
+                        <h2>🏢 找人才（工作機會）</h2>
+                        <button class="btn btn-warning" onclick="openPostModal('job')">+ 發布工作</button>
+                    </div>
+                    <div class="search-box">
+                        <input type="text" class="search-input" id="searchJobs" placeholder="🔍 搜尋工作內容或領域...">
+                    </div>
+                    <div id="jobsList"></div>
+                </div>
+
+                <!-- 找工作區（人才發布專長） -->
+                <div class="section">
+                    <div class="section-header">
+                        <h2>👔 找工作（專業人才）</h2>
+                        <button class="btn btn-secondary" onclick="openPostModal('talent')">+ 我要找工作</button>
+                    </div>
+                    <div class="search-box">
+                        <input type="text" class="search-input" id="searchTalents" placeholder="🔍 搜尋人才專長或領域...">
+                    </div>
+                    <div id="talentsList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 資料儲存
+        let currentUser = null;
+        let users = JSON.parse(localStorage.getItem('users')) || {};
+        let posts = JSON.parse(localStorage.getItem('posts')) || [];
+        let currentReplyPostId = null;
+        let selectedRechargeAmount = 0;
+
+        // 初始化
+        window.onload = function() {
+            loadPosts();
+            updateUIForUser();
+            
+            // 搜尋功能
+            document.getElementById('searchJobs').addEventListener('input', function() {
+                loadPosts();
+            });
+            
+            document.getElementById('searchTalents').addEventListener('input', function() {
+                loadPosts();
+            });
+        };
+
+        // 更新UI顯示
+        function updateUIForUser() {
+            const guestButtons = document.getElementById('guestButtons');
+            const loggedInButtons = document.getElementById('loggedInButtons');
+            const guestNotice = document.getElementById('guestNotice');
+
+            if (currentUser) {
+                guestButtons.style.display = 'none';
+                loggedInButtons.style.display = 'flex';
+                guestNotice.style.display = 'none';
+                document.getElementById('userName').textContent = currentUser;
+                document.getElementById('userBalance').textContent = users[currentUser].balance;
             } else {
-                result.innerHTML = `🎉 恭喜你決定遊玩<br><strong>${selectedClass}</strong> 職業！`;
-                result.classList.add('show');
-                
-                setTimeout(() => {
-                    resetGame();
-                }, 5000);
+                guestButtons.style.display = 'flex';
+                loggedInButtons.style.display = 'none';
+                guestNotice.style.display = 'block';
             }
-        }, 4000);
-    }
+        }
 
-    function resetGame() {
-        currentStage = 1;
-        selectedBaseClass = null;
-        isSpinning = false;
-        currentRotation = 0;
-        
-        document.getElementById('stageIndicator').innerHTML = 
-            '<span>第一階段：選擇基礎職業</span>';
-        document.getElementById('result').classList.remove('show');
-        canvas.style.transform = 'rotate(0deg)';
-        document.getElementById('spinBtn').disabled = false;
-        
-        drawWheel(baseClasses);
-    }
-</script>
-```
+        // === 登入/註冊系統 ===
+        function showLoginModal() {
+            switchAuthTab('login');
+            document.getElementById('loginModal').classList.add('active');
+        }
 
+        function showRegisterModal() {
+            switchAuthTab('register');
+            document.getElementById('loginModal').classList.add('active');
+        }
+
+        function closeLoginModal() {
+            document.getElementById('loginModal').classList.remove('active');
+        }
+
+        function switchAuthTab(tab) {
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const tabBtns = document.querySelectorAll('#loginModal .tab-btn');
+            
+            tabBtns.forEach(btn => btn.classList.remove('active'));
+            
+            if (tab === 'login') {
+                loginForm.style.display = 'block';
+                registerForm.style.display = 'none';
+                tabBtns[0].classList.add('active');
+            } else {
+                loginForm.style.display = 'none';
+                registerForm.style.display = 'block';
+                tabBtns[1].classList.add('active');
+            }
+        }
+
+        // 註冊
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('registerUsername').value.trim();
+            const password = document.getElementById('registerPassword').value;
+            const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
+
+            if (password !== passwordConfirm) {
+                alert('密碼不一致！');
+                return;
+            }
+
+            if (users[username]) {
+                alert('此帳號已存在！');
+                return;
+            }
+
+            users[username] = {
+                password: password,
+                balance: 500,
+                transactions: [{
+                    type: 'income',
+                    amount: 500,
+                    description: '註冊贈送',
+                    time: new Date().toLocaleString('zh-TW')
+                }]
+            };
+
+            localStorage.setItem('users', JSON.stringify(users));
+            alert('註冊成功！已贈送 NT$ 500，請登入');
+            switchAuthTab('login');
+            this.reset();
+        });
+
+        // 登入
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            if (!users[username]) {
+                alert('帳號不存在！');
+                return;
+            }
+
+            if (users[username].password !== password) {
+                alert('密碼錯誤！');
+                return;
+            }
+
+            currentUser = username;
+            updateUIForUser();
+            loadPosts();
+            closeLoginModal();
+            this.reset();
+            alert('登入成功！');
+        });
+
+        // 登出
+        function logout() {
+            currentUser = null;
+            updateUIForUser();
+            loadPosts();
+        }
+
+        // === 儲值系統 ===
+        function openRechargeModal() {
+            if (!currentUser) {
+                alert('請先登入！');
+                showLoginModal();
+                return;
+            }
+            loadTransactions();
+            document.getElementById('rechargeModal').classList.add('active');
+        }
+
+        function closeRechargeModal() {
+            document.getElementById('rechargeModal').classList.remove('active');
+            document.getElementById('customAmount').value = '';
+            selectedRechargeAmount = 0;
+            document.querySelectorAll('.recharge-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+        }
+
+        function selectRecharge(amount) {
+            selectedRechargeAmount = amount;
+            document.getElementById('customAmount').value = '';
+            document.querySelectorAll('.recharge-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            event.target.closest('.recharge-card').classList.add('selected');
+        }
+
+        function confirmRecharge() {
+            let amount = selectedRechargeAmount;
+            const customAmount = parseInt(document.getElementById('customAmount').value);
+            
+            if (customAmount > 0) {
+                amount = customAmount;
+            }
+
+            if (amount < 100) {
+                alert('儲值金額不得低於 NT$ 100');
+                return;
+            }
+
+            // 計算贈送金額
+            let bonus = 0;
+            if (amount >= 5000) bonus = 1000;
+            else if (amount >= 2000) bonus = 300;
+            else if (amount >= 1000) bonus = 100;
+
+            const total = amount + bonus;
+
+            if (confirm(`確認儲值 NT$ ${amount}${bonus > 0 ? ` + 贈送 NT$ ${bonus}` : ''} = NT$ ${total}？`)) {
+                users[currentUser].balance += total;
+                
+                if (!users[currentUser].transactions) {
+                    users[currentUser].transactions = [];
+                }
+                
+                users[currentUser].transactions.unshift({
+                    type: 'income',
+                    amount: total,
+                    description: `儲值 $${amount}${bonus > 0 ? ` (含贈送 $${bonus})` : ''}`,
+                    time: new Date().toLocaleString('zh-TW')
+                });
+
+                localStorage.setItem('users', JSON.stringify(users));
+                updateUIForUser();
+                loadTransactions();
+                alert(`儲值成功！已增加 NT$ ${total}`);
+            }
+        }
+
+        function loadTransactions() {
+            const list = document.getElementById('transactionList');
+            const transactions = users[currentUser].transactions || [];
+            
+            if (transactions.length === 0) {
+                list.innerHTML = '<div style="text-align: center; color: #a0aec0; padding: 20px;">暫無交易記錄</div>';
+                return;
+            }
+
+            list.innerHTML = transactions.slice(0, 10).map(t => `
+                <div class="transaction-item">
+                    <div>
+                        <div class="transaction-type ${t.type}">${t.description}</div>
+                        <div style="font-size: 12px; color: #a0aec0;">${t.time}</div>
+                    </div>
+                    <div class="transaction-type ${t.type}">
+                        ${t.type === 'income' ? '+' : '-'} NT$ ${t.amount}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // === 發布系統 ===
+        function openPostModal(type) {
+            if (!currentUser) {
+                alert('請先登入才能發布！');
+                showLoginModal();
+                return;
+            }
+            
+            document.getElementById('postType').value = type;
+            document.getElementById('postModalTitle').textContent = type === 'job' ? '🏢 發布工作機會' : '👔 發布專業人才';
+            document.getElementById('postModal').classList.add('active');
+        }
+
+        function closePostModal() {
+            document.getElementById('postModal').classList.remove('active');
+            document.getElementById('postForm').reset();
+        }
+
+        document.getElementById('postForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const type = document.getElementById('postType').value;
+            const category = document.getElementById('postCategory').value;
+            const title = document.getElementById('postTitle').value.trim();
+            const content = document.getElementById('postContent').value.trim();
+
+            const newPost = {
+                id: Date.now(),
+                type: type,
+                category: category,
+                title: title,
+                content: content,
+                author: currentUser,
+                time: new Date().toLocaleString('zh-TW'),
+                replies: []
+            };
+
+            posts.unshift(newPost);
+            localStorage.setItem('posts', JSON.stringify(posts));
+            loadPosts();
+            closePostModal();
+            alert('發布成功！');
+        });
+
+        // === 回覆系統 ===
+        function openReplyModal(postId) {
+            if (!currentUser) {
+                alert('請先登入才能回覆！');
+                showLoginModal();
+                return;
+            }
+
+            if (users[currentUser].balance < 100) {
+                alert('餘額不足！回覆需要 NT$ 100\n\n請點擊右上角餘額進行儲值');
+                return;
+            }
+
+            currentReplyPostId = postId;
+            document.getElementById('currentBalanceInModal').textContent = users[currentUser].balance;
+            document.getElementById('replyModal').classList.add('active');
+        }
+
+        function closeReplyModal() {
+            document.getElementById('replyModal').classList.remove('active');
+            document.getElementById('replyForm').reset();
+            currentReplyPostId = null;
+        }
+
+        document.getElementById('replyForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const content = document.getElementById('replyContent').value.trim();
+
+            // 扣款
+            users[currentUser].balance -= 100;
+            
+            if (!users[currentUser].transactions) {
+                users[currentUser].transactions = [];
+            }
+            
+            users[currentUser].transactions.unshift({
+                type: 'expense',
+                amount: 100,
+                description: '回覆訊息',
+                time: new Date().toLocaleString('zh-TW')
+            });
+
+            localStorage.setItem('users', JSON.stringify(users));
+            updateUIForUser();
+
+            // 新增回覆
+            const post = posts.find(p => p.id === currentReplyPostId);
+            if (post) {
+                post.replies.push({
+                    author: currentUser,
+                    content: content,
+                    time: new Date().toLocaleString('zh-TW')
+                });
+                localStorage.setItem('posts', JSON.stringify(posts));
+                loadPosts();
+            }
+
+            closeReplyModal();
+            alert('回覆成功！已扣除 NT$ 100');
+        });
+
+        // === 載入貼文 ===
+        function loadPosts() {
+            const jobSearch = document.getElementById('searchJobs').value.toLowerCase().trim();
+            const talentSearch = document.getElementById('searchTalents').value.toLowerCase().trim();
+            
+            const jobPosts = posts.filter(p => p.type === 'job');
+            const talentPosts = posts.filter(p => p.type === 'talent');
+
+            // 過濾工作
+            let filteredJobs = jobPosts;
+            if (jobSearch) {
+                filteredJobs = jobPosts.filter(p => 
+                    p.title.toLowerCase().includes(jobSearch) || 
+                    p.content.toLowerCase().includes(jobSearch) ||
+                    p.category.toLowerCase().includes(jobSearch)
+                );
+            }
+
+            // 過濾人才
+            let filteredTalents = talentPosts;
+            if (talentSearch) {
+                filteredTalents = talentPosts.filter(p => 
+                    p.title.toLowerCase().includes(talentSearch) || 
+                    p.content.toLowerCase().includes(talentSearch) ||
+                    p.category.toLowerCase().includes(talentSearch)
+                );
+            }
+
+            renderPosts('jobsList', filteredJobs, 'job');
+            renderPosts('talentsList', filteredTalents, 'talent');
+        }
+
+        function renderPosts(elementId, postList, type) {
+            const element = document.getElementById(elementId);
+            
+            if (postList.length === 0) {
+                element.innerHTML = `<div class="no-items">目前沒有${type === 'job' ? '工作機會' : '人才'}，快來發布第一個吧！</div>`;
+                return;
+            }
+
+            element.innerHTML = postList.map(post => `
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <div class="card-title">${post.title}</div>
+                            <div class="card-author">👤 ${post.author}</div>
+                            <span class="card-category">${post.category}</span>
+                        </div>
+                        <span class="card-badge badge-${post.type}">${post.type === 'job' ? '徵才' : '求職'}</span>
+                    </div>
+                    <div class="card-content">${post.content}</div>
+                    <div class="card-footer">
+                        <div class="card-time">🕐 ${post.time}</div>
+                        <div class="replies-count">💬 ${post.replies.length} 則回覆</div>
+                        ${post.author !== currentUser ? 
+                            `<button class="btn btn-primary" onclick="openReplyModal(${post.id})">💰 NT$ 100 回覆</button>` : 
+                            ''}
+                    </div>
+                    ${post.replies.length > 0 ? `
+                        <div class="replies-section">
+                            <strong>回覆內容：</strong>
+                            ${post.replies.map(reply => `
+                                <div class="reply-item">
+                                    <div class="reply-author">${reply.author}</div>
+                                    <div class="reply-content">${reply.content}</div>
+                                    <div class="reply-time">${reply.time}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+    </script>
 </body>
 </html>
