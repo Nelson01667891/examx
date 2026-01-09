@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>雙向媒合平台 - 人才與工作配對</title>
+    <title>雙向媒合平台 - 專業版</title>
     <style>
         * {
             margin: 0;
@@ -86,15 +86,6 @@
             color: white;
         }
 
-        .btn-secondary:hover {
-            background: #38a169;
-        }
-
-        .btn-danger {
-            background: #f56565;
-            color: white;
-        }
-
         .btn-warning {
             background: #ed8936;
             color: white;
@@ -127,7 +118,7 @@
             padding: 30px;
             border-radius: 10px;
             width: 90%;
-            max-width: 500px;
+            max-width: 600px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             max-height: 90vh;
             overflow-y: auto;
@@ -164,13 +155,6 @@
             min-height: 100px;
         }
 
-        .form-group input:focus,
-        .form-group textarea:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
         .form-actions {
             display: flex;
             gap: 10px;
@@ -197,16 +181,11 @@
             font-weight: bold;
             color: #718096;
             transition: all 0.3s;
-            text-align: center;
         }
 
         .tab-btn.active {
             background: #667eea;
             color: white;
-            border-color: #667eea;
-        }
-
-        .tab-btn:hover {
             border-color: #667eea;
         }
 
@@ -232,28 +211,13 @@
             border-bottom: 2px solid #e2e8f0;
         }
 
-        .section-header h2 {
-            color: #2d3748;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .search-box {
-            margin-bottom: 20px;
-        }
-
         .search-input {
             width: 100%;
             padding: 12px 15px;
             border: 2px solid #e2e8f0;
             border-radius: 5px;
             font-size: 16px;
-        }
-
-        .search-input:focus {
-            outline: none;
-            border-color: #667eea;
+            margin-bottom: 20px;
         }
 
         .card {
@@ -274,7 +238,6 @@
         .card-header {
             display: flex;
             justify-content: space-between;
-            align-items: start;
             margin-bottom: 10px;
         }
 
@@ -332,16 +295,6 @@
             border-top: 1px solid #e2e8f0;
         }
 
-        .card-time {
-            color: #a0aec0;
-            font-size: 13px;
-        }
-
-        .replies-count {
-            color: #667eea;
-            font-weight: bold;
-        }
-
         .replies-section {
             margin-top: 15px;
             padding-top: 15px;
@@ -362,31 +315,27 @@
             margin-bottom: 5px;
         }
 
-        .reply-content {
-            color: #4a5568;
-            line-height: 1.5;
-        }
-
-        .reply-time {
-            color: #a0aec0;
-            font-size: 12px;
-            margin-top: 5px;
-        }
-
-        .no-items {
+        .hidden-replies {
+            background: #fff9e6;
+            border: 2px dashed #ffa940;
+            padding: 30px;
+            border-radius: 8px;
             text-align: center;
-            padding: 40px;
-            color: #a0aec0;
+            margin-top: 15px;
         }
 
-        .guest-notice {
-            background: #fef5e7;
-            border: 2px solid #f39c12;
+        .hidden-replies h3 {
+            color: #d46b08;
+            margin-bottom: 15px;
+        }
+
+        .info-notice {
+            background: #e6f7ff;
+            border: 2px solid #1890ff;
             padding: 15px;
             border-radius: 5px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             text-align: center;
-            color: #d68910;
         }
 
         .payment-notice {
@@ -396,11 +345,6 @@
             border-radius: 5px;
             margin-bottom: 15px;
             text-align: center;
-        }
-
-        .payment-notice strong {
-            color: #c53030;
-            font-size: 18px;
         }
 
         .recharge-options {
@@ -439,11 +383,6 @@
             margin-bottom: 10px;
         }
 
-        .recharge-label {
-            color: #718096;
-            font-size: 14px;
-        }
-
         .recharge-bonus {
             background: #48bb78;
             color: white;
@@ -454,28 +393,64 @@
             display: inline-block;
         }
 
-        .transaction-history {
-            margin-top: 20px;
+        .payment-methods {
+            display: grid;
+            gap: 15px;
+            margin: 20px 0;
         }
 
-        .transaction-item {
+        .payment-method {
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            padding: 12px;
-            border-bottom: 1px solid #e2e8f0;
+            gap: 15px;
         }
 
-        .transaction-type {
+        .payment-method:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .payment-method.selected {
+            border-color: #667eea;
+            background: #f0f4ff;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+
+        .payment-icon {
+            font-size: 40px;
+        }
+
+        .payment-info {
+            flex: 1;
+            text-align: left;
+        }
+
+        .payment-name {
             font-weight: bold;
+            font-size: 16px;
+            color: #2d3748;
+            margin-bottom: 5px;
         }
 
-        .transaction-type.income {
-            color: #48bb78;
+        .payment-desc {
+            color: #718096;
+            font-size: 14px;
         }
 
-        .transaction-type.expense {
-            color: #f56565;
+        .guest-notice {
+            background: #fef5e7;
+            border: 2px solid #f39c12;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #d68910;
         }
 
         @media (max-width: 1024px) {
@@ -489,12 +464,6 @@
                 flex-direction: column;
                 gap: 15px;
             }
-
-            .user-info {
-                width: 100%;
-                justify-content: space-between;
-            }
-
             .recharge-options {
                 grid-template-columns: 1fr;
             }
@@ -548,43 +517,69 @@
         <div id="rechargeModal" class="modal">
             <div class="modal-content">
                 <h2>💰 儲值中心</h2>
-                <p style="color: #718096; margin-bottom: 20px;">選擇儲值金額，享受更多服務</p>
                 
                 <div class="recharge-options">
                     <div class="recharge-card" onclick="selectRecharge(500)">
                         <div class="recharge-amount">$500</div>
-                        <div class="recharge-label">基礎方案</div>
+                        <div style="color: #718096;">基礎方案</div>
                     </div>
                     <div class="recharge-card" onclick="selectRecharge(1000)">
                         <div class="recharge-amount">$1000</div>
-                        <div class="recharge-label">熱門方案</div>
+                        <div style="color: #718096;">熱門方案</div>
                         <div class="recharge-bonus">送 $100</div>
                     </div>
                     <div class="recharge-card" onclick="selectRecharge(2000)">
                         <div class="recharge-amount">$2000</div>
-                        <div class="recharge-label">超值方案</div>
+                        <div style="color: #718096;">超值方案</div>
                         <div class="recharge-bonus">送 $300</div>
                     </div>
                     <div class="recharge-card" onclick="selectRecharge(5000)">
                         <div class="recharge-amount">$5000</div>
-                        <div class="recharge-label">尊榮方案</div>
+                        <div style="color: #718096;">尊榮方案</div>
                         <div class="recharge-bonus">送 $1000</div>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label>自訂金額</label>
+                    <label>自訂金額 (最低 NT$ 100)</label>
                     <input type="number" id="customAmount" placeholder="輸入自訂金額" min="100">
+                </div>
+
+                <h3 style="margin: 20px 0 15px 0; color: #2d3748;">選擇付款方式</h3>
+                <div class="payment-methods">
+                    <div class="payment-method" onclick="selectPaymentMethod('ecpay')">
+                        <div class="payment-icon">💳</div>
+                        <div class="payment-info">
+                            <div class="payment-name">綠界 ECPay</div>
+                            <div class="payment-desc">信用卡、ATM、超商代碼</div>
+                        </div>
+                    </div>
+                    <div class="payment-method" onclick="selectPaymentMethod('newebpay')">
+                        <div class="payment-icon">🏪</div>
+                        <div class="payment-info">
+                            <div class="payment-name">藍新 NewebPay</div>
+                            <div class="payment-desc">信用卡、WebATM、超商</div>
+                        </div>
+                    </div>
+                    <div class="payment-method" onclick="selectPaymentMethod('linepay')">
+                        <div class="payment-icon">💚</div>
+                        <div class="payment-info">
+                            <div class="payment-name">LINE Pay</div>
+                            <div class="payment-desc">LINE Pay 付款</div>
+                        </div>
+                    </div>
+                    <div class="payment-method" onclick="selectPaymentMethod('jkopay')">
+                        <div class="payment-icon">🅹</div>
+                        <div class="payment-info">
+                            <div class="payment-name">街口支付</div>
+                            <div class="payment-desc">街口帳戶付款</div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="form-actions">
                     <button type="button" class="btn btn-logout" onclick="closeRechargeModal()">取消</button>
-                    <button type="button" class="btn btn-secondary" onclick="confirmRecharge()">確認儲值</button>
-                </div>
-
-                <div class="transaction-history">
-                    <h3 style="margin-bottom: 15px; color: #2d3748;">交易記錄</h3>
-                    <div id="transactionList"></div>
+                    <button type="button" class="btn btn-secondary" onclick="confirmRecharge()">確認付款</button>
                 </div>
             </div>
         </div>
@@ -617,7 +612,7 @@
                     </div>
                     <div class="form-group">
                         <label>標題</label>
-                        <input type="text" id="postTitle" required placeholder="例：尋找資深前端工程師 或 5年經驗平面設計師找案">
+                        <input type="text" id="postTitle" required placeholder="例：尋找資深前端工程師">
                     </div>
                     <div class="form-group">
                         <label>詳細內容</label>
@@ -631,25 +626,43 @@
             </div>
         </div>
 
-        <!-- 回覆 Modal -->
-        <div id="replyModal" class="modal">
+        <!-- 留言 Modal -->
+        <div id="messageModal" class="modal">
             <div class="modal-content">
-                <h2>回覆內容</h2>
-                <div class="payment-notice">
-                    <strong>⚠️ 回覆需支付 NT$ 100</strong>
-                    <p style="margin-top: 10px; color: #718096;">此費用將從您的帳戶餘額扣除</p>
-                    <p style="margin-top: 5px; color: #718096;">目前餘額: NT$ <span id="currentBalanceInModal">0</span></p>
+                <h2>💬 留言給發布者</h2>
+                <div class="info-notice">
+                    <strong>✅ 留言完全免費</strong>
+                    <p style="margin-top: 10px; color: #0050b3;">發布者查看留言時需支付費用，您可以自由留言！</p>
                 </div>
-                <form id="replyForm">
+                <form id="messageForm">
                     <div class="form-group">
-                        <label>您的回覆</label>
-                        <textarea id="replyContent" required placeholder="輸入您的回覆內容..."></textarea>
+                        <label>您的暱稱 (選填)</label>
+                        <input type="text" id="messageNickname" placeholder="不填寫則顯示為訪客">
+                    </div>
+                    <div class="form-group">
+                        <label>留言內容</label>
+                        <textarea id="messageContent" required placeholder="輸入您的留言..."></textarea>
                     </div>
                     <div class="form-actions">
-                        <button type="button" class="btn btn-logout" onclick="closeReplyModal()">取消</button>
-                        <button type="submit" class="btn btn-primary">支付 NT$ 100 並回覆</button>
+                        <button type="button" class="btn btn-logout" onclick="closeMessageModal()">取消</button>
+                        <button type="submit" class="btn btn-primary">免費發送留言</button>
                     </div>
                 </form>
+            </div>
+        </div>
+
+        <!-- 查看留言 Modal -->
+        <div id="viewMessagesModal" class="modal">
+            <div class="modal-content">
+                <h2>📬 查看留言</h2>
+                <div id="unlockNotice" class="payment-notice">
+                    <strong>🔒 解鎖留言需支付 NT$ 50</strong>
+                    <p style="margin-top: 10px; color: #c53030;">一次性付費後可查看此貼文的所有留言</p>
+                    <p style="margin-top: 5px; color: #718096;">目前餘額: NT$ <span id="balanceInViewModal">0</span></p>
+                    <button class="btn btn-primary" style="margin-top: 15px;" onclick="unlockMessages()">支付 NT$ 50 解鎖</button>
+                </div>
+                <div id="messagesContent" style="display: none;"></div>
+                <button type="button" class="btn btn-logout" style="width: 100%; margin-top: 20px;" onclick="closeViewMessagesModal()">關閉</button>
             </div>
         </div>
 
@@ -657,13 +670,11 @@
         <div id="mainScreen">
             <div class="header">
                 <h1>🎯 雙向媒合平台</h1>
-                <div class="user-info" id="userInfoSection">
-                    <!-- 訪客模式 -->
+                <div class="user-info">
                     <div id="guestButtons">
                         <button class="btn btn-primary" onclick="showLoginModal()">登入</button>
                         <button class="btn btn-secondary" onclick="showRegisterModal()">註冊</button>
                     </div>
-                    <!-- 登入模式 -->
                     <div id="loggedInButtons" style="display: none;">
                         <div class="balance" onclick="openRechargeModal()" title="點擊儲值">
                             💰 餘額: NT$ <span id="userBalance">0</span>
@@ -674,36 +685,29 @@
                 </div>
             </div>
 
-            <!-- 訪客提示 -->
             <div id="guestNotice" class="guest-notice" style="display: none;">
                 <strong>👋 您目前是訪客模式</strong>
-                <p>可以瀏覽所有內容，但需要登入才能發布和回覆</p>
+                <p>可以瀏覽並免費留言，登入後可發布內容並查看留言</p>
                 <button class="btn btn-primary" onclick="showLoginModal()">立即登入</button>
                 <button class="btn btn-secondary" onclick="showRegisterModal()">免費註冊</button>
             </div>
 
             <div class="main-content">
-                <!-- 找人才區（雇主發布工作） -->
                 <div class="section">
                     <div class="section-header">
                         <h2>🏢 找人才（工作機會）</h2>
                         <button class="btn btn-warning" onclick="openPostModal('job')">+ 發布工作</button>
                     </div>
-                    <div class="search-box">
-                        <input type="text" class="search-input" id="searchJobs" placeholder="🔍 搜尋工作內容或領域...">
-                    </div>
+                    <input type="text" class="search-input" id="searchJobs" placeholder="🔍 搜尋工作...">
                     <div id="jobsList"></div>
                 </div>
 
-                <!-- 找工作區（人才發布專長） -->
                 <div class="section">
                     <div class="section-header">
                         <h2>👔 找工作（專業人才）</h2>
                         <button class="btn btn-secondary" onclick="openPostModal('talent')">+ 我要找工作</button>
                     </div>
-                    <div class="search-box">
-                        <input type="text" class="search-input" id="searchTalents" placeholder="🔍 搜尋人才專長或領域...">
-                    </div>
+                    <input type="text" class="search-input" id="searchTalents" placeholder="🔍 搜尋人才...">
                     <div id="talentsList"></div>
                 </div>
             </div>
@@ -711,29 +715,21 @@
     </div>
 
     <script>
-        // 資料儲存
         let currentUser = null;
         let users = JSON.parse(localStorage.getItem('users')) || {};
         let posts = JSON.parse(localStorage.getItem('posts')) || [];
-        let currentReplyPostId = null;
         let selectedRechargeAmount = 0;
+        let selectedPaymentMethod = '';
+        let currentMessagePostId = null;
+        let currentViewPostId = null;
 
-        // 初始化
         window.onload = function() {
             loadPosts();
             updateUIForUser();
-            
-            // 搜尋功能
-            document.getElementById('searchJobs').addEventListener('input', function() {
-                loadPosts();
-            });
-            
-            document.getElementById('searchTalents').addEventListener('input', function() {
-                loadPosts();
-            });
+            document.getElementById('searchJobs').addEventListener('input', loadPosts);
+            document.getElementById('searchTalents').addEventListener('input', loadPosts);
         };
 
-        // 更新UI顯示
         function updateUIForUser() {
             const guestButtons = document.getElementById('guestButtons');
             const loggedInButtons = document.getElementById('loggedInButtons');
@@ -752,7 +748,7 @@
             }
         }
 
-        // === 登入/註冊系統 ===
+        // === 登入/註冊 ===
         function showLoginModal() {
             switchAuthTab('login');
             document.getElementById('loginModal').classList.add('active');
@@ -785,7 +781,6 @@
             }
         }
 
-        // 註冊
         document.getElementById('registerForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const username = document.getElementById('registerUsername').value.trim();
@@ -805,33 +800,22 @@
             users[username] = {
                 password: password,
                 balance: 500,
-                transactions: [{
-                    type: 'income',
-                    amount: 500,
-                    description: '註冊贈送',
-                    time: new Date().toLocaleString('zh-TW')
-                }]
+                unlockedPosts: []
             };
 
             localStorage.setItem('users', JSON.stringify(users));
-            alert('註冊成功！已贈送 NT$ 500，請登入');
+            alert('註冊成功！已贈送 NT$ 500');
             switchAuthTab('login');
             this.reset();
         });
 
-        // 登入
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const username = document.getElementById('loginUsername').value.trim();
             const password = document.getElementById('loginPassword').value;
 
-            if (!users[username]) {
-                alert('帳號不存在！');
-                return;
-            }
-
-            if (users[username].password !== password) {
-                alert('密碼錯誤！');
+            if (!users[username] || users[username].password !== password) {
+                alert('帳號或密碼錯誤！');
                 return;
             }
 
@@ -843,7 +827,6 @@
             alert('登入成功！');
         });
 
-        // 登出
         function logout() {
             currentUser = null;
             updateUIForUser();
@@ -857,90 +840,70 @@
                 showLoginModal();
                 return;
             }
-            loadTransactions();
             document.getElementById('rechargeModal').classList.add('active');
         }
 
         function closeRechargeModal() {
             document.getElementById('rechargeModal').classList.remove('active');
-            document.getElementById('customAmount').value = '';
             selectedRechargeAmount = 0;
-            document.querySelectorAll('.recharge-card').forEach(card => {
-                card.classList.remove('selected');
-            });
+            selectedPaymentMethod = '';
+            document.getElementById('customAmount').value = '';
+            document.querySelectorAll('.recharge-card').forEach(c => c.classList.remove('selected'));
+            document.querySelectorAll('.payment-method').forEach(c => c.classList.remove('selected'));
         }
 
         function selectRecharge(amount) {
             selectedRechargeAmount = amount;
             document.getElementById('customAmount').value = '';
-            document.querySelectorAll('.recharge-card').forEach(card => {
-                card.classList.remove('selected');
-            });
+            document.querySelectorAll('.recharge-card').forEach(c => c.classList.remove('selected'));
             event.target.closest('.recharge-card').classList.add('selected');
+        }
+
+        function selectPaymentMethod(method) {
+            selectedPaymentMethod = method;
+            document.querySelectorAll('.payment-method').forEach(c => c.classList.remove('selected'));
+            event.target.closest('.payment-method').classList.add('selected');
         }
 
         function confirmRecharge() {
             let amount = selectedRechargeAmount;
             const customAmount = parseInt(document.getElementById('customAmount').value);
             
-            if (customAmount > 0) {
-                amount = customAmount;
-            }
-
+            if (customAmount > 0) amount = customAmount;
             if (amount < 100) {
                 alert('儲值金額不得低於 NT$ 100');
                 return;
             }
+            if (!selectedPaymentMethod) {
+                alert('請選擇付款方式');
+                return;
+            }
 
-            // 計算贈送金額
             let bonus = 0;
             if (amount >= 5000) bonus = 1000;
             else if (amount >= 2000) bonus = 300;
             else if (amount >= 1000) bonus = 100;
 
             const total = amount + bonus;
+            const methodNames = {
+                ecpay: '綠界ECPay',
+                newebpay: '藍新NewebPay',
+                linepay: 'LINE Pay',
+                jkopay: '街口支付'
+            };
 
-            if (confirm(`確認儲值 NT$ ${amount}${bonus > 0 ? ` + 贈送 NT$ ${bonus}` : ''} = NT$ ${total}？`)) {
-                users[currentUser].balance += total;
+            if (confirm(`確認使用 ${methodNames[selectedPaymentMethod]} 儲值 NT$ ${amount}${bonus > 0 ? ` (送$${bonus})` : ''} = NT$ ${total}？\n\n※ 此為示範系統，實際金流需串接第三方支付`)) {
+                // 模擬金流處理
+                alert('正在跳轉至付款頁面...\n\n※ 實際系統會跳轉至 ' + methodNames[selectedPaymentMethod]);
                 
-                if (!users[currentUser].transactions) {
-                    users[currentUser].transactions = [];
-                }
-                
-                users[currentUser].transactions.unshift({
-                    type: 'income',
-                    amount: total,
-                    description: `儲值 $${amount}${bonus > 0 ? ` (含贈送 $${bonus})` : ''}`,
-                    time: new Date().toLocaleString('zh-TW')
-                });
-
-                localStorage.setItem('users', JSON.stringify(users));
-                updateUIForUser();
-                loadTransactions();
-                alert(`儲值成功！已增加 NT$ ${total}`);
+                setTimeout(() => {
+                    users[currentUser].balance += total;
+                    localStorage.setItem('users', JSON.stringify(users));
+                    updateUIForUser();
+                    alert(`付款成功！已增加 NT$ ${total}`);
+                    closeRechargeModal();
+                }, 1000);
             }
-        }
-
-        function loadTransactions() {
-            const list = document.getElementById('transactionList');
-            const transactions = users[currentUser].transactions || [];
-            
-            if (transactions.length === 0) {
-                list.innerHTML = '<div style="text-align: center; color: #a0aec0; padding: 20px;">暫無交易記錄</div>';
-                return;
-            }
-
-            list.innerHTML = transactions.slice(0, 10).map(t => `
-                <div class="transaction-item">
-                    <div>
-                        <div class="transaction-type ${t.type}">${t.description}</div>
-                        <div style="font-size: 12px; color: #a0aec0;">${t.time}</div>
-                    </div>
-                    <div class="transaction-type ${t.type}">
-                        ${t.type === 'income' ? '+' : '-'} NT$ ${t.amount}
-                    </div>
-                </div>
-            `).join('');
         }
 
         // === 發布系統 ===
@@ -950,7 +913,6 @@
                 showLoginModal();
                 return;
             }
-            
             document.getElementById('postType').value = type;
             document.getElementById('postModalTitle').textContent = type === 'job' ? '🏢 發布工作機會' : '👔 發布專業人才';
             document.getElementById('postModal').classList.add('active');
@@ -963,20 +925,15 @@
 
         document.getElementById('postForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            const type = document.getElementById('postType').value;
-            const category = document.getElementById('postCategory').value;
-            const title = document.getElementById('postTitle').value.trim();
-            const content = document.getElementById('postContent').value.trim();
-
             const newPost = {
                 id: Date.now(),
-                type: type,
-                category: category,
-                title: title,
-                content: content,
+                type: document.getElementById('postType').value,
+                category: document.getElementById('postCategory').value,
+                title: document.getElementById('postTitle').value.trim(),
+                content: document.getElementById('postContent').value.trim(),
                 author: currentUser,
                 time: new Date().toLocaleString('zh-TW'),
-                replies: []
+                messages: []
             };
 
             posts.unshift(newPost);
@@ -986,56 +943,27 @@
             alert('發布成功！');
         });
 
-        // === 回覆系統 ===
-        function openReplyModal(postId) {
-            if (!currentUser) {
-                alert('請先登入才能回覆！');
-                showLoginModal();
-                return;
-            }
-
-            if (users[currentUser].balance < 100) {
-                alert('餘額不足！回覆需要 NT$ 100\n\n請點擊右上角餘額進行儲值');
-                return;
-            }
-
-            currentReplyPostId = postId;
-            document.getElementById('currentBalanceInModal').textContent = users[currentUser].balance;
-            document.getElementById('replyModal').classList.add('active');
+        // === 留言系統 ===
+        function openMessageModal(postId) {
+            currentMessagePostId = postId;
+            document.getElementById('messageModal').classList.add('active');
         }
 
-        function closeReplyModal() {
-            document.getElementById('replyModal').classList.remove('active');
-            document.getElementById('replyForm').reset();
-            currentReplyPostId = null;
+        function closeMessageModal() {
+            document.getElementById('messageModal').classList.remove('active');
+            document.getElementById('messageForm').reset();
+            currentMessagePostId = null;
         }
 
-        document.getElementById('replyForm').addEventListener('submit', function(e) {
+        document.getElementById('messageForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            const content = document.getElementById('replyContent').value.trim();
+            const nickname = document.getElementById('messageNickname').value.trim() || '訪客';
+            const content = document.getElementById('messageContent').value.trim();
 
-            // 扣款
-            users[currentUser].balance -= 100;
-            
-            if (!users[currentUser].transactions) {
-                users[currentUser].transactions = [];
-            }
-            
-            users[currentUser].transactions.unshift({
-                type: 'expense',
-                amount: 100,
-                description: '回覆訊息',
-                time: new Date().toLocaleString('zh-TW')
-            });
-
-            localStorage.setItem('users', JSON.stringify(users));
-            updateUIForUser();
-
-            // 新增回覆
-            const post = posts.find(p => p.id === currentReplyPostId);
+            const post = posts.find(p => p.id === currentMessagePostId);
             if (post) {
-                post.replies.push({
-                    author: currentUser,
+                post.messages.push({
+                    nickname: nickname,
                     content: content,
                     time: new Date().toLocaleString('zh-TW')
                 });
@@ -1043,82 +971,139 @@
                 loadPosts();
             }
 
-            closeReplyModal();
-            alert('回覆成功！已扣除 NT$ 100');
+            closeMessageModal();
+            alert('留言發送成功！');
         });
+
+        // === 查看留言系統 ===
+        function openViewMessagesModal(postId) {
+            if (!currentUser) {
+                alert('請先登入才能查看留言！');
+                showLoginModal();
+                return;
+            }
+
+            currentViewPostId = postId;
+            const post = posts.find(p => p.id === postId);
+            const isUnlocked = users[currentUser].unlockedPosts.includes(postId);
+
+            document.getElementById('balanceInViewModal').textContent = users[currentUser].balance;
+
+            if (isUnlocked) {
+                showUnlockedMessages(post);
+            } else {
+                document.getElementById('unlockNotice').style.display = 'block';
+                document.getElementById('messagesContent').style.display = 'none';
+            }
+
+            document.getElementById('viewMessagesModal').classList.add('active');
+        }
+
+        function closeViewMessagesModal() {
+            document.getElementById('viewMessagesModal').classList.remove('active');
+            currentViewPostId = null;
+        }
+
+        function unlockMessages() {
+            if (users[currentUser].balance < 50) {
+                alert('餘額不足！需要 NT$ 50\n請點擊右上角儲值');
+                return;
+            }
+
+            if (confirm('確認支付 NT$ 50 解鎖此貼文的所有留言？')) {
+                users[currentUser].balance -= 50;
+                users[currentUser].unlockedPosts.push(currentViewPostId);
+                localStorage.setItem('users', JSON.stringify(users));
+                updateUIForUser();
+
+                const post = posts.find(p => p.id === currentViewPostId);
+                showUnlockedMessages(post);
+                alert('解鎖成功！已扣除 NT$ 50');
+            }
+        }
+
+        function showUnlockedMessages(post) {
+            document.getElementById('unlockNotice').style.display = 'none';
+            const content = document.getElementById('messagesContent');
+            content.style.display = 'block';
+
+            if (post.messages.length === 0) {
+                content.innerHTML = '<div style="text-align: center; padding: 30px; color: #a0aec0;">目前沒有留言</div>';
+            } else {
+                content.innerHTML = '<h3 style="margin-bottom: 15px;">💬 所有留言</h3>' + 
+                    post.messages.map(m => `
+                        <div class="reply-item">
+                            <div class="reply-author">${m.nickname}</div>
+                            <div style="color: #4a5568; line-height: 1.5;">${m.content}</div>
+                            <div style="color: #a0aec0; font-size: 12px; margin-top: 5px;">${m.time}</div>
+                        </div>
+                    `).join('');
+            }
+        }
 
         // === 載入貼文 ===
         function loadPosts() {
-            const jobSearch = document.getElementById('searchJobs').value.toLowerCase().trim();
-            const talentSearch = document.getElementById('searchTalents').value.toLowerCase().trim();
-            
-            const jobPosts = posts.filter(p => p.type === 'job');
-            const talentPosts = posts.filter(p => p.type === 'talent');
+            const jobSearch = document.getElementById('searchJobs').value.toLowerCase();
+            const talentSearch = document.getElementById('searchTalents').value.toLowerCase();
 
-            // 過濾工作
-            let filteredJobs = jobPosts;
+            let jobPosts = posts.filter(p => p.type === 'job');
+            let talentPosts = posts.filter(p => p.type === 'talent');
+
             if (jobSearch) {
-                filteredJobs = jobPosts.filter(p => 
+                jobPosts = jobPosts.filter(p => 
                     p.title.toLowerCase().includes(jobSearch) || 
                     p.content.toLowerCase().includes(jobSearch) ||
                     p.category.toLowerCase().includes(jobSearch)
                 );
             }
 
-            // 過濾人才
-            let filteredTalents = talentPosts;
             if (talentSearch) {
-                filteredTalents = talentPosts.filter(p => 
+                talentPosts = talentPosts.filter(p => 
                     p.title.toLowerCase().includes(talentSearch) || 
                     p.content.toLowerCase().includes(talentSearch) ||
                     p.category.toLowerCase().includes(talentSearch)
                 );
             }
 
-            renderPosts('jobsList', filteredJobs, 'job');
-            renderPosts('talentsList', filteredTalents, 'talent');
+            renderPosts('jobsList', jobPosts, 'job');
+            renderPosts('talentsList', talentPosts, 'talent');
         }
 
         function renderPosts(elementId, postList, type) {
             const element = document.getElementById(elementId);
             
             if (postList.length === 0) {
-                element.innerHTML = `<div class="no-items">目前沒有${type === 'job' ? '工作機會' : '人才'}，快來發布第一個吧！</div>`;
+                element.innerHTML = `<div style="text-align: center; padding: 40px; color: #a0aec0;">目前沒有${type === 'job' ? '工作機會' : '人才'}</div>`;
                 return;
             }
 
-            element.innerHTML = postList.map(post => `
-                <div class="card">
-                    <div class="card-header">
-                        <div>
-                            <div class="card-title">${post.title}</div>
-                            <div class="card-author">👤 ${post.author}</div>
-                            <span class="card-category">${post.category}</span>
+            element.innerHTML = postList.map(post => {
+                const isAuthor = currentUser && post.author === currentUser;
+                const isUnlocked = currentUser && users[currentUser].unlockedPosts.includes(post.id);
+                const messageCount = post.messages.length;
+
+                return `
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">${post.title}</div>
+                                <div class="card-author">👤 ${post.author}</div>
+                                <span class="card-category">${post.category}</span>
+                            </div>
+                            <span class="card-badge badge-${post.type}">${post.type === 'job' ? '徵才' : '求職'}</span>
                         </div>
-                        <span class="card-badge badge-${post.type}">${post.type === 'job' ? '徵才' : '求職'}</span>
-                    </div>
-                    <div class="card-content">${post.content}</div>
-                    <div class="card-footer">
-                        <div class="card-time">🕐 ${post.time}</div>
-                        <div class="replies-count">💬 ${post.replies.length} 則回覆</div>
-                        ${post.author !== currentUser ? 
-                            `<button class="btn btn-primary" onclick="openReplyModal(${post.id})">💰 NT$ 100 回覆</button>` : 
-                            ''}
-                    </div>
-                    ${post.replies.length > 0 ? `
-                        <div class="replies-section">
-                            <strong>回覆內容：</strong>
-                            ${post.replies.map(reply => `
-                                <div class="reply-item">
-                                    <div class="reply-author">${reply.author}</div>
-                                    <div class="reply-content">${reply.content}</div>
-                                    <div class="reply-time">${reply.time}</div>
-                                </div>
-                            `).join('')}
+                        <div class="card-content">${post.content}</div>
+                        <div class="card-footer">
+                            <div style="color: #a0aec0; font-size: 13px;">🕐 ${post.time}</div>
+                            <div style="color: #667eea; font-weight: bold;">💬 ${messageCount} 則留言</div>
+                            ${!isAuthor ? 
+                                `<button class="btn btn-primary" onclick="openMessageModal(${post.id})">免費留言</button>` : 
+                                `<button class="btn btn-warning" onclick="openViewMessagesModal(${post.id})">${isUnlocked ? '查看留言' : '解鎖留言 ($50)'}</button>`
+                            }
                         </div>
-                    ` : ''}
-                </div>
-            `).join('');
+                    </div>
+                `;
+            }).join('');
         }
     </script>
 </body>
