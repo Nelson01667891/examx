@@ -2,1108 +2,678 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>雙向媒合平台 - 專業版</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>費西亞的遺產 - 昇華轉盤</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            font-family: 'Microsoft JhengHei', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Microsoft JhengHei', 'PingFang TC', Arial, sans-serif;
+            background: #0a0e27;
             min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             padding: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(168, 85, 247, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(244, 63, 94, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(59, 130, 246, 0.3) 0%, transparent 50%);
+            animation: bgPulse 10s ease-in-out infinite;
+        }
+
+        @keyframes bgPulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
         }
 
         .container {
-            max-width: 1400px;
-            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            width: 100%;
+            max-width: 550px;
         }
 
-        .header {
-            background: white;
-            padding: 20px 30px;
-            border-radius: 10px;
+        h1 {
+            color: #fff;
+            margin-bottom: 10px;
+            font-size: clamp(26px, 6vw, 36px);
+            text-shadow: 0 0 30px rgba(168, 85, 247, 1);
+            letter-spacing: 3px;
+            animation: titleGlow 3s ease-in-out infinite;
+            background: linear-gradient(135deg, #a855f7 0%, #f43f5e 50%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        @keyframes titleGlow {
+            0%, 100% { text-shadow: 0 0 30px rgba(168, 85, 247, 1); }
+            50% { text-shadow: 0 0 50px rgba(244, 63, 94, 1); }
+        }
+
+        .subtitle {
+            color: #a5b4fc;
+            font-size: clamp(12px, 3vw, 14px);
             margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            opacity: 0.8;
+            letter-spacing: 1px;
         }
 
-        .header h1 {
-            color: #667eea;
-            font-size: 28px;
+        .stage-indicator {
+            margin-bottom: 25px;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.3) 0%, rgba(244, 63, 94, 0.3) 100%);
+            border: 2px solid rgba(168, 85, 247, 0.6);
+            border-radius: 50px;
+            backdrop-filter: blur(15px);
+            display: inline-block;
+            box-shadow: 0 0 30px rgba(168, 85, 247, 0.5);
+            animation: stagePulse 2s ease-in-out infinite;
         }
 
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
+        @keyframes stagePulse {
+            0%, 100% { box-shadow: 0 0 30px rgba(168, 85, 247, 0.5); }
+            50% { box-shadow: 0 0 50px rgba(244, 63, 94, 0.8); }
         }
 
-        .balance {
-            background: #f0f4ff;
-            padding: 8px 15px;
-            border-radius: 20px;
+        .stage-indicator span {
+            color: #fff;
+            font-size: clamp(14px, 3.5vw, 18px);
             font-weight: bold;
-            color: #667eea;
-            cursor: pointer;
-            transition: all 0.3s;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
         }
 
-        .balance:hover {
-            background: #667eea;
-            color: white;
-            transform: scale(1.05);
+        .wheel-container {
+            position: relative;
+            width: 100%;
+            max-width: 450px;
+            margin: 0 auto 30px;
+            aspect-ratio: 1;
         }
 
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: bold;
-            transition: all 0.3s;
-        }
-
-        .btn-primary {
-            background: #667eea;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #5568d3;
-            transform: translateY(-2px);
-        }
-
-        .btn-secondary {
-            background: #48bb78;
-            color: white;
-        }
-
-        .btn-warning {
-            background: #ed8936;
-            color: white;
-        }
-
-        .btn-logout {
-            background: #e2e8f0;
-            color: #2d3748;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
+        #wheelCanvas {
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.5);
+            filter: drop-shadow(0 0 40px rgba(168, 85, 247, 0.8));
+            transition: transform 5s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+        }
+
+        .pointer {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 45px solid #f43f5e;
+            z-index: 10;
+            filter: drop-shadow(0 0 15px rgba(244, 63, 94, 1));
+            animation: pointerPulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pointerPulse {
+            0%, 100% { 
+                transform: translateX(-50%) scale(1);
+                filter: drop-shadow(0 0 15px rgba(244, 63, 94, 1));
+            }
+            50% { 
+                transform: translateX(-50%) scale(1.15);
+                filter: drop-shadow(0 0 25px rgba(244, 63, 94, 1));
+            }
+        }
+
+        .center-circle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: clamp(60px, 16vw, 80px);
+            height: clamp(60px, 16vw, 80px);
+            background: linear-gradient(135deg, #a855f7 0%, #f43f5e 50%, #3b82f6 100%);
+            border-radius: 50%;
+            border: 4px solid rgba(255, 255, 255, 0.5);
+            z-index: 5;
+            display: flex;
+            align-items: center;
             justify-content: center;
-            align-items: center;
-            z-index: 1000;
+            font-weight: bold;
+            color: white;
+            font-size: clamp(16px, 4vw, 22px);
+            box-shadow: 
+                0 0 30px rgba(168, 85, 247, 0.8),
+                inset 0 0 30px rgba(255, 255, 255, 0.2);
+            animation: centerGlow 2.5s ease-in-out infinite;
+            cursor: pointer;
+            transition: transform 0.2s;
         }
 
-        .modal.active {
-            display: flex;
+        .center-circle:hover {
+            transform: translate(-50%, -50%) scale(1.1);
         }
 
-        .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            width: 90%;
-            max-width: 600px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            max-height: 90vh;
-            overflow-y: auto;
+        @keyframes centerGlow {
+            0%, 100% { 
+                box-shadow: 0 0 30px rgba(168, 85, 247, 0.8), inset 0 0 30px rgba(255, 255, 255, 0.2);
+            }
+            50% { 
+                box-shadow: 0 0 60px rgba(244, 63, 94, 1), inset 0 0 30px rgba(255, 255, 255, 0.3);
+            }
         }
 
-        .modal-content h2 {
-            margin-bottom: 20px;
-            color: #2d3748;
+        button {
+            background: linear-gradient(135deg, #a855f7 0%, #f43f5e 50%, #3b82f6 100%);
+            color: white;
+            border: 3px solid rgba(255, 255, 255, 0.4);
+            padding: 18px 60px;
+            font-size: clamp(18px, 4.5vw, 22px);
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 
+                0 8px 30px rgba(168, 85, 247, 0.6),
+                inset 0 0 30px rgba(255, 255, 255, 0.15);
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 2px;
         }
 
-        .form-group {
-            margin-bottom: 15px;
+        button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
         }
 
-        .form-group label {
+        button:active::before {
+            width: 400px;
+            height: 400px;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 12px 40px rgba(244, 63, 94, 0.8),
+                inset 0 0 30px rgba(255, 255, 255, 0.25);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result {
+            margin-top: 35px;
+            padding: 25px 35px;
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.3) 0%, rgba(244, 63, 94, 0.3) 100%);
+            border: 3px solid rgba(168, 85, 247, 0.7);
+            border-radius: 25px;
+            backdrop-filter: blur(15px);
+            color: white;
+            font-size: clamp(18px, 4.5vw, 24px);
+            font-weight: bold;
+            display: none;
+            animation: resultSlideIn 0.6s ease-out;
+            box-shadow: 0 0 40px rgba(168, 85, 247, 0.6);
+        }
+
+        .result.show {
             display: block;
-            margin-bottom: 5px;
-            color: #4a5568;
-            font-weight: bold;
         }
 
-        .form-group input,
-        .form-group textarea,
-        .form-group select {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #e2e8f0;
-            border-radius: 5px;
-            font-size: 14px;
+        @keyframes resultSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-40px) scale(0.7);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
         }
 
-        .form-group textarea {
-            resize: vertical;
-            min-height: 100px;
+        .result strong {
+            color: #fbbf24;
+            text-shadow: 0 0 15px rgba(251, 191, 36, 1);
+            font-size: 1.2em;
+            display: block;
+            margin: 10px 0;
         }
 
-        .form-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .form-actions button {
-            flex: 1;
-        }
-
-        .tab-buttons {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .tab-btn {
-            flex: 1;
-            padding: 15px;
-            border: 2px solid #e2e8f0;
-            background: white;
-            cursor: pointer;
-            border-radius: 5px;
-            font-weight: bold;
-            color: #718096;
-            transition: all 0.3s;
-        }
-
-        .tab-btn.active {
-            background: #667eea;
-            color: white;
-            border-color: #667eea;
-        }
-
-        .main-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        .section {
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #e2e8f0;
-        }
-
-        .search-input {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e2e8f0;
-            border-radius: 5px;
-            font-size: 16px;
-            margin-bottom: 20px;
-        }
-
-        .card {
-            background: #f7fafc;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 15px;
-            transition: all 0.3s;
-        }
-
-        .card:hover {
-            border-color: #667eea;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-
-        .card-title {
-            font-size: 18px;
-            font-weight: bold;
-            color: #2d3748;
-        }
-
-        .card-badge {
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-
-        .badge-job {
-            background: #bee3f8;
-            color: #2c5282;
-        }
-
-        .badge-talent {
-            background: #c6f6d5;
-            color: #22543d;
-        }
-
-        .card-author {
-            color: #718096;
-            font-size: 14px;
-            margin-top: 5px;
-        }
-
-        .card-category {
+        .result .tier {
             display: inline-block;
-            background: #edf2f7;
-            color: #4a5568;
-            padding: 4px 10px;
-            border-radius: 5px;
-            font-size: 13px;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8em;
             margin-top: 10px;
+            animation: tierGlow 2s ease-in-out infinite;
         }
 
-        .card-content {
-            color: #4a5568;
-            line-height: 1.6;
-            margin: 15px 0;
+        .tier.t0 {
+            background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.8);
         }
 
-        .card-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid #e2e8f0;
+        .tier.t1 {
+            background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.8);
         }
 
-        .replies-section {
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 2px solid #e2e8f0;
+        .tier.t2 {
+            background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.8);
         }
 
-        .reply-item {
-            background: white;
-            padding: 15px;
-            border-left: 3px solid #667eea;
-            margin-bottom: 10px;
-            border-radius: 5px;
+        @keyframes tierGlow {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.9; }
         }
 
-        .reply-author {
-            font-weight: bold;
-            color: #667eea;
-            margin-bottom: 5px;
+        .particle {
+            position: fixed;
+            width: 5px;
+            height: 5px;
+            background: rgba(168, 85, 247, 0.8);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: particleFloat 4s ease-in-out infinite;
         }
 
-        .hidden-replies {
-            background: #fff9e6;
-            border: 2px dashed #ffa940;
-            padding: 30px;
-            border-radius: 8px;
-            text-align: center;
-            margin-top: 15px;
+        @keyframes particleFloat {
+            0%, 100% { transform: translateY(0) translateX(0); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateY(-120vh) translateX(60px); opacity: 0; }
         }
 
-        .hidden-replies h3 {
-            color: #d46b08;
-            margin-bottom: 15px;
-        }
-
-        .info-notice {
-            background: #e6f7ff;
-            border: 2px solid #1890ff;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-
-        .payment-notice {
-            background: #fff5f5;
-            border: 2px solid #fc8181;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-
-        .recharge-options {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin: 20px 0;
-        }
-
-        .recharge-card {
-            background: #f7fafc;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .recharge-card:hover {
-            border-color: #667eea;
-            background: #f0f4ff;
-            transform: scale(1.05);
-        }
-
-        .recharge-card.selected {
-            border-color: #667eea;
-            background: #f0f4ff;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
-        }
-
-        .recharge-amount {
-            font-size: 32px;
-            font-weight: bold;
-            color: #667eea;
-            margin-bottom: 10px;
-        }
-
-        .recharge-bonus {
-            background: #48bb78;
-            color: white;
-            padding: 4px 8px;
-            border-radius: 5px;
-            font-size: 12px;
-            margin-top: 8px;
-            display: inline-block;
-        }
-
-        .payment-methods {
-            display: grid;
-            gap: 15px;
-            margin: 20px 0;
-        }
-
-        .payment-method {
-            background: #f7fafc;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 20px;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .payment-method:hover {
-            border-color: #667eea;
-            background: #f0f4ff;
-        }
-
-        .payment-method.selected {
-            border-color: #667eea;
-            background: #f0f4ff;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
-        }
-
-        .payment-icon {
-            font-size: 40px;
-        }
-
-        .payment-info {
-            flex: 1;
-            text-align: left;
-        }
-
-        .payment-name {
-            font-weight: bold;
-            font-size: 16px;
-            color: #2d3748;
-            margin-bottom: 5px;
-        }
-
-        .payment-desc {
-            color: #718096;
-            font-size: 14px;
-        }
-
-        .guest-notice {
-            background: #fef5e7;
-            border: 2px solid #f39c12;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            text-align: center;
-            color: #d68910;
-        }
-
-        @media (max-width: 1024px) {
-            .main-content {
-                grid-template-columns: 1fr;
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
             }
-        }
-
-        @media (max-width: 768px) {
-            .header {
-                flex-direction: column;
-                gap: 15px;
+            
+            h1 {
+                margin-bottom: 8px;
             }
-            .recharge-options {
-                grid-template-columns: 1fr;
+            
+            .subtitle {
+                margin-bottom: 15px;
+            }
+            
+            .stage-indicator {
+                margin-bottom: 20px;
+                padding: 12px 24px;
+            }
+            
+            .wheel-container {
+                margin-bottom: 25px;
             }
         }
     </style>
 </head>
 <body>
+    <div id="particles"></div>
+
     <div class="container">
-        <!-- 登入/註冊 Modal -->
-        <div id="loginModal" class="modal">
-            <div class="modal-content">
-                <h2>🎯 雙向媒合平台</h2>
-                <div class="tab-buttons">
-                    <button class="tab-btn active" onclick="switchAuthTab('login')">登入</button>
-                    <button class="tab-btn" onclick="switchAuthTab('register')">註冊</button>
-                </div>
-                
-                <form id="loginForm">
-                    <div class="form-group">
-                        <label>帳號</label>
-                        <input type="text" id="loginUsername" required>
-                    </div>
-                    <div class="form-group">
-                        <label>密碼</label>
-                        <input type="password" id="loginPassword" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary" style="width: 100%;">登入</button>
-                    <button type="button" class="btn btn-logout" style="width: 100%; margin-top: 10px;" onclick="closeLoginModal()">取消</button>
-                </form>
-
-                <form id="registerForm" style="display: none;">
-                    <div class="form-group">
-                        <label>帳號</label>
-                        <input type="text" id="registerUsername" required>
-                    </div>
-                    <div class="form-group">
-                        <label>密碼</label>
-                        <input type="password" id="registerPassword" required>
-                    </div>
-                    <div class="form-group">
-                        <label>確認密碼</label>
-                        <input type="password" id="registerPasswordConfirm" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary" style="width: 100%;">註冊 (送 NT$ 500)</button>
-                    <button type="button" class="btn btn-logout" style="width: 100%; margin-top: 10px;" onclick="closeLoginModal()">取消</button>
-                </form>
-            </div>
+        <h1>⚔️ 費西亞的遺產</h1>
+        <div class="subtitle">Legacy of Phrecia - 昇華轉盤</div>
+        <div class="stage-indicator" id="stageIndicator">
+            <span>第一階段：選擇基礎職業</span>
         </div>
-
-        <!-- 儲值 Modal -->
-        <div id="rechargeModal" class="modal">
-            <div class="modal-content">
-                <h2>💰 儲值中心</h2>
-                
-                <div class="recharge-options">
-                    <div class="recharge-card" onclick="selectRecharge(500)">
-                        <div class="recharge-amount">$500</div>
-                        <div style="color: #718096;">基礎方案</div>
-                    </div>
-                    <div class="recharge-card" onclick="selectRecharge(1000)">
-                        <div class="recharge-amount">$1000</div>
-                        <div style="color: #718096;">熱門方案</div>
-                        <div class="recharge-bonus">送 $100</div>
-                    </div>
-                    <div class="recharge-card" onclick="selectRecharge(2000)">
-                        <div class="recharge-amount">$2000</div>
-                        <div style="color: #718096;">超值方案</div>
-                        <div class="recharge-bonus">送 $300</div>
-                    </div>
-                    <div class="recharge-card" onclick="selectRecharge(5000)">
-                        <div class="recharge-amount">$5000</div>
-                        <div style="color: #718096;">尊榮方案</div>
-                        <div class="recharge-bonus">送 $1000</div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>自訂金額 (最低 NT$ 100)</label>
-                    <input type="number" id="customAmount" placeholder="輸入自訂金額" min="100">
-                </div>
-
-                <h3 style="margin: 20px 0 15px 0; color: #2d3748;">選擇付款方式</h3>
-                <div class="payment-methods">
-                    <div class="payment-method" onclick="selectPaymentMethod('ecpay')">
-                        <div class="payment-icon">💳</div>
-                        <div class="payment-info">
-                            <div class="payment-name">綠界 ECPay</div>
-                            <div class="payment-desc">信用卡、ATM、超商代碼</div>
-                        </div>
-                    </div>
-                    <div class="payment-method" onclick="selectPaymentMethod('newebpay')">
-                        <div class="payment-icon">🏪</div>
-                        <div class="payment-info">
-                            <div class="payment-name">藍新 NewebPay</div>
-                            <div class="payment-desc">信用卡、WebATM、超商</div>
-                        </div>
-                    </div>
-                    <div class="payment-method" onclick="selectPaymentMethod('linepay')">
-                        <div class="payment-icon">💚</div>
-                        <div class="payment-info">
-                            <div class="payment-name">LINE Pay</div>
-                            <div class="payment-desc">LINE Pay 付款</div>
-                        </div>
-                    </div>
-                    <div class="payment-method" onclick="selectPaymentMethod('jkopay')">
-                        <div class="payment-icon">🅹</div>
-                        <div class="payment-info">
-                            <div class="payment-name">街口支付</div>
-                            <div class="payment-desc">街口帳戶付款</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-actions">
-                    <button type="button" class="btn btn-logout" onclick="closeRechargeModal()">取消</button>
-                    <button type="button" class="btn btn-secondary" onclick="confirmRecharge()">確認付款</button>
-                </div>
-            </div>
+        
+        <div class="wheel-container">
+            <div class="pointer"></div>
+            <canvas id="wheelCanvas"></canvas>
+            <div class="center-circle">轉！</div>
         </div>
-
-        <!-- 發布 Modal -->
-        <div id="postModal" class="modal">
-            <div class="modal-content">
-                <h2 id="postModalTitle">發布內容</h2>
-                <form id="postForm">
-                    <div class="form-group">
-                        <label>類型</label>
-                        <select id="postType" required>
-                            <option value="job">🏢 我要找人才（發布工作）</option>
-                            <option value="talent">👔 我要找工作（專業人才）</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>領域分類</label>
-                        <select id="postCategory" required>
-                            <option value="">請選擇領域</option>
-                            <option value="程式開發">💻 程式開發</option>
-                            <option value="設計美術">🎨 設計美術</option>
-                            <option value="行銷企劃">📊 行銷企劃</option>
-                            <option value="文字編輯">✍️ 文字編輯</option>
-                            <option value="影音製作">🎬 影音製作</option>
-                            <option value="翻譯語言">🌐 翻譯語言</option>
-                            <option value="顧問諮詢">💼 顧問諮詢</option>
-                            <option value="其他">📌 其他</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>標題</label>
-                        <input type="text" id="postTitle" required placeholder="例：尋找資深前端工程師">
-                    </div>
-                    <div class="form-group">
-                        <label>詳細內容</label>
-                        <textarea id="postContent" required placeholder="詳細描述您的需求或專長..."></textarea>
-                    </div>
-                    <div class="form-actions">
-                        <button type="button" class="btn btn-logout" onclick="closePostModal()">取消</button>
-                        <button type="submit" class="btn btn-secondary">發布</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- 留言 Modal -->
-        <div id="messageModal" class="modal">
-            <div class="modal-content">
-                <h2>💬 留言給發布者</h2>
-                <div class="info-notice">
-                    <strong>✅ 留言完全免費</strong>
-                    <p style="margin-top: 10px; color: #0050b3;">發布者查看留言時需支付費用，您可以自由留言！</p>
-                </div>
-                <form id="messageForm">
-                    <div class="form-group">
-                        <label>您的暱稱 (選填)</label>
-                        <input type="text" id="messageNickname" placeholder="不填寫則顯示為訪客">
-                    </div>
-                    <div class="form-group">
-                        <label>留言內容</label>
-                        <textarea id="messageContent" required placeholder="輸入您的留言..."></textarea>
-                    </div>
-                    <div class="form-actions">
-                        <button type="button" class="btn btn-logout" onclick="closeMessageModal()">取消</button>
-                        <button type="submit" class="btn btn-primary">免費發送留言</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- 查看留言 Modal -->
-        <div id="viewMessagesModal" class="modal">
-            <div class="modal-content">
-                <h2>📬 查看留言</h2>
-                <div id="unlockNotice" class="payment-notice">
-                    <strong>🔒 解鎖留言需支付 NT$ 50</strong>
-                    <p style="margin-top: 10px; color: #c53030;">一次性付費後可查看此貼文的所有留言</p>
-                    <p style="margin-top: 5px; color: #718096;">目前餘額: NT$ <span id="balanceInViewModal">0</span></p>
-                    <button class="btn btn-primary" style="margin-top: 15px;" onclick="unlockMessages()">支付 NT$ 50 解鎖</button>
-                </div>
-                <div id="messagesContent" style="display: none;"></div>
-                <button type="button" class="btn btn-logout" style="width: 100%; margin-top: 20px;" onclick="closeViewMessagesModal()">關閉</button>
-            </div>
-        </div>
-
-        <!-- 主畫面 -->
-        <div id="mainScreen">
-            <div class="header">
-                <h1>🎯 雙向媒合平台</h1>
-                <div class="user-info">
-                    <div id="guestButtons">
-                        <button class="btn btn-primary" onclick="showLoginModal()">登入</button>
-                        <button class="btn btn-secondary" onclick="showRegisterModal()">註冊</button>
-                    </div>
-                    <div id="loggedInButtons" style="display: none;">
-                        <div class="balance" onclick="openRechargeModal()" title="點擊儲值">
-                            💰 餘額: NT$ <span id="userBalance">0</span>
-                        </div>
-                        <span id="userName">使用者</span>
-                        <button class="btn btn-logout" onclick="logout()">登出</button>
-                    </div>
-                </div>
-            </div>
-
-            <div id="guestNotice" class="guest-notice" style="display: none;">
-                <strong>👋 您目前是訪客模式</strong>
-                <p>可以瀏覽並免費留言，登入後可發布內容並查看留言</p>
-                <button class="btn btn-primary" onclick="showLoginModal()">立即登入</button>
-                <button class="btn btn-secondary" onclick="showRegisterModal()">免費註冊</button>
-            </div>
-
-            <div class="main-content">
-                <div class="section">
-                    <div class="section-header">
-                        <h2>🏢 找人才（工作機會）</h2>
-                        <button class="btn btn-warning" onclick="openPostModal('job')">+ 發布工作</button>
-                    </div>
-                    <input type="text" class="search-input" id="searchJobs" placeholder="🔍 搜尋工作...">
-                    <div id="jobsList"></div>
-                </div>
-
-                <div class="section">
-                    <div class="section-header">
-                        <h2>👔 找工作（專業人才）</h2>
-                        <button class="btn btn-secondary" onclick="openPostModal('talent')">+ 我要找工作</button>
-                    </div>
-                    <input type="text" class="search-input" id="searchTalents" placeholder="🔍 搜尋人才...">
-                    <div id="talentsList"></div>
-                </div>
-            </div>
-        </div>
+        
+        <button id="spinBtn" onclick="spin()">🎲 開始轉動</button>
+        
+        <div class="result" id="result"></div>
     </div>
 
     <script>
-        let currentUser = null;
-        let users = JSON.parse(localStorage.getItem('users')) || {};
-        let posts = JSON.parse(localStorage.getItem('posts')) || [];
-        let selectedRechargeAmount = 0;
-        let selectedPaymentMethod = '';
-        let currentMessagePostId = null;
-        let currentViewPostId = null;
+        // 創建粒子效果
+        function createParticles() {
+            const particles = document.getElementById('particles');
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 4 + 's';
+                particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
+                const colors = ['rgba(168, 85, 247, 0.8)', 'rgba(244, 63, 94, 0.8)', 'rgba(59, 130, 246, 0.8)'];
+                particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                particles.appendChild(particle);
+            }
+        }
+        createParticles();
 
-        window.onload = function() {
-            loadPosts();
-            updateUIForUser();
-            document.getElementById('searchJobs').addEventListener('input', loadPosts);
-            document.getElementById('searchTalents').addEventListener('input', loadPosts);
+        // 強度評級
+        const tierInfo = {
+            'T0': { class: 't0', text: '🔥 T0 最強' },
+            'T1': { class: 't1', text: '⭐ T1 很強' },
+            'T2': { class: 't2', text: '✨ T2 中上' }
         };
 
-        function updateUIForUser() {
-            const guestButtons = document.getElementById('guestButtons');
-            const loggedInButtons = document.getElementById('loggedInButtons');
-            const guestNotice = document.getElementById('guestNotice');
-
-            if (currentUser) {
-                guestButtons.style.display = 'none';
-                loggedInButtons.style.display = 'flex';
-                guestNotice.style.display = 'none';
-                document.getElementById('userName').textContent = currentUser;
-                document.getElementById('userBalance').textContent = users[currentUser].balance;
-            } else {
-                guestButtons.style.display = 'flex';
-                loggedInButtons.style.display = 'none';
-                guestNotice.style.display = 'block';
+        // 費西亞的遺產昇華職業
+        const baseClasses = [
+            { 
+                name: '遊俠', 
+                color: '#10b981',
+                icon: '🏹',
+                advanced: [
+                    { name: '奧莎比之女', color: '#059669', icon: '🌿', tier: 'T1', desc: '神殿人打圖T1' },
+                    { name: '細語者', color: '#0d9488', icon: '💫', tier: 'T0', desc: '魔力攻擊破億' },
+                    { name: '荒野語者', color: '#14b8a6', icon: '🦅', tier: 'T2', desc: '拓荒輪椅選項' }
+                ]
+            },
+            { 
+                name: '暗影', 
+                color: '#8b5cf6',
+                icon: '🗡️',
+                advanced: [
+                    { name: '海濱釣客', color: '#7c3aed', icon: '🎣', tier: 'T0', desc: '全方位最強' },
+                    { name: '艾爾卡莉僕從', color: '#6d28d9', icon: '🕷️', tier: 'T1', desc: '章節火車輾壓' },
+                    { name: '盲眼先知', color: '#5b21b6', icon: '👁️', tier: 'T1', desc: '返還流頂級' }
+                ]
+            },
+            { 
+                name: '女巫', 
+                color: '#ec4899',
+                icon: '🧙‍♀️',
+                advanced: [
+                    { name: '神諭', color: '#db2777', icon: '🔮', tier: 'T2', desc: '冷卻特化' },
+                    { name: '命運之主', color: '#be185d', icon: '⚡', tier: 'T2', desc: '捷召喚' },
+                    { name: '泥沼薩滿', color: '#9f1239', icon: '🐸', tier: 'T2', desc: 'CI毒電球' }
+                ]
+            },
+            { 
+                name: '野蠻人', 
+                color: '#ef4444',
+                icon: '⚔️',
+                advanced: [
+                    { name: '古文物家', color: '#dc2626', icon: '🏺', tier: 'T2', desc: '夜之觸專用' },
+                    { name: '巨獸', color: '#b91c1c', icon: '👹', tier: 'T2', desc: '禁法術系統' },
+                    { name: '先祖指揮官', color: '#991b1b', icon: '🪖', tier: 'T1', desc: '戰吼炸屍強' }
+                ]
+            },
+            { 
+                name: '決鬥者', 
+                color: '#f59e0b',
+                icon: '🛡️',
+                advanced: [
+                    { name: '賭徒', color: '#d97706', icon: '🎲', tier: 'T2', desc: '90%大抗' },
+                    { name: '聖武士', color: '#b45309', icon: '⚜️', tier: 'T1', desc: '力量元素最佳' },
+                    { name: '名士', color: '#92400e', icon: '💎', tier: 'T2', desc: '古靈軍團' }
+                ]
+            },
+            { 
+                name: '聖堂武僧', 
+                color: '#3b82f6',
+                icon: '☀️',
+                advanced: [
+                    { name: '混沌建師', color: '#2563eb', icon: '⚗️', tier: 'T2', desc: '瓦爾技能' },
+                    { name: '多神教徒', color: '#1d4ed8', icon: '🙏', tier: 'T2', desc: 'QoL防禦' },
+                    { name: '操偶師', color: '#1e40af', icon: '🧟', tier: 'T2', desc: '殭屍問題多' }
+                ]
+            },
+            { 
+                name: '貴族', 
+                color: '#a855f7',
+                icon: '💠',
+                advanced: [
+                    { name: '拾荒者', color: '#9333ea', icon: '🎁', tier: 'T1', desc: '萬用配置多' }
+                ]
             }
+        ];
+
+        let currentStage = 1;
+        let selectedBaseClass = null;
+        let isSpinning = false;
+        let currentRotation = 0;
+
+        const canvas = document.getElementById('wheelCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            const container = document.querySelector('.wheel-container');
+            const size = Math.min(container.offsetWidth, container.offsetHeight);
+            canvas.width = size;
+            canvas.height = size;
+            drawWheel(currentStage === 1 ? baseClasses : baseClasses.find(c => c.name === selectedBaseClass).advanced);
         }
 
-        // === 登入/註冊 ===
-        function showLoginModal() {
-            switchAuthTab('login');
-            document.getElementById('loginModal').classList.add('active');
-        }
-
-        function showRegisterModal() {
-            switchAuthTab('register');
-            document.getElementById('loginModal').classList.add('active');
-        }
-
-        function closeLoginModal() {
-            document.getElementById('loginModal').classList.remove('active');
-        }
-
-        function switchAuthTab(tab) {
-            const loginForm = document.getElementById('loginForm');
-            const registerForm = document.getElementById('registerForm');
-            const tabBtns = document.querySelectorAll('#loginModal .tab-btn');
+        async function drawWheel(classes) {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = canvas.width / 2 - 10;
             
-            tabBtns.forEach(btn => btn.classList.remove('active'));
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            if (tab === 'login') {
-                loginForm.style.display = 'block';
-                registerForm.style.display = 'none';
-                tabBtns[0].classList.add('active');
-            } else {
-                loginForm.style.display = 'none';
-                registerForm.style.display = 'block';
-                tabBtns[1].classList.add('active');
-            }
-        }
-
-        document.getElementById('registerForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const username = document.getElementById('registerUsername').value.trim();
-            const password = document.getElementById('registerPassword').value;
-            const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
-
-            if (password !== passwordConfirm) {
-                alert('密碼不一致！');
-                return;
-            }
-
-            if (users[username]) {
-                alert('此帳號已存在！');
-                return;
-            }
-
-            users[username] = {
-                password: password,
-                balance: 500,
-                unlockedPosts: []
-            };
-
-            localStorage.setItem('users', JSON.stringify(users));
-            alert('註冊成功！已贈送 NT$ 500');
-            switchAuthTab('login');
-            this.reset();
-        });
-
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const username = document.getElementById('loginUsername').value.trim();
-            const password = document.getElementById('loginPassword').value;
-
-            if (!users[username] || users[username].password !== password) {
-                alert('帳號或密碼錯誤！');
-                return;
-            }
-
-            currentUser = username;
-            updateUIForUser();
-            loadPosts();
-            closeLoginModal();
-            this.reset();
-            alert('登入成功！');
-        });
-
-        function logout() {
-            currentUser = null;
-            updateUIForUser();
-            loadPosts();
-        }
-
-        // === 儲值系統 ===
-        function openRechargeModal() {
-            if (!currentUser) {
-                alert('請先登入！');
-                showLoginModal();
-                return;
-            }
-            document.getElementById('rechargeModal').classList.add('active');
-        }
-
-        function closeRechargeModal() {
-            document.getElementById('rechargeModal').classList.remove('active');
-            selectedRechargeAmount = 0;
-            selectedPaymentMethod = '';
-            document.getElementById('customAmount').value = '';
-            document.querySelectorAll('.recharge-card').forEach(c => c.classList.remove('selected'));
-            document.querySelectorAll('.payment-method').forEach(c => c.classList.remove('selected'));
-        }
-
-        function selectRecharge(amount) {
-            selectedRechargeAmount = amount;
-            document.getElementById('customAmount').value = '';
-            document.querySelectorAll('.recharge-card').forEach(c => c.classList.remove('selected'));
-            event.target.closest('.recharge-card').classList.add('selected');
-        }
-
-        function selectPaymentMethod(method) {
-            selectedPaymentMethod = method;
-            document.querySelectorAll('.payment-method').forEach(c => c.classList.remove('selected'));
-            event.target.closest('.payment-method').classList.add('selected');
-        }
-
-        function confirmRecharge() {
-            let amount = selectedRechargeAmount;
-            const customAmount = parseInt(document.getElementById('customAmount').value);
+            const segmentAngle = (2 * Math.PI) / classes.length;
             
-            if (customAmount > 0) amount = customAmount;
-            if (amount < 100) {
-                alert('儲值金額不得低於 NT$ 100');
-                return;
-            }
-            if (!selectedPaymentMethod) {
-                alert('請選擇付款方式');
-                return;
-            }
-
-            let bonus = 0;
-            if (amount >= 5000) bonus = 1000;
-            else if (amount >= 2000) bonus = 300;
-            else if (amount >= 1000) bonus = 100;
-
-            const total = amount + bonus;
-            const methodNames = {
-                ecpay: '綠界ECPay',
-                newebpay: '藍新NewebPay',
-                linepay: 'LINE Pay',
-                jkopay: '街口支付'
-            };
-
-            if (confirm(`確認使用 ${methodNames[selectedPaymentMethod]} 儲值 NT$ ${amount}${bonus > 0 ? ` (送$${bonus})` : ''} = NT$ ${total}？\n\n※ 此為示範系統，實際金流需串接第三方支付`)) {
-                // 模擬金流處理
-                alert('正在跳轉至付款頁面...\n\n※ 實際系統會跳轉至 ' + methodNames[selectedPaymentMethod]);
+            for (let index = 0; index < classes.length; index++) {
+                const cls = classes[index];
+                const startAngle = index * segmentAngle - Math.PI / 2;
+                const endAngle = startAngle + segmentAngle;
                 
-                setTimeout(() => {
-                    users[currentUser].balance += total;
-                    localStorage.setItem('users', JSON.stringify(users));
-                    updateUIForUser();
-                    alert(`付款成功！已增加 NT$ ${total}`);
-                    closeRechargeModal();
-                }, 1000);
-            }
-        }
-
-        // === 發布系統 ===
-        function openPostModal(type) {
-            if (!currentUser) {
-                alert('請先登入才能發布！');
-                showLoginModal();
-                return;
-            }
-            document.getElementById('postType').value = type;
-            document.getElementById('postModalTitle').textContent = type === 'job' ? '🏢 發布工作機會' : '👔 發布專業人才';
-            document.getElementById('postModal').classList.add('active');
-        }
-
-        function closePostModal() {
-            document.getElementById('postModal').classList.remove('active');
-            document.getElementById('postForm').reset();
-        }
-
-        document.getElementById('postForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const newPost = {
-                id: Date.now(),
-                type: document.getElementById('postType').value,
-                category: document.getElementById('postCategory').value,
-                title: document.getElementById('postTitle').value.trim(),
-                content: document.getElementById('postContent').value.trim(),
-                author: currentUser,
-                time: new Date().toLocaleString('zh-TW'),
-                messages: []
-            };
-
-            posts.unshift(newPost);
-            localStorage.setItem('posts', JSON.stringify(posts));
-            loadPosts();
-            closePostModal();
-            alert('發布成功！');
-        });
-
-        // === 留言系統 ===
-        function openMessageModal(postId) {
-            currentMessagePostId = postId;
-            document.getElementById('messageModal').classList.add('active');
-        }
-
-        function closeMessageModal() {
-            document.getElementById('messageModal').classList.remove('active');
-            document.getElementById('messageForm').reset();
-            currentMessagePostId = null;
-        }
-
-        document.getElementById('messageForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const nickname = document.getElementById('messageNickname').value.trim() || '訪客';
-            const content = document.getElementById('messageContent').value.trim();
-
-            const post = posts.find(p => p.id === currentMessagePostId);
-            if (post) {
-                post.messages.push({
-                    nickname: nickname,
-                    content: content,
-                    time: new Date().toLocaleString('zh-TW')
-                });
-                localStorage.setItem('posts', JSON.stringify(posts));
-                loadPosts();
-            }
-
-            closeMessageModal();
-            alert('留言發送成功！');
-        });
-
-        // === 查看留言系統 ===
-        function openViewMessagesModal(postId) {
-            if (!currentUser) {
-                alert('請先登入才能查看留言！');
-                showLoginModal();
-                return;
-            }
-
-            currentViewPostId = postId;
-            const post = posts.find(p => p.id === postId);
-            const isUnlocked = users[currentUser].unlockedPosts.includes(postId);
-
-            document.getElementById('balanceInViewModal').textContent = users[currentUser].balance;
-
-            if (isUnlocked) {
-                showUnlockedMessages(post);
-            } else {
-                document.getElementById('unlockNotice').style.display = 'block';
-                document.getElementById('messagesContent').style.display = 'none';
-            }
-
-            document.getElementById('viewMessagesModal').classList.add('active');
-        }
-
-        function closeViewMessagesModal() {
-            document.getElementById('viewMessagesModal').classList.remove('active');
-            currentViewPostId = null;
-        }
-
-        function unlockMessages() {
-            if (users[currentUser].balance < 50) {
-                alert('餘額不足！需要 NT$ 50\n請點擊右上角儲值');
-                return;
-            }
-
-            if (confirm('確認支付 NT$ 50 解鎖此貼文的所有留言？')) {
-                users[currentUser].balance -= 50;
-                users[currentUser].unlockedPosts.push(currentViewPostId);
-                localStorage.setItem('users', JSON.stringify(users));
-                updateUIForUser();
-
-                const post = posts.find(p => p.id === currentViewPostId);
-                showUnlockedMessages(post);
-                alert('解鎖成功！已扣除 NT$ 50');
-            }
-        }
-
-        function showUnlockedMessages(post) {
-            document.getElementById('unlockNotice').style.display = 'none';
-            const content = document.getElementById('messagesContent');
-            content.style.display = 'block';
-
-            if (post.messages.length === 0) {
-                content.innerHTML = '<div style="text-align: center; padding: 30px; color: #a0aec0;">目前沒有留言</div>';
-            } else {
-                content.innerHTML = '<h3 style="margin-bottom: 15px;">💬 所有留言</h3>' + 
-                    post.messages.map(m => `
-                        <div class="reply-item">
-                            <div class="reply-author">${m.nickname}</div>
-                            <div style="color: #4a5568; line-height: 1.5;">${m.content}</div>
-                            <div style="color: #a0aec0; font-size: 12px; margin-top: 5px;">${m.time}</div>
-                        </div>
-                    `).join('');
-            }
-        }
-
-        // === 載入貼文 ===
-        function loadPosts() {
-            const jobSearch = document.getElementById('searchJobs').value.toLowerCase();
-            const talentSearch = document.getElementById('searchTalents').value.toLowerCase();
-
-            let jobPosts = posts.filter(p => p.type === 'job');
-            let talentPosts = posts.filter(p => p.type === 'talent');
-
-            if (jobSearch) {
-                jobPosts = jobPosts.filter(p => 
-                    p.title.toLowerCase().includes(jobSearch) || 
-                    p.content.toLowerCase().includes(jobSearch) ||
-                    p.category.toLowerCase().includes(jobSearch)
+                ctx.save();
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                ctx.closePath();
+                
+                const midAngle = startAngle + segmentAngle / 2;
+                const gradX = centerX + Math.cos(midAngle) * radius;
+                const gradY = centerY + Math.sin(midAngle) * radius;
+                const gradient = ctx.createRadialGradient(centerX, centerY, 0, gradX, gradY, radius);
+                gradient.addColorStop(0, cls.color);
+                gradient.addColorStop(0.7, cls.color);
+                gradient.addColorStop(1, shadeColor(cls.color, -40));
+                
+                ctx.fillStyle = gradient;
+                ctx.fill();
+                ctx.restore();
+                
+                // 繪製超大圖標
+                if (cls.icon) {
+                    ctx.save();
+                    ctx.translate(centerX, centerY);
+                    ctx.rotate(midAngle);
+                    
+                    const iconRadius = radius * 0.55;
+                    const iconSize = canvas.width * 0.18;
+                    
+                    // 圖標背景光暈
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+                    ctx.beginPath();
+                    ctx.arc(iconRadius, 0, iconSize * 0.65, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // emoji圖標
+                    ctx.font = `${iconSize}px Arial`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillStyle = '#fff';
+                    ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
+                    ctx.shadowBlur = 10;
+                    ctx.fillText(cls.icon, iconRadius, 0);
+                    
+                    ctx.restore();
+                }
+                
+                // 繪製邊框
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                ctx.closePath();
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+                ctx.lineWidth = 4;
+                ctx.stroke();
+                
+                // 內部光暈效果
+                ctx.save();
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                ctx.closePath();
+                ctx.clip();
+                
+                const innerGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
+                innerGradient.addColorStop(0, 'rgba(255, 255, 255, 0.4)');
+                innerGradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.1)');
+                innerGradient.addColorStop(1, 'rgba(0, 0, 0, 0.4)');
+                ctx.fillStyle = innerGradient;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.restore();
+                
+                // 繪製文字
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(midAngle);
+                
+                const textRadius = radius * 0.8;
+                const text = cls.name;
+                ctx.font = `bold ${canvas.width * 0.05}px Microsoft JhengHei, Arial`;
+                const textWidth = ctx.measureText(text).width;
+                
+                // 文字背景
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+                ctx.fillRect(
+                    textRadius - textWidth / 2 - 10,
+                    -canvas.width * 0.035,
+                    textWidth + 20,
+                    canvas.width * 0.07
                 );
+                
+                // 文字
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = '#ffffff';
+                ctx.shadowColor = 'rgba(0, 0, 0, 1)';
+                ctx.shadowBlur = 8;
+                ctx.fillText(text, textRadius, 0);
+                
+                ctx.restore();
             }
-
-            if (talentSearch) {
-                talentPosts = talentPosts.filter(p => 
-                    p.title.toLowerCase().includes(talentSearch) || 
-                    p.content.toLowerCase().includes(talentSearch) ||
-                    p.category.toLowerCase().includes(talentSearch)
-                );
-            }
-
-            renderPosts('jobsList', jobPosts, 'job');
-            renderPosts('talentsList', talentPosts, 'talent');
         }
 
-        function renderPosts(elementId, postList, type) {
-            const element = document.getElementById(elementId);
+        function shadeColor(color, percent) {
+            const num = parseInt(color.replace('#', ''), 16);
+            const amt = Math.round(2.55 * percent);
+            const R = (num >> 16) + amt;
+            const G = (num >> 8 & 0x00FF) + amt;
+            const B = (num & 0x0000FF) + amt;
+            return '#' + (0x1000000 + (R < 255 ? (R < 1 ? 0 : R) : 255) * 0x10000 +
+                (G < 255 ? (G < 1 ? 0 : G) : 255) * 0x100 +
+                (B < 255 ? (B < 1 ? 0 : B) : 255))
+                .toString(16).slice(1);
+        }
+
+        window.addEventListener('load', () => {
+            resizeCanvas();
+        });
+        window.addEventListener('resize', resizeCanvas);
+
+        async function spin() {
+            if (isSpinning) return;
             
-            if (postList.length === 0) {
-                element.innerHTML = `<div style="text-align: center; padding: 40px; color: #a0aec0;">目前沒有${type === 'job' ? '工作機會' : '人才'}</div>`;
-                return;
-            }
-
-            element.innerHTML = postList.map(post => {
-                const isAuthor = currentUser && post.author === currentUser;
-                const isUnlocked = currentUser && users[currentUser].unlockedPosts.includes(post.id);
-                const messageCount = post.messages.length;
-
-                return `
-                    <div class="card">
-                        <div class="card-header">
-                            <div>
-                                <div class="card-title">${post.title}</div>
-                                <div class="card-author">👤 ${post.author}</div>
-                                <span class="card-category">${post.category}</span>
-                            </div>
-                            <span class="card-badge badge-${post.type}">${post.type === 'job' ? '徵才' : '求職'}</span>
+            isSpinning = true;
+            const spinBtn = document.getElementById('spinBtn');
+            const result = document.getElementById('result');
+            
+            spinBtn.disabled = true;
+            result.classList.remove('show');
+            
+            let classes = currentStage === 1 ? baseClasses : 
+                          baseClasses.find(c => c.name === selectedBaseClass).advanced;
+            
+            const selectedIndex = Math.floor(Math.random() * classes.length);
+            const segmentAngle = 360 / classes.length;
+            
+            const spins = 6;
+            const targetAngle = 360 - (segmentAngle * selectedIndex) - (segmentAngle / 2);
+            const totalRotation = (360 * spins) + targetAngle;
+            
+            currentRotation += totalRotation;
+            canvas.style.transform = `rotate(${currentRotation}deg)`;
+            
+            setTimeout(() => {
+                const selectedClass = classes[selectedIndex];
+                
+                if (currentStage === 1) {
+                    selectedBaseClass = selectedClass.name;
+                    result.innerHTML = `✨ 抽中基礎職業<strong>${selectedClass.name} ${selectedClass.icon}</strong><br><br>準備進入昇華選擇！`;
+                    result.classList.add('show');
+                    
+                    setTimeout(async () => {
+                        currentStage = 2;
+                        document.getElementById('stageIndicator').innerHTML = 
+                            `<span>第二階段：選擇 ${selectedBaseClass} 的昇華</span>`;
+                        
+                        await drawWheel(baseClasses.find(c => c.name === selectedBaseClass).advanced);
+                        result.classList.remove('show');
+                        spinBtn.disabled = false;
+                        isSpinning = false;
+                    }, 3000);
+                } else {
+                    const tierData = tierInfo[selectedClass.tier];
+                    result.innerHTML = `
+                        🎉 恭喜你決定遊玩
+                        <strong>${selectedClass.name} ${selectedClass.icon}</strong>
+                        <div class="tier ${tierData.class}">${tierData.text}</div>
+                        <div style="font-size: 0.7em; margin-top: 15px; opacity: 0.9;">
+                            ${selectedClass.desc}
                         </div>
-                        <div class="card-content">${post.content}</div>
-                        <div class="card-footer">
-                            <div style="color: #a0aec0; font-size: 13px;">🕐 ${post.time}</div>
-                            <div style="color: #667eea; font-weight: bold;">💬 ${messageCount} 則留言</div>
-                            ${!isAuthor ? 
-                                `<button class="btn btn-primary" onclick="openMessageModal(${post.id})">免費留言</button>` : 
-                                `<button class="btn btn-warning" onclick="openViewMessagesModal(${post.id})">${isUnlocked ? '查看留言' : '解鎖留言 ($50)'}</button>`
-                            }
-                        </div>
-                    </div>
-                `;
-            }).join('');
+                    `;
+                    result.classList.add('show');
+                    
+                    setTimeout(() => {
+                        resetGame();
+                    }, 6000);
+                }
+            }, 5000);
+        }
+
+        async function resetGame() {
+            currentStage = 1;
+            selectedBaseClass = null;
+            isSpinning = false;
+            currentRotation = 0;
+            
+            document.getElementById('stageIndicator').innerHTML = 
+                '<span>第一階段：選擇基礎職業</span>';
+            document.getElementById('result').classList.remove('show');
+            canvas.style.transform = 'rotate(0deg)';
+            document.getElementById('spinBtn').disabled = false;
+            
+            await drawWheel(baseClasses);
         }
     </script>
 </body>
