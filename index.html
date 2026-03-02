@@ -1,680 +1,184 @@
 <!DOCTYPE html>
+
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>費西亞的遺產 - 昇華轉盤</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>R203 會議室</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        body {
-            font-family: 'Microsoft JhengHei', 'PingFang TC', Arial, sans-serif;
-            background: #0a0e27;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            overflow: hidden;
-            position: relative;
-        }
+body {
+font-family: “PingFang TC”, “Noto Sans TC”, sans-serif;
+background: #AA5C5C;
+color: white;
+height: 100vh;
+display: flex;
+flex-direction: column;
+transition: background 0.4s ease;
+}
 
-        body::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: 
-                radial-gradient(circle at 20% 50%, rgba(168, 85, 247, 0.4) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(244, 63, 94, 0.4) 0%, transparent 50%),
-                radial-gradient(circle at 40% 20%, rgba(59, 130, 246, 0.3) 0%, transparent 50%);
-            animation: bgPulse 10s ease-in-out infinite;
-        }
+/* === 換色面板 === */
+.color-switcher {
+position: fixed;
+top: 0;
+right: 0;
+bottom: 0;
+width: 192px;
+background: rgba(0,0,0,0.55);
+backdrop-filter: blur(8px);
+display: flex;
+flex-direction: column;
+padding: 12px 10px;
+gap: 5px;
+overflow-y: auto;
+z-index: 100;
+}
+.color-switcher .panel-title {
+color: rgba(255,255,255,0.6);
+font-size: 11px;
+text-align: center;
+letter-spacing: 0.1em;
+margin-bottom: 4px;
+}
+.color-switcher .section-label {
+color: rgba(255,255,255,0.45);
+font-size: 10px;
+letter-spacing: 0.06em;
+margin-top: 6px;
+margin-bottom: 1px;
+padding-left: 6px;
+border-left: 2px solid rgba(255,255,255,0.2);
+}
+.color-switcher button {
+padding: 6px 10px;
+border: 2px solid transparent;
+border-radius: 6px;
+cursor: pointer;
+font-size: 12px;
+font-family: inherit;
+font-weight: 600;
+color: white;
+text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+text-align: left;
+transition: border-color 0.2s, transform 0.1s;
+}
+.color-switcher button:hover { border-color: rgba(255,255,255,0.6); transform: translateX(-2px); }
+.color-switcher button.active { border-color: white; box-shadow: 0 0 0 1px white inset; }
 
-        @keyframes bgPulse {
-            0%, 100% { opacity: 0.6; }
-            50% { opacity: 1; }
-        }
+/* === Header === */
+.header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+padding: 18px 210px 18px 28px;
+background: rgba(0,0,0,0.15);
+}
+.room-name { font-size: 2.2rem; font-weight: 500; letter-spacing: 0.05em; }
+.datetime { text-align: right; }
+.time { font-size: 2.2rem; font-weight: 700; }
+.date { font-size: 1rem; opacity: 0.75; margin-top: 2px; }
 
-        .container {
-            position: relative;
-            z-index: 1;
-            text-align: center;
-            width: 100%;
-            max-width: 550px;
-        }
+/* === Content === */
+.content {
+flex: 1;
+padding: 60px 210px 40px 60px;
+display: flex;
+flex-direction: column;
+justify-content: space-between;
+}
+.meeting-title { font-size: 3.2rem; font-weight: 700; color: #FFD966; margin-bottom: 20px; }
+.meeting-time { font-size: 1.8rem; opacity: 0.9; }
+.attendees { display: flex; align-items: center; gap: 10px; font-size: 1.5rem; }
+.attendees svg { width: 40px; height: 40px; fill: #FFD966; }
 
-        h1 {
-            color: #fff;
-            margin-bottom: 10px;
-            font-size: clamp(26px, 6vw, 36px);
-            text-shadow: 0 0 30px rgba(168, 85, 247, 1);
-            letter-spacing: 3px;
-            animation: titleGlow 3s ease-in-out infinite;
-            background: linear-gradient(135deg, #a855f7 0%, #f43f5e 50%, #3b82f6 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
+.search-icon { position: fixed; bottom: 20px; left: 20px; opacity: 0.6; }
+.search-icon svg { width: 32px; height: 32px; fill: white; }
+</style>
 
-        @keyframes titleGlow {
-            0%, 100% { text-shadow: 0 0 30px rgba(168, 85, 247, 1); }
-            50% { text-shadow: 0 0 50px rgba(244, 63, 94, 1); }
-        }
-
-        .subtitle {
-            color: #a5b4fc;
-            font-size: clamp(12px, 3vw, 14px);
-            margin-bottom: 20px;
-            opacity: 0.8;
-            letter-spacing: 1px;
-        }
-
-        .stage-indicator {
-            margin-bottom: 25px;
-            padding: 15px 30px;
-            background: linear-gradient(135deg, rgba(168, 85, 247, 0.3) 0%, rgba(244, 63, 94, 0.3) 100%);
-            border: 2px solid rgba(168, 85, 247, 0.6);
-            border-radius: 50px;
-            backdrop-filter: blur(15px);
-            display: inline-block;
-            box-shadow: 0 0 30px rgba(168, 85, 247, 0.5);
-            animation: stagePulse 2s ease-in-out infinite;
-        }
-
-        @keyframes stagePulse {
-            0%, 100% { box-shadow: 0 0 30px rgba(168, 85, 247, 0.5); }
-            50% { box-shadow: 0 0 50px rgba(244, 63, 94, 0.8); }
-        }
-
-        .stage-indicator span {
-            color: #fff;
-            font-size: clamp(14px, 3.5vw, 18px);
-            font-weight: bold;
-            text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
-        }
-
-        .wheel-container {
-            position: relative;
-            width: 100%;
-            max-width: 450px;
-            margin: 0 auto 30px;
-            aspect-ratio: 1;
-        }
-
-        #wheelCanvas {
-            width: 100%;
-            height: 100%;
-            filter: drop-shadow(0 0 40px rgba(168, 85, 247, 0.8));
-            transition: transform 5s cubic-bezier(0.17, 0.67, 0.12, 0.99);
-        }
-
-        .pointer {
-            position: absolute;
-            top: -20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 0;
-            height: 0;
-            border-left: 20px solid transparent;
-            border-right: 20px solid transparent;
-            border-top: 45px solid #f43f5e;
-            z-index: 10;
-            filter: drop-shadow(0 0 15px rgba(244, 63, 94, 1));
-            animation: pointerPulse 1.5s ease-in-out infinite;
-        }
-
-        @keyframes pointerPulse {
-            0%, 100% { 
-                transform: translateX(-50%) scale(1);
-                filter: drop-shadow(0 0 15px rgba(244, 63, 94, 1));
-            }
-            50% { 
-                transform: translateX(-50%) scale(1.15);
-                filter: drop-shadow(0 0 25px rgba(244, 63, 94, 1));
-            }
-        }
-
-        .center-circle {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: clamp(60px, 16vw, 80px);
-            height: clamp(60px, 16vw, 80px);
-            background: linear-gradient(135deg, #a855f7 0%, #f43f5e 50%, #3b82f6 100%);
-            border-radius: 50%;
-            border: 4px solid rgba(255, 255, 255, 0.5);
-            z-index: 5;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            color: white;
-            font-size: clamp(16px, 4vw, 22px);
-            box-shadow: 
-                0 0 30px rgba(168, 85, 247, 0.8),
-                inset 0 0 30px rgba(255, 255, 255, 0.2);
-            animation: centerGlow 2.5s ease-in-out infinite;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-
-        .center-circle:hover {
-            transform: translate(-50%, -50%) scale(1.1);
-        }
-
-        @keyframes centerGlow {
-            0%, 100% { 
-                box-shadow: 0 0 30px rgba(168, 85, 247, 0.8), inset 0 0 30px rgba(255, 255, 255, 0.2);
-            }
-            50% { 
-                box-shadow: 0 0 60px rgba(244, 63, 94, 1), inset 0 0 30px rgba(255, 255, 255, 0.3);
-            }
-        }
-
-        button {
-            background: linear-gradient(135deg, #a855f7 0%, #f43f5e 50%, #3b82f6 100%);
-            color: white;
-            border: 3px solid rgba(255, 255, 255, 0.4);
-            padding: 18px 60px;
-            font-size: clamp(18px, 4.5vw, 22px);
-            font-weight: bold;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 
-                0 8px 30px rgba(168, 85, 247, 0.6),
-                inset 0 0 30px rgba(255, 255, 255, 0.15);
-            position: relative;
-            overflow: hidden;
-            letter-spacing: 2px;
-        }
-
-        button::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.4);
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
-
-        button:active::before {
-            width: 400px;
-            height: 400px;
-        }
-
-        button:hover:not(:disabled) {
-            transform: translateY(-3px) scale(1.05);
-            box-shadow: 
-                0 12px 40px rgba(244, 63, 94, 0.8),
-                inset 0 0 30px rgba(255, 255, 255, 0.25);
-        }
-
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .result {
-            margin-top: 35px;
-            padding: 25px 35px;
-            background: linear-gradient(135deg, rgba(168, 85, 247, 0.3) 0%, rgba(244, 63, 94, 0.3) 100%);
-            border: 3px solid rgba(168, 85, 247, 0.7);
-            border-radius: 25px;
-            backdrop-filter: blur(15px);
-            color: white;
-            font-size: clamp(18px, 4.5vw, 24px);
-            font-weight: bold;
-            display: none;
-            animation: resultSlideIn 0.6s ease-out;
-            box-shadow: 0 0 40px rgba(168, 85, 247, 0.6);
-        }
-
-        .result.show {
-            display: block;
-        }
-
-        @keyframes resultSlideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-40px) scale(0.7);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-
-        .result strong {
-            color: #fbbf24;
-            text-shadow: 0 0 15px rgba(251, 191, 36, 1);
-            font-size: 1.2em;
-            display: block;
-            margin: 10px 0;
-        }
-
-        .result .tier {
-            display: inline-block;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.8em;
-            margin-top: 10px;
-            animation: tierGlow 2s ease-in-out infinite;
-        }
-
-        .tier.t0 {
-            background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
-            box-shadow: 0 0 20px rgba(245, 158, 11, 0.8);
-        }
-
-        .tier.t1 {
-            background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
-            box-shadow: 0 0 20px rgba(139, 92, 246, 0.8);
-        }
-
-        .tier.t2 {
-            background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
-            box-shadow: 0 0 20px rgba(59, 130, 246, 0.8);
-        }
-
-        @keyframes tierGlow {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.05); opacity: 0.9; }
-        }
-
-        .particle {
-            position: fixed;
-            width: 5px;
-            height: 5px;
-            background: rgba(168, 85, 247, 0.8);
-            border-radius: 50%;
-            pointer-events: none;
-            animation: particleFloat 4s ease-in-out infinite;
-        }
-
-        @keyframes particleFloat {
-            0%, 100% { transform: translateY(0) translateX(0); opacity: 0; }
-            50% { opacity: 1; }
-            100% { transform: translateY(-120vh) translateX(60px); opacity: 0; }
-        }
-
-        @media (max-width: 480px) {
-            .container {
-                padding: 10px;
-            }
-            
-            h1 {
-                margin-bottom: 8px;
-            }
-            
-            .subtitle {
-                margin-bottom: 15px;
-            }
-            
-            .stage-indicator {
-                margin-bottom: 20px;
-                padding: 12px 24px;
-            }
-            
-            .wheel-container {
-                margin-bottom: 25px;
-            }
-        }
-    </style>
 </head>
 <body>
-    <div id="particles"></div>
 
-    <div class="container">
-        <h1>⚔️ 費西亞的遺產</h1>
-        <div class="subtitle">Legacy of Phrecia - 昇華轉盤</div>
-        <div class="stage-indicator" id="stageIndicator">
-            <span>第一階段：選擇基礎職業</span>
-        </div>
-        
-        <div class="wheel-container">
-            <div class="pointer"></div>
-            <canvas id="wheelCanvas"></canvas>
-            <div class="center-circle">轉！</div>
-        </div>
-        
-        <button id="spinBtn" onclick="spin()">🎲 開始轉動</button>
-        
-        <div class="result" id="result"></div>
+  <div class="header">
+    <div class="room-name">R203會議室</div>
+    <div class="datetime">
+      <div class="time">下午 05:33</div>
+      <div class="date">週四. 2月 26, 2026</div>
     </div>
+  </div>
 
-    <script>
-        // 創建粒子效果
-        function createParticles() {
-            const particles = document.getElementById('particles');
-            for (let i = 0; i < 30; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                particle.style.left = Math.random() * 100 + '%';
-                particle.style.animationDelay = Math.random() * 4 + 's';
-                particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
-                const colors = ['rgba(168, 85, 247, 0.8)', 'rgba(244, 63, 94, 0.8)', 'rgba(59, 130, 246, 0.8)'];
-                particle.style.background = colors[Math.floor(Math.random() * colors.length)];
-                particles.appendChild(particle);
-            }
-        }
-        createParticles();
+  <div class="content">
+    <div>
+      <div class="meeting-title">Test123</div>
+      <div class="meeting-time">17:33 ～ 18:33</div>
+    </div>
+    <div class="attendees">
+      <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+      <span>0</span>
+    </div>
+  </div>
 
-        // 強度評級
-        const tierInfo = {
-            'T0': { class: 't0', text: '🔥 T0 最強' },
-            'T1': { class: 't1', text: '⭐ T1 很強' },
-            'T2': { class: 't2', text: '✨ T2 中上' }
-        };
+  <div class="search-icon">
+    <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+  </div>
 
-        // 費西亞的遺產昇華職業
-        const baseClasses = [
-            { 
-                name: '遊俠', 
-                color: '#10b981',
-                icon: '🏹',
-                advanced: [
-                    { name: '奧莎比之女', color: '#059669', icon: '🌿', tier: 'T1', desc: '神殿人打圖T1' },
-                    { name: '細語者', color: '#0d9488', icon: '💫', tier: 'T0', desc: '魔力攻擊破億' },
-                    { name: '荒野語者', color: '#14b8a6', icon: '🦅', tier: 'T2', desc: '拓荒輪椅選項' }
-                ]
-            },
-            { 
-                name: '暗影', 
-                color: '#8b5cf6',
-                icon: '🗡️',
-                advanced: [
-                    { name: '海濱釣客', color: '#7c3aed', icon: '🎣', tier: 'T0', desc: '全方位最強' },
-                    { name: '艾爾卡莉僕從', color: '#6d28d9', icon: '🕷️', tier: 'T1', desc: '章節火車輾壓' },
-                    { name: '盲眼先知', color: '#5b21b6', icon: '👁️', tier: 'T1', desc: '返還流頂級' }
-                ]
-            },
-            { 
-                name: '女巫', 
-                color: '#ec4899',
-                icon: '🧙‍♀️',
-                advanced: [
-                    { name: '神諭', color: '#db2777', icon: '🔮', tier: 'T2', desc: '冷卻特化' },
-                    { name: '命運之主', color: '#be185d', icon: '⚡', tier: 'T2', desc: '捷召喚' },
-                    { name: '泥沼薩滿', color: '#9f1239', icon: '🐸', tier: 'T2', desc: 'CI毒電球' }
-                ]
-            },
-            { 
-                name: '野蠻人', 
-                color: '#ef4444',
-                icon: '⚔️',
-                advanced: [
-                    { name: '古文物家', color: '#dc2626', icon: '🏺', tier: 'T2', desc: '夜之觸專用' },
-                    { name: '巨獸', color: '#b91c1c', icon: '👹', tier: 'T2', desc: '禁法術系統' },
-                    { name: '先祖指揮官', color: '#991b1b', icon: '🪖', tier: 'T1', desc: '戰吼炸屍強' }
-                ]
-            },
-            { 
-                name: '決鬥者', 
-                color: '#f59e0b',
-                icon: '🛡️',
-                advanced: [
-                    { name: '賭徒', color: '#d97706', icon: '🎲', tier: 'T2', desc: '90%大抗' },
-                    { name: '聖武士', color: '#b45309', icon: '⚜️', tier: 'T1', desc: '力量元素最佳' },
-                    { name: '名士', color: '#92400e', icon: '💎', tier: 'T2', desc: '古靈軍團' }
-                ]
-            },
-            { 
-                name: '聖堂武僧', 
-                color: '#3b82f6',
-                icon: '☀️',
-                advanced: [
-                    { name: '混沌建師', color: '#2563eb', icon: '⚗️', tier: 'T2', desc: '瓦爾技能' },
-                    { name: '多神教徒', color: '#1d4ed8', icon: '🙏', tier: 'T2', desc: 'QoL防禦' },
-                    { name: '操偶師', color: '#1e40af', icon: '🧟', tier: 'T2', desc: '殭屍問題多' }
-                ]
-            },
-            { 
-                name: '貴族', 
-                color: '#a855f7',
-                icon: '💠',
-                advanced: [
-                    { name: '拾荒者', color: '#9333ea', icon: '🎁', tier: 'T1', desc: '萬用配置多' }
-                ]
-            }
-        ];
+  <div class="color-switcher" id="panel">
+    <div class="panel-title">背景色方案</div>
 
-        let currentStage = 1;
-        let selectedBaseClass = null;
-        let isSpinning = false;
-        let currentRotation = 0;
+```
+<div class="section-label">🔴 紅色系（深→淺）</div>
+<button onclick="pick(this,'#7A3535')" style="background:#7A3535">① 暗酒紅</button>
+<button onclick="pick(this,'#8B4A4A')" style="background:#8B4A4A">② 原本深紅</button>
+<button onclick="pick(this,'#963D3D')" style="background:#963D3D">③ 深磚紅</button>
+<button onclick="pick(this,'#9B5555')" style="background:#9B5555">④ 紅褐</button>
+<button onclick="pick(this,'#AA5C5C')" style="background:#AA5C5C" id="default-btn">⑤ 磚紅 ★</button>
+<button onclick="pick(this,'#B86262')" style="background:#B86262">⑥ 中紅</button>
+<button onclick="pick(this,'#C07070')" style="background:#C07070">⑦ 前版玫瑰紅</button>
+<button onclick="pick(this,'#C47474')" style="background:#C47474">⑧ 玫瑰紅</button>
+<button onclick="pick(this,'#CC7A7A')" style="background:#CC7A7A">⑨ 淺玫瑰</button>
+<button onclick="pick(this,'#D48888')" style="background:#D48888;color:#333;text-shadow:none">⑩ 粉紅</button>
+<button onclick="pick(this,'#B85050')" style="background:#B85050">⑪ 正紅偏淺</button>
+<button onclick="pick(this,'#C46060')" style="background:#C46060">⑫ 番茄紅</button>
+<button onclick="pick(this,'#C06878')" style="background:#C06878">⑬ 莓紅</button>
+<button onclick="pick(this,'#A05060')" style="background:#A05060">⑭ 暗莓紅</button>
+<button onclick="pick(this,'#A06060')" style="background:#A06060">⑮ 灰玫紅</button>
 
-        const canvas = document.getElementById('wheelCanvas');
-        const ctx = canvas.getContext('2d');
+<div class="section-label">🎨 其他推薦色</div>
+<button onclick="pick(this,'#5C7A8A')" style="background:#5C7A8A">⑯ 鋼藍灰</button>
+<button onclick="pick(this,'#4A6B5C')" style="background:#4A6B5C">⑰ 深森綠</button>
+<button onclick="pick(this,'#5A5A7A')" style="background:#5A5A7A">⑱ 藍紫灰</button>
+<button onclick="pick(this,'#6B5A4A')" style="background:#6B5A4A">⑲ 咖啡棕</button>
+<button onclick="pick(this,'#4A5A6B')" style="background:#4A5A6B">⑳ 深海藍</button>
+```
 
-        function resizeCanvas() {
-            const container = document.querySelector('.wheel-container');
-            const size = Math.min(container.offsetWidth, container.offsetHeight);
-            canvas.width = size;
-            canvas.height = size;
-            drawWheel(currentStage === 1 ? baseClasses : baseClasses.find(c => c.name === selectedBaseClass).advanced);
-        }
+  </div>
 
-        async function drawWheel(classes) {
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
-            const radius = canvas.width / 2 - 10;
-            
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            const segmentAngle = (2 * Math.PI) / classes.length;
-            
-            for (let index = 0; index < classes.length; index++) {
-                const cls = classes[index];
-                const startAngle = index * segmentAngle - Math.PI / 2;
-                const endAngle = startAngle + segmentAngle;
-                
-                ctx.save();
-                ctx.beginPath();
-                ctx.moveTo(centerX, centerY);
-                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
-                ctx.closePath();
-                
-                const midAngle = startAngle + segmentAngle / 2;
-                const gradX = centerX + Math.cos(midAngle) * radius;
-                const gradY = centerY + Math.sin(midAngle) * radius;
-                const gradient = ctx.createRadialGradient(centerX, centerY, 0, gradX, gradY, radius);
-                gradient.addColorStop(0, cls.color);
-                gradient.addColorStop(0.7, cls.color);
-                gradient.addColorStop(1, shadeColor(cls.color, -40));
-                
-                ctx.fillStyle = gradient;
-                ctx.fill();
-                ctx.restore();
-                
-                // 繪製超大圖標
-                if (cls.icon) {
-                    ctx.save();
-                    ctx.translate(centerX, centerY);
-                    ctx.rotate(midAngle);
-                    
-                    const iconRadius = radius * 0.55;
-                    const iconSize = canvas.width * 0.18;
-                    
-                    // 圖標背景光暈
-                    ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
-                    ctx.beginPath();
-                    ctx.arc(iconRadius, 0, iconSize * 0.65, 0, Math.PI * 2);
-                    ctx.fill();
-                    
-                    // emoji圖標
-                    ctx.font = `${iconSize}px Arial`;
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillStyle = '#fff';
-                    ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
-                    ctx.shadowBlur = 10;
-                    ctx.fillText(cls.icon, iconRadius, 0);
-                    
-                    ctx.restore();
-                }
-                
-                // 繪製邊框
-                ctx.beginPath();
-                ctx.moveTo(centerX, centerY);
-                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
-                ctx.closePath();
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
-                ctx.lineWidth = 4;
-                ctx.stroke();
-                
-                // 內部光暈效果
-                ctx.save();
-                ctx.beginPath();
-                ctx.moveTo(centerX, centerY);
-                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
-                ctx.closePath();
-                ctx.clip();
-                
-                const innerGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
-                innerGradient.addColorStop(0, 'rgba(255, 255, 255, 0.4)');
-                innerGradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.1)');
-                innerGradient.addColorStop(1, 'rgba(0, 0, 0, 0.4)');
-                ctx.fillStyle = innerGradient;
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.restore();
-                
-                // 繪製文字
-                ctx.save();
-                ctx.translate(centerX, centerY);
-                ctx.rotate(midAngle);
-                
-                const textRadius = radius * 0.8;
-                const text = cls.name;
-                ctx.font = `bold ${canvas.width * 0.05}px Microsoft JhengHei, Arial`;
-                const textWidth = ctx.measureText(text).width;
-                
-                // 文字背景
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
-                ctx.fillRect(
-                    textRadius - textWidth / 2 - 10,
-                    -canvas.width * 0.035,
-                    textWidth + 20,
-                    canvas.width * 0.07
-                );
-                
-                // 文字
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillStyle = '#ffffff';
-                ctx.shadowColor = 'rgba(0, 0, 0, 1)';
-                ctx.shadowBlur = 8;
-                ctx.fillText(text, textRadius, 0);
-                
-                ctx.restore();
-            }
-        }
+<script>
+  let current = null;
 
-        function shadeColor(color, percent) {
-            const num = parseInt(color.replace('#', ''), 16);
-            const amt = Math.round(2.55 * percent);
-            const R = (num >> 16) + amt;
-            const G = (num >> 8 & 0x00FF) + amt;
-            const B = (num & 0x0000FF) + amt;
-            return '#' + (0x1000000 + (R < 255 ? (R < 1 ? 0 : R) : 255) * 0x10000 +
-                (G < 255 ? (G < 1 ? 0 : G) : 255) * 0x100 +
-                (B < 255 ? (B < 1 ? 0 : B) : 255))
-                .toString(16).slice(1);
-        }
+  function pick(btn, color) {
+    document.body.style.background = color;
+    if (current) current.classList.remove('active');
+    btn.classList.add('active');
+    current = btn;
+  }
 
-        window.addEventListener('load', () => {
-            resizeCanvas();
-        });
-        window.addEventListener('resize', resizeCanvas);
+  function updateTime() {
+    const now = new Date();
+    let h = now.getHours();
+    const m = String(now.getMinutes()).padStart(2,'0');
+    const ampm = h >= 12 ? '下午' : '上午';
+    if (h > 12) h -= 12;
+    if (h === 0) h = 12;
+    const days = ['週日','週一','週二','週三','週四','週五','週六'];
+    document.querySelector('.time').textContent = `${ampm} ${String(h).padStart(2,'0')}:${m}`;
+    document.querySelector('.date').textContent = `${days[now.getDay()]}. ${now.getMonth()+1}月 ${now.getDate()}, ${now.getFullYear()}`;
+  }
+  updateTime();
+  setInterval(updateTime, 1000);
 
-        async function spin() {
-            if (isSpinning) return;
-            
-            isSpinning = true;
-            const spinBtn = document.getElementById('spinBtn');
-            const result = document.getElementById('result');
-            
-            spinBtn.disabled = true;
-            result.classList.remove('show');
-            
-            let classes = currentStage === 1 ? baseClasses : 
-                          baseClasses.find(c => c.name === selectedBaseClass).advanced;
-            
-            const selectedIndex = Math.floor(Math.random() * classes.length);
-            const segmentAngle = 360 / classes.length;
-            
-            const spins = 6;
-            const targetAngle = 360 - (segmentAngle * selectedIndex) - (segmentAngle / 2);
-            const totalRotation = (360 * spins) + targetAngle;
-            
-            currentRotation += totalRotation;
-            canvas.style.transform = `rotate(${currentRotation}deg)`;
-            
-            setTimeout(() => {
-                const selectedClass = classes[selectedIndex];
-                
-                if (currentStage === 1) {
-                    selectedBaseClass = selectedClass.name;
-                    result.innerHTML = `✨ 抽中基礎職業<strong>${selectedClass.name} ${selectedClass.icon}</strong><br><br>準備進入昇華選擇！`;
-                    result.classList.add('show');
-                    
-                    setTimeout(async () => {
-                        currentStage = 2;
-                        document.getElementById('stageIndicator').innerHTML = 
-                            `<span>第二階段：選擇 ${selectedBaseClass} 的昇華</span>`;
-                        
-                        await drawWheel(baseClasses.find(c => c.name === selectedBaseClass).advanced);
-                        result.classList.remove('show');
-                        spinBtn.disabled = false;
-                        isSpinning = false;
-                    }, 3000);
-                } else {
-                    const tierData = tierInfo[selectedClass.tier];
-                    result.innerHTML = `
-                        🎉 恭喜你決定遊玩
-                        <strong>${selectedClass.name} ${selectedClass.icon}</strong>
-                        <div class="tier ${tierData.class}">${tierData.text}</div>
-                        <div style="font-size: 0.7em; margin-top: 15px; opacity: 0.9;">
-                            ${selectedClass.desc}
-                        </div>
-                    `;
-                    result.classList.add('show');
-                    
-                    setTimeout(() => {
-                        resetGame();
-                    }, 6000);
-                }
-            }, 5000);
-        }
+  pick(document.getElementById('default-btn'), '#AA5C5C');
+</script>
 
-        async function resetGame() {
-            currentStage = 1;
-            selectedBaseClass = null;
-            isSpinning = false;
-            currentRotation = 0;
-            
-            document.getElementById('stageIndicator').innerHTML = 
-                '<span>第一階段：選擇基礎職業</span>';
-            document.getElementById('result').classList.remove('show');
-            canvas.style.transform = 'rotate(0deg)';
-            document.getElementById('spinBtn').disabled = false;
-            
-            await drawWheel(baseClasses);
-        }
-    </script>
 </body>
 </html>
