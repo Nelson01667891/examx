@@ -7,30 +7,26 @@
 <title>R203 會議室</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "PingFang TC", "Noto Sans TC", sans-serif;
+    background: #AA5C5C;
+    color: white;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    transition: background 0.4s ease;
+  }
 
-body {
-font-family: “PingFang TC”, “Noto Sans TC”, sans-serif;
-background: #AA5C5C;
-color: white;
-height: 100vh;
-display: flex;
-flex-direction: column;
-transition: background 0.4s ease;
-}
-
-/* === 換色面板 === */
 .color-switcher {
 position: fixed;
-top: 0;
-right: 0;
-bottom: 0;
-width: 192px;
-background: rgba(0,0,0,0.55);
-backdrop-filter: blur(8px);
+top: 0; right: 0; bottom: 0;
+width: 210px;
+background: rgba(0,0,0,0.6);
+backdrop-filter: blur(10px);
 display: flex;
 flex-direction: column;
 padding: 12px 10px;
-gap: 5px;
+gap: 4px;
 overflow-y: auto;
 z-index: 100;
 }
@@ -45,10 +41,10 @@ margin-bottom: 4px;
 color: rgba(255,255,255,0.45);
 font-size: 10px;
 letter-spacing: 0.06em;
-margin-top: 6px;
+margin-top: 8px;
 margin-bottom: 1px;
 padding-left: 6px;
-border-left: 2px solid rgba(255,255,255,0.2);
+border-left: 2px solid rgba(255,255,255,0.25);
 }
 .color-switcher button {
 padding: 6px 10px;
@@ -58,20 +54,20 @@ cursor: pointer;
 font-size: 12px;
 font-family: inherit;
 font-weight: 600;
-color: white;
-text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+text-shadow: 0 1px 3px rgba(0,0,0,0.45);
 text-align: left;
 transition: border-color 0.2s, transform 0.1s;
+color: white;
 }
+.color-switcher button.light-text { color: #333; text-shadow: none; }
 .color-switcher button:hover { border-color: rgba(255,255,255,0.6); transform: translateX(-2px); }
-.color-switcher button.active { border-color: white; box-shadow: 0 0 0 1px white inset; }
+.color-switcher button.active { border-color: white; box-shadow: inset 0 0 0 1px white; }
 
-/* === Header === */
 .header {
 display: flex;
 justify-content: space-between;
 align-items: center;
-padding: 18px 210px 18px 28px;
+padding: 18px 225px 18px 28px;
 background: rgba(0,0,0,0.15);
 }
 .room-name { font-size: 2.2rem; font-weight: 500; letter-spacing: 0.05em; }
@@ -79,10 +75,9 @@ background: rgba(0,0,0,0.15);
 .time { font-size: 2.2rem; font-weight: 700; }
 .date { font-size: 1rem; opacity: 0.75; margin-top: 2px; }
 
-/* === Content === */
 .content {
 flex: 1;
-padding: 60px 210px 40px 60px;
+padding: 60px 225px 40px 60px;
 display: flex;
 flex-direction: column;
 justify-content: space-between;
@@ -122,33 +117,43 @@ justify-content: space-between;
     <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
   </div>
 
-  <div class="color-switcher" id="panel">
+  <div class="color-switcher">
     <div class="panel-title">背景色方案</div>
 
 ```
-<div class="section-label">🔴 紅色系（深→淺）</div>
-<button onclick="pick(this,'#7A3535')" style="background:#7A3535">① 暗酒紅</button>
-<button onclick="pick(this,'#8B4A4A')" style="background:#8B4A4A">② 原本深紅</button>
-<button onclick="pick(this,'#963D3D')" style="background:#963D3D">③ 深磚紅</button>
-<button onclick="pick(this,'#9B5555')" style="background:#9B5555">④ 紅褐</button>
-<button onclick="pick(this,'#AA5C5C')" style="background:#AA5C5C" id="default-btn">⑤ 磚紅 ★</button>
-<button onclick="pick(this,'#B86262')" style="background:#B86262">⑥ 中紅</button>
-<button onclick="pick(this,'#C07070')" style="background:#C07070">⑦ 前版玫瑰紅</button>
-<button onclick="pick(this,'#C47474')" style="background:#C47474">⑧ 玫瑰紅</button>
-<button onclick="pick(this,'#CC7A7A')" style="background:#CC7A7A">⑨ 淺玫瑰</button>
-<button onclick="pick(this,'#D48888')" style="background:#D48888;color:#333;text-shadow:none">⑩ 粉紅</button>
-<button onclick="pick(this,'#B85050')" style="background:#B85050">⑪ 正紅偏淺</button>
-<button onclick="pick(this,'#C46060')" style="background:#C46060">⑫ 番茄紅</button>
-<button onclick="pick(this,'#C06878')" style="background:#C06878">⑬ 莓紅</button>
-<button onclick="pick(this,'#A05060')" style="background:#A05060">⑭ 暗莓紅</button>
-<button onclick="pick(this,'#A06060')" style="background:#A06060">⑮ 灰玫紅</button>
+<div class="section-label">原色參考</div>
+<button onclick="pick(this,'#8B4A4A')" style="background:#8B4A4A">原本深紅 #8B4A4A</button>
 
-<div class="section-label">🎨 其他推薦色</div>
-<button onclick="pick(this,'#5C7A8A')" style="background:#5C7A8A">⑯ 鋼藍灰</button>
-<button onclick="pick(this,'#4A6B5C')" style="background:#4A6B5C">⑰ 深森綠</button>
-<button onclick="pick(this,'#5A5A7A')" style="background:#5A5A7A">⑱ 藍紫灰</button>
-<button onclick="pick(this,'#6B5A4A')" style="background:#6B5A4A">⑲ 咖啡棕</button>
-<button onclick="pick(this,'#4A5A6B')" style="background:#4A5A6B">⑳ 深海藍</button>
+<div class="section-label">🔴 紅色（深）</div>
+<button onclick="pick(this,'#9B5555')" style="background:#9B5555">紅褐 #9B5555</button>
+<button onclick="pick(this,'#AA5C5C')" style="background:#AA5C5C" id="default-btn">磚紅 #AA5C5C ★</button>
+<button onclick="pick(this,'#B86262')" style="background:#B86262">中紅 #B86262</button>
+<button onclick="pick(this,'#C07070')" style="background:#C07070">玫瑰紅 #C07070</button>
+<button onclick="pick(this,'#C47474')" style="background:#C47474">淺玫瑰 #C47474</button>
+
+<div class="section-label">🌸 紅色（去飽和）</div>
+<button onclick="pick(this,'#C47E7E')" style="background:#C47E7E">灰玫紅 #C47E7E</button>
+<button onclick="pick(this,'#C48888')" style="background:#C48888" class="light-text">粉磚紅 #C48888</button>
+<button onclick="pick(this,'#C49090')" style="background:#C49090" class="light-text">淡磚紅 #C49090</button>
+<button onclick="pick(this,'#B88080')" style="background:#B88080">霧玫瑰 #B88080</button>
+<button onclick="pick(this,'#B07878')" style="background:#B07878">煙燻玫瑰 #B07878</button>
+<button onclick="pick(this,'#A87070')" style="background:#A87070">灰紅 #A87070</button>
+<button onclick="pick(this,'#A06868')" style="background:#A06868">沉玫紅 #A06868</button>
+
+<div class="section-label">🩶 紅灰（更淡更中性）</div>
+<button onclick="pick(this,'#9E7070')" style="background:#9E7070">淡灰玫 #9E7070</button>
+<button onclick="pick(this,'#997878')" style="background:#997878">灰玫 #997878</button>
+<button onclick="pick(this,'#906868')" style="background:#906868">深灰玫 #906868</button>
+<button onclick="pick(this,'#8A6868')" style="background:#8A6868">暖灰紅 #8A6868</button>
+<button onclick="pick(this,'#856060')" style="background:#856060">低調暗紅 #856060</button>
+<button onclick="pick(this,'#7D5A5A')" style="background:#7D5A5A">深霧玫 #7D5A5A</button>
+
+<div class="section-label">🎨 非紅推薦</div>
+<button onclick="pick(this,'#5C7A8A')" style="background:#5C7A8A">鋼藍灰 #5C7A8A</button>
+<button onclick="pick(this,'#4A6B5C')" style="background:#4A6B5C">深森綠 #4A6B5C</button>
+<button onclick="pick(this,'#5A5A7A')" style="background:#5A5A7A">藍紫灰 #5A5A7A</button>
+<button onclick="pick(this,'#6B5A4A')" style="background:#6B5A4A">咖啡棕 #6B5A4A</button>
+<button onclick="pick(this,'#4A5A6B')" style="background:#4A5A6B">深海藍 #4A5A6B</button>
 ```
 
   </div>
