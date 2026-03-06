@@ -1,189 +1,784 @@
 <!DOCTYPE html>
-
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>R203 會議室</title>
+<title>會議室 UI 顏色編輯器</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    font-family: "PingFang TC", "Noto Sans TC", sans-serif;
-    background: #AA5C5C;
-    color: white;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    transition: background 0.4s ease;
-  }
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: "PingFang TC","Noto Sans TC",sans-serif;
+  background:#18181f; color:#fff;
+  display:flex; height:100vh; overflow:hidden;
+}
 
-.color-switcher {
-position: fixed;
-top: 0; right: 0; bottom: 0;
-width: 210px;
-background: rgba(0,0,0,0.6);
-backdrop-filter: blur(10px);
-display: flex;
-flex-direction: column;
-padding: 12px 10px;
-gap: 4px;
-overflow-y: auto;
-z-index: 100;
+/* ======== LEFT PREVIEW ======== */
+.preview-col {
+  flex:0 0 580px;
+  display:flex; flex-direction:column; align-items:center;
+  gap:16px; padding:18px 24px;
+  border-right:1px solid rgba(255,255,255,0.08);
+  overflow-y:auto;
 }
-.color-switcher .panel-title {
-color: rgba(255,255,255,0.6);
-font-size: 11px;
-text-align: center;
-letter-spacing: 0.1em;
-margin-bottom: 4px;
+.tab-row { display:flex; gap:8px; flex-shrink:0; }
+.tab-btn {
+  padding:7px 22px; border-radius:20px;
+  border:1px solid rgba(255,255,255,0.2);
+  background:transparent; color:rgba(255,255,255,0.5);
+  font-size:13px; cursor:pointer; font-family:inherit; transition:all 0.2s;
 }
-.color-switcher .section-label {
-color: rgba(255,255,255,0.45);
-font-size: 10px;
-letter-spacing: 0.06em;
-margin-top: 8px;
-margin-bottom: 1px;
-padding-left: 6px;
-border-left: 2px solid rgba(255,255,255,0.25);
-}
-.color-switcher button {
-padding: 6px 10px;
-border: 2px solid transparent;
-border-radius: 6px;
-cursor: pointer;
-font-size: 12px;
-font-family: inherit;
-font-weight: 600;
-text-shadow: 0 1px 3px rgba(0,0,0,0.45);
-text-align: left;
-transition: border-color 0.2s, transform 0.1s;
-color: white;
-}
-.color-switcher button.light-text { color: #333; text-shadow: none; }
-.color-switcher button:hover { border-color: rgba(255,255,255,0.6); transform: translateX(-2px); }
-.color-switcher button.active { border-color: white; box-shadow: inset 0 0 0 1px white; }
+.tab-btn.active { background:rgba(255,255,255,0.15); color:#fff; border-color:rgba(255,255,255,0.4); }
 
-.header {
-display: flex;
-justify-content: space-between;
-align-items: center;
-padding: 18px 225px 18px 28px;
-background: rgba(0,0,0,0.15);
+/* Device */
+.device-wrap { position:relative; width:510px; flex-shrink:0; }
+.led-left,.led-right {
+  position:absolute; top:10%; bottom:10%;
+  width:9px; border-radius:5px;
+  transition:background 0.3s,box-shadow 0.3s; z-index:2;
 }
-.room-name { font-size: 2.2rem; font-weight: 500; letter-spacing: 0.05em; }
-.datetime { text-align: right; }
-.time { font-size: 2.2rem; font-weight: 700; }
-.date { font-size: 1rem; opacity: 0.75; margin-top: 2px; }
-
-.content {
-flex: 1;
-padding: 60px 225px 40px 60px;
-display: flex;
-flex-direction: column;
-justify-content: space-between;
+.led-left  { left:-13px; }
+.led-right { right:-13px; }
+.device {
+  width:510px; border-radius:12px; overflow:visible;
+  border:2px solid rgba(255,255,255,0.12);
+  box-shadow:0 16px 48px rgba(0,0,0,0.6);
 }
-.meeting-title { font-size: 3.2rem; font-weight: 700; color: #FFD966; margin-bottom: 20px; }
-.meeting-time { font-size: 1.8rem; opacity: 0.9; }
-.attendees { display: flex; align-items: center; gap: 10px; font-size: 1.5rem; }
-.attendees svg { width: 40px; height: 40px; fill: #FFD966; }
+/* Screen = outer shell only, no bg here */
+.screen {
+  width:100%; border-radius:12px; overflow:hidden;
+  position:relative; display:flex; flex-direction:column;
+}
 
-.search-icon { position: fixed; bottom: 20px; left: 20px; opacity: 0.6; }
-.search-icon svg { width: 32px; height: 32px; fill: white; }
+/* ====== UPPER PANEL (Header area) ====== */
+.panel-top {
+  padding:20px 20px 14px;
+  flex-shrink:0;
+  transition:background 0.3s;
+  background-size:cover; background-position:center;
+}
+.hdr {
+  display:flex; justify-content:space-between; align-items:flex-start;
+}
+.room-name  { font-size:1.3rem; font-weight:500; letter-spacing:0.05em; transition:color 0.3s; }
+.clock-right { text-align:right; }
+.clock-time  { font-size:1.3rem; font-weight:700; transition:color 0.3s; }
+.clock-date  { font-size:0.75rem; opacity:0.75; transition:color 0.3s; }
+
+/* ====== DIVIDER ====== */
+.panel-divider {
+  height:3px;
+  flex-shrink:0;
+  transition:background 0.3s;
+}
+
+/* ====== LOWER PANEL (Content area) ====== */
+.panel-bot {
+  flex:1; position:relative;
+  padding:14px 20px 16px;
+  transition:background 0.3s;
+  background-size:cover; background-position:center;
+}
+
+/* FREE STATE */
+.free-body { position:relative; padding-bottom:32px; min-height:200px; }
+.timeline  { position:relative; padding-left:52px; padding-right:120px; }
+.tl-line   { position:absolute; left:38px; top:0; bottom:0; width:1px; transition:background 0.3s; }
+.tl-row    { display:flex; align-items:center; height:26px; font-size:0.76rem; position:relative; transition:color 0.3s; }
+.free-btns { position:absolute; right:0; top:0; display:flex; flex-direction:column; gap:10px; }
+.free-btn  {
+  width:88px; height:88px; border-radius:50%; border:none;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:5px; font-size:0.68rem; cursor:default; font-family:inherit;
+  transition:background 0.3s,color 0.3s; flex-shrink:0;
+}
+.free-btn svg { width:30px; height:30px; transition:fill 0.3s; }
+.bottom-bar {
+  display:flex; align-items:center; gap:10px;
+  position:absolute; bottom:8px; left:0; right:0;
+}
+.corner-icon svg { width:20px; height:20px; transition:fill 0.3s; }
+.attendee-inline { display:flex; align-items:center; gap:5px; font-size:0.9rem; transition:color 0.3s; }
+.attendee-inline svg { width:22px; height:22px; transition:fill 0.3s; }
+
+/* BUSY STATE */
+#state-busy { position:relative; min-height:240px; padding-bottom:36px; }
+.busy-content { padding-right:110px; }
+.mtg-title { font-size:1.6rem; font-weight:700; margin:0 0 6px; transition:color 0.3s; }
+.mtg-time  { font-size:1.05rem; transition:color 0.3s; }
+.busy-bottom {
+  display:flex; align-items:center; gap:10px;
+  position:absolute; bottom:8px; left:0; right:0;
+}
+.busy-btns {
+  position:absolute; right:0; top:0; width:100px;
+  display:flex; flex-direction:column; gap:8px; padding-top:4px;
+}
+.busy-btn {
+  width:88px; height:88px; border-radius:50%; border:none;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:4px; font-size:0.64rem; cursor:default; font-family:inherit;
+  transition:background 0.3s,color 0.3s; flex-shrink:0;
+}
+.busy-btn svg { width:26px; height:26px; transition:fill 0.3s; }
+
+/* Presets */
+.preset-label { font-size:11px; color:rgba(255,255,255,0.4); text-align:center; width:100%; }
+.preset-row { display:flex; gap:7px; flex-wrap:wrap; justify-content:center; width:100%; max-width:510px; }
+.preset-dot {
+  width:36px; height:36px; border-radius:50%; cursor:pointer;
+  border:2px solid transparent; transition:transform 0.2s,border-color 0.2s;
+  flex-shrink:0; position:relative;
+}
+.preset-dot:hover { transform:scale(1.2); border-color:white; }
+.ptip {
+  display:none; position:absolute; bottom:42px; left:50%;
+  transform:translateX(-50%); background:rgba(0,0,0,0.85);
+  color:#fff; font-size:11px; padding:3px 8px; border-radius:4px;
+  white-space:nowrap; pointer-events:none; z-index:99;
+}
+.preset-dot:hover .ptip { display:block; }
+
+/* ======== RIGHT CONTROLS ======== */
+.controls-col { flex:1; overflow-y:auto; padding:20px 24px; }
+.controls-col h2 { font-size:12px; letter-spacing:0.12em; color:rgba(255,255,255,0.4); margin-bottom:16px; text-transform:uppercase; }
+.section { margin-bottom:20px; }
+.section-title { font-size:11px; letter-spacing:0.1em; color:rgba(255,255,255,0.35); text-transform:uppercase; padding:5px 0 7px; border-bottom:1px solid rgba(255,255,255,0.06); margin-bottom:8px; }
+.row { display:flex; align-items:center; padding:5px 0; gap:10px; }
+.row-label { font-size:13px; color:rgba(255,255,255,0.8); flex:1; min-width:0; }
+.row-right { display:flex; align-items:center; gap:7px; flex-shrink:0; }
+.cp { width:28px; height:28px; border-radius:6px; border:1px solid rgba(255,255,255,0.15); cursor:pointer; flex-shrink:0; transition:transform 0.15s; }
+.cp:hover { transform:scale(1.1); }
+input[type=color] { width:0; height:0; opacity:0; position:absolute; pointer-events:none; }
+.hex-input {
+  font-family:monospace; font-size:12px;
+  background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.12);
+  border-radius:5px; color:rgba(255,255,255,0.85);
+  padding:4px 7px; width:76px; outline:none; transition:border-color 0.2s;
+}
+.hex-input:focus { border-color:rgba(255,255,255,0.4); }
+.hex-input.invalid { border-color:#ff5555; }
+
+/* Image upload button */
+.img-upload-btn {
+  padding:5px 12px; border-radius:6px;
+  background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2);
+  color:rgba(255,255,255,0.8); font-size:12px; cursor:pointer; font-family:inherit;
+  transition:background 0.2s; white-space:nowrap;
+}
+.img-upload-btn:hover { background:rgba(255,255,255,0.18); }
+.img-clear-btn {
+  padding:5px 10px; border-radius:6px;
+  background:rgba(255,60,60,0.15); border:1px solid rgba(255,60,60,0.3);
+  color:rgba(255,120,120,0.9); font-size:12px; cursor:pointer; font-family:inherit;
+  transition:background 0.2s;
+}
+.img-clear-btn:hover { background:rgba(255,60,60,0.25); }
+.img-filename { font-size:11px; color:rgba(255,255,255,0.4); max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+/* Scrollbars */
+.controls-col::-webkit-scrollbar,
+.preview-col::-webkit-scrollbar { width:4px; }
+.controls-col::-webkit-scrollbar-thumb,
+.preview-col::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.15); border-radius:2px; }
+
+/* ======== SAVE SLOTS ======== */
+.save-section { margin-top:4px; margin-bottom:20px; }
+.save-section .section-title { font-size:11px; letter-spacing:0.1em; color:rgba(255,255,255,0.35); text-transform:uppercase; padding:5px 0 7px; border-bottom:1px solid rgba(255,255,255,0.06); margin-bottom:10px; }
+.save-slots { display:flex; flex-direction:column; gap:8px; }
+.save-slot {
+  display:flex; align-items:center; gap:8px;
+  background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
+  border-radius:8px; padding:8px 10px;
+  transition:border-color 0.2s;
+}
+.save-slot:hover { border-color:rgba(255,255,255,0.18); }
+.slot-preview {
+  display:flex; gap:4px; flex-shrink:0;
+}
+.slot-swatch {
+  width:14px; height:28px; border-radius:3px;
+  border:1px solid rgba(255,255,255,0.1);
+}
+.slot-info { flex:1; min-width:0; }
+.slot-name {
+  font-size:12px; color:rgba(255,255,255,0.85);
+  font-family:monospace; background:transparent;
+  border:none; border-bottom:1px solid transparent;
+  padding:1px 2px; width:100%; outline:none;
+  transition:border-color 0.2s;
+}
+.slot-name:focus { border-bottom-color:rgba(255,255,255,0.3); }
+.slot-date { font-size:10px; color:rgba(255,255,255,0.3); margin-top:2px; }
+.slot-actions { display:flex; gap:5px; flex-shrink:0; }
+.slot-btn {
+  padding:4px 10px; border-radius:5px; border:none;
+  font-size:11px; cursor:pointer; font-family:inherit;
+  transition:background 0.2s; white-space:nowrap;
+}
+.slot-btn.save-btn  { background:rgba(80,180,120,0.2); color:#80e0a8; border:1px solid rgba(80,180,120,0.3); }
+.slot-btn.save-btn:hover  { background:rgba(80,180,120,0.35); }
+.slot-btn.load-btn  { background:rgba(80,140,255,0.2); color:#80b8ff; border:1px solid rgba(80,140,255,0.3); }
+.slot-btn.load-btn:hover  { background:rgba(80,140,255,0.35); }
+.slot-btn.load-btn:disabled { opacity:0.3; cursor:default; }
+.slot-empty .slot-date { font-style:italic; }
+
 </style>
-
 </head>
 <body>
 
-  <div class="header">
-    <div class="room-name">R203會議室</div>
-    <div class="datetime">
-      <div class="time">下午 05:33</div>
-      <div class="date">週四. 2月 26, 2026</div>
+<!-- ===== LEFT PREVIEW ===== -->
+<div class="preview-col">
+  <div class="tab-row">
+    <button class="tab-btn active" onclick="showState('free')">無會議</button>
+    <button class="tab-btn" onclick="showState('busy')">會議中</button>
+  </div>
+
+  <div class="device-wrap">
+    <div class="led-left"  id="led-l"></div>
+    <div class="led-right" id="led-r"></div>
+    <div class="device">
+      <div class="screen" id="screen">
+
+        <!-- UPPER PANEL: Header -->
+        <div class="panel-top" id="panel-top">
+          <div class="hdr">
+            <div class="room-name" id="room-name">R２０３會議室</div>
+            <div class="clock-right">
+              <div class="clock-time" id="clk-time">上午 10:52</div>
+              <div class="clock-date" id="clk-date">週三. 3月 4, 2026</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DIVIDER -->
+        <div class="panel-divider" id="panel-divider"></div>
+
+        <!-- LOWER PANEL: Content -->
+        <div class="panel-bot" id="panel-bot">
+
+          <!-- FREE STATE -->
+          <div class="free-body" id="state-free">
+            <div class="timeline">
+              <div class="tl-line" id="tl-line"></div>
+              <div id="tl-rows"></div>
+            </div>
+            <div class="free-btns">
+              <button class="free-btn" id="fb-search">
+                <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.5 6.5 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                <span>會議室查詢</span>
+              </button>
+              <button class="free-btn" id="fb-book">
+                <svg viewBox="0 0 24 24"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/></svg>
+                <span>預約會議</span>
+              </button>
+            </div>
+            <div class="bottom-bar">
+              <div class="corner-icon" id="free-icon">
+                <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.5 6.5 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- BUSY STATE -->
+          <div id="state-busy" style="display:none;">
+            <div class="busy-content">
+              <div class="mtg-title" id="mtg-title">測試會議狀態</div>
+              <div class="mtg-time"  id="mtg-time">10:00 ～ 12:00</div>
+            </div>
+            <div class="busy-btns">
+              <button class="busy-btn" id="bb-checkin">
+                <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                <span>手動簽到</span>
+              </button>
+              <button class="busy-btn" id="bb-end">
+                <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                <span>立即結束</span>
+              </button>
+              <button class="busy-btn" id="bb-extend">
+                <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>
+                <span>延長會議</span>
+              </button>
+            </div>
+            <div class="busy-bottom">
+              <div class="corner-icon" id="busy-icon">
+                <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.5 6.5 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+              </div>
+              <div class="attendee-inline" id="busy-attendee">
+                <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+                <span>0</span>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- panel-bot -->
+      </div><!-- screen -->
+    </div><!-- device -->
+  </div><!-- device-wrap -->
+
+  <div class="preset-label">快速套用預設主題（共 13 種）</div>
+  <div class="preset-row" id="preset-row"></div>
+</div><!-- preview-col -->
+
+<!-- ===== RIGHT CONTROLS ===== -->
+<div class="controls-col">
+  <h2>顏色編輯器 — 點色塊 或 直接輸入 Hex 色碼</h2>
+
+  <!-- SAVE SLOTS -->
+  <div class="save-section">
+    <div class="section-title">💾 我的儲存方案</div>
+    <div class="save-slots" id="save-slots"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">🔲 上方區塊背景（Header）</div>
+    <div class="row">
+      <span class="row-label">背景色</span>
+      <div class="row-right" id="rr-topBg"></div>
+    </div>
+    <div class="row">
+      <span class="row-label">背景圖片</span>
+      <div class="row-right">
+        <button class="img-upload-btn" onclick="triggerImgUpload('top')">📁 選擇圖片</button>
+        <button class="img-clear-btn" onclick="clearImg('top')" id="top-img-clear" style="display:none">✕ 清除</button>
+        <input type="file" id="img-input-top" accept="image/*" style="display:none" onchange="handleImgUpload('top',this)">
+        <span class="img-filename" id="top-img-name"></span>
+      </div>
     </div>
   </div>
 
-  <div class="content">
-    <div>
-      <div class="meeting-title">Test123</div>
-      <div class="meeting-time">17:33 ～ 18:33</div>
+  <div class="section">
+    <div class="section-title">➖ 分隔線</div>
+    <div class="row"><span class="row-label">分隔線顏色</span><div class="row-right" id="rr-divider"></div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">🔳 下方區塊背景（內容）— 無會議</div>
+    <div class="row">
+      <span class="row-label">背景色</span>
+      <div class="row-right" id="rr-freeBg"></div>
     </div>
-    <div class="attendees">
-      <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
-      <span>0</span>
+    <div class="row">
+      <span class="row-label">背景圖片</span>
+      <div class="row-right">
+        <button class="img-upload-btn" onclick="triggerImgUpload('free')">📁 選擇圖片</button>
+        <button class="img-clear-btn" onclick="clearImg('free')" id="free-img-clear" style="display:none">✕ 清除</button>
+        <input type="file" id="img-input-free" accept="image/*" style="display:none" onchange="handleImgUpload('free',this)">
+        <span class="img-filename" id="free-img-name"></span>
+      </div>
     </div>
   </div>
 
-  <div class="search-icon">
-    <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+  <div class="section">
+    <div class="section-title">🔳 下方區塊背景（內容）— 會議中</div>
+    <div class="row">
+      <span class="row-label">背景色</span>
+      <div class="row-right" id="rr-busyBg"></div>
+    </div>
+    <div class="row">
+      <span class="row-label">背景圖片</span>
+      <div class="row-right">
+        <button class="img-upload-btn" onclick="triggerImgUpload('busy')">📁 選擇圖片</button>
+        <button class="img-clear-btn" onclick="clearImg('busy')" id="busy-img-clear" style="display:none">✕ 清除</button>
+        <input type="file" id="img-input-busy" accept="image/*" style="display:none" onchange="handleImgUpload('busy',this)">
+        <span class="img-filename" id="busy-img-name"></span>
+      </div>
+    </div>
   </div>
 
-  <div class="color-switcher">
-    <div class="panel-title">背景色方案</div>
-
-```
-<div class="section-label">原色參考</div>
-<button onclick="pick(this,'#8B4A4A')" style="background:#8B4A4A">原本深紅 #8B4A4A</button>
-
-<div class="section-label">🔴 紅色（深）</div>
-<button onclick="pick(this,'#9B5555')" style="background:#9B5555">紅褐 #9B5555</button>
-<button onclick="pick(this,'#AA5C5C')" style="background:#AA5C5C" id="default-btn">磚紅 #AA5C5C ★</button>
-<button onclick="pick(this,'#B86262')" style="background:#B86262">中紅 #B86262</button>
-<button onclick="pick(this,'#C07070')" style="background:#C07070">玫瑰紅 #C07070</button>
-<button onclick="pick(this,'#C47474')" style="background:#C47474">淺玫瑰 #C47474</button>
-
-<div class="section-label">🌸 紅色（去飽和）</div>
-<button onclick="pick(this,'#C47E7E')" style="background:#C47E7E">灰玫紅 #C47E7E</button>
-<button onclick="pick(this,'#C48888')" style="background:#C48888" class="light-text">粉磚紅 #C48888</button>
-<button onclick="pick(this,'#C49090')" style="background:#C49090" class="light-text">淡磚紅 #C49090</button>
-<button onclick="pick(this,'#B88080')" style="background:#B88080">霧玫瑰 #B88080</button>
-<button onclick="pick(this,'#B07878')" style="background:#B07878">煙燻玫瑰 #B07878</button>
-<button onclick="pick(this,'#A87070')" style="background:#A87070">灰紅 #A87070</button>
-<button onclick="pick(this,'#A06868')" style="background:#A06868">沉玫紅 #A06868</button>
-
-<div class="section-label">🩶 紅灰（更淡更中性）</div>
-<button onclick="pick(this,'#9E7070')" style="background:#9E7070">淡灰玫 #9E7070</button>
-<button onclick="pick(this,'#997878')" style="background:#997878">灰玫 #997878</button>
-<button onclick="pick(this,'#906868')" style="background:#906868">深灰玫 #906868</button>
-<button onclick="pick(this,'#8A6868')" style="background:#8A6868">暖灰紅 #8A6868</button>
-<button onclick="pick(this,'#856060')" style="background:#856060">低調暗紅 #856060</button>
-<button onclick="pick(this,'#7D5A5A')" style="background:#7D5A5A">深霧玫 #7D5A5A</button>
-
-<div class="section-label">🎨 非紅推薦</div>
-<button onclick="pick(this,'#5C7A8A')" style="background:#5C7A8A">鋼藍灰 #5C7A8A</button>
-<button onclick="pick(this,'#4A6B5C')" style="background:#4A6B5C">深森綠 #4A6B5C</button>
-<button onclick="pick(this,'#5A5A7A')" style="background:#5A5A7A">藍紫灰 #5A5A7A</button>
-<button onclick="pick(this,'#6B5A4A')" style="background:#6B5A4A">咖啡棕 #6B5A4A</button>
-<button onclick="pick(this,'#4A5A6B')" style="background:#4A5A6B">深海藍 #4A5A6B</button>
-```
-
+  <div class="section">
+    <div class="section-title">🔤 Header 文字</div>
+    <div class="row"><span class="row-label">房間名稱</span><div class="row-right" id="rr-roomName"></div></div>
+    <div class="row"><span class="row-label">時鐘時間</span><div class="row-right" id="rr-clockTime"></div></div>
+    <div class="row"><span class="row-label">日期文字</span><div class="row-right" id="rr-clockDate"></div></div>
   </div>
+  <div class="section">
+    <div class="section-title">📅 時間軸（無會議）</div>
+    <div class="row"><span class="row-label">軸線顏色</span><div class="row-right" id="rr-tlLine"></div></div>
+    <div class="row"><span class="row-label">刻度線顏色</span><div class="row-right" id="rr-tlTick"></div></div>
+    <div class="row"><span class="row-label">時間文字</span><div class="row-right" id="rr-tlText"></div></div>
+  </div>
+  <div class="section">
+    <div class="section-title">🔘 功能按鈕（查詢 / 預約）</div>
+    <div class="row"><span class="row-label">按鈕背景</span><div class="row-right" id="rr-fbBg"></div></div>
+    <div class="row"><span class="row-label">圖示顏色</span><div class="row-right" id="rr-fbIcon"></div></div>
+    <div class="row"><span class="row-label">文字顏色</span><div class="row-right" id="rr-fbText"></div></div>
+  </div>
+  <div class="section">
+    <div class="section-title">📝 會議資訊（會議中）</div>
+    <div class="row"><span class="row-label">會議標題</span><div class="row-right" id="rr-mtgTitle"></div></div>
+    <div class="row"><span class="row-label">會議時間</span><div class="row-right" id="rr-mtgTime"></div></div>
+  </div>
+  <div class="section">
+    <div class="section-title">🔘 操作按鈕（簽到 / 結束 / 延長）</div>
+    <div class="row"><span class="row-label">按鈕背景</span><div class="row-right" id="rr-bbBg"></div></div>
+    <div class="row"><span class="row-label">圖示顏色</span><div class="row-right" id="rr-bbIcon"></div></div>
+    <div class="row"><span class="row-label">文字顏色</span><div class="row-right" id="rr-bbText"></div></div>
+  </div>
+  <div class="section">
+    <div class="section-title">👤 與會人數 / 搜尋圖示</div>
+    <div class="row"><span class="row-label">與會人數圖示 + 數字</span><div class="row-right" id="rr-attendee"></div></div>
+    <div class="row"><span class="row-label">搜尋圖示</span><div class="row-right" id="rr-cornerIcon"></div></div>
+  </div>
+  <div class="section">
+    <div class="section-title">💡 LED 燈條</div>
+    <div class="row"><span class="row-label">空閒 LED</span><div class="row-right" id="rr-ledFree"></div></div>
+    <div class="row"><span class="row-label">使用中 LED</span><div class="row-right" id="rr-ledBusy"></div></div>
+  </div>
+</div>
 
 <script>
-  let current = null;
+// ============================================================
+// COLOR STATE
+// ============================================================
+const C = {
+  topBg:'#f0f0f0',
+  divider:'#cccccc',
+  freeBg:'#ffffff', busyBg:'#8B4A4A',
+  roomName:'#333333', clockTime:'#333333', clockDate:'#666666',
+  tlLine:'#cccccc', tlTick:'#aaaaaa', tlText:'#777777',
+  fbBg:'#888888', fbIcon:'#ffffff', fbText:'#ffffff',
+  mtgTitle:'#FFD966', mtgTime:'#ffffff',
+  attendee:'#FFD966',
+  bbBg:'#6B2A2A', bbIcon:'#ffffff', bbText:'#ffffff',
+  ledFree:'#22cc44', ledBusy:'#dd2222',
+  cornerIcon:'#aaaaaa',
+};
 
-  function pick(btn, color) {
-    document.body.style.background = color;
-    if (current) current.classList.remove('active');
-    btn.classList.add('active');
-    current = btn;
+// BG image data URLs — top panel + free/busy bottom panel
+const bgImg = { top: null, free: null, busy: null };
+
+// ============================================================
+// 13 PRESETS
+// ============================================================
+const presets = [
+  { name:'原版深紅',   dot:'#8B4A4A', topBg:'#f0f0f0',divider:'#cccccc',freeBg:'#ffffff',busyBg:'#8B4A4A',roomName:'#333333',clockTime:'#333333',clockDate:'#666666',tlLine:'#cccccc',tlTick:'#aaaaaa',tlText:'#777777',fbBg:'#888888',fbIcon:'#ffffff',fbText:'#ffffff',mtgTitle:'#FFD966',mtgTime:'#ffffff',attendee:'#FFD966',bbBg:'#6B2A2A',bbIcon:'#ffffff',bbText:'#ffffff',ledFree:'#22cc44',ledBusy:'#dd2222',cornerIcon:'#aaaaaa' },
+  { name:'全白簡約',   dot:'#e0e0e0', topBg:'#f0f0f0',divider:'#dddddd',freeBg:'#f8f8f8',busyBg:'#f0f0f0',roomName:'#222222',clockTime:'#222222',clockDate:'#555555',tlLine:'#dddddd',tlTick:'#bbbbbb',tlText:'#777777',fbBg:'#e0e0e0',fbIcon:'#444444',fbText:'#444444',mtgTitle:'#e05000',mtgTime:'#333333',attendee:'#e05000',bbBg:'#cccccc',bbIcon:'#333333',bbText:'#333333',ledFree:'#00cc44',ledBusy:'#ee3300',cornerIcon:'#bbbbbb' },
+  { name:'深夜藍',     dot:'#0d1b2e', topBg:'#0a1020',divider:'#1e3a5a',freeBg:'#0d1b2e',busyBg:'#0a1628',roomName:'#a0c4ff',clockTime:'#a0c4ff',clockDate:'#6080aa',tlLine:'#1e3a5a',tlTick:'#2a4a6a',tlText:'#4a7aaa',fbBg:'#1a3a6a',fbIcon:'#60aaff',fbText:'#60aaff',mtgTitle:'#60ccff',mtgTime:'#80aacc',attendee:'#60ccff',bbBg:'#1a4a8a',bbIcon:'#60aaff',bbText:'#60aaff',ledFree:'#00ffaa',ledBusy:'#ff4444',cornerIcon:'#4a7aaa' },
+  { name:'企業灰',     dot:'#2e3a48', topBg:'#e8ecf0',divider:'#b0bcc8',freeBg:'#f4f6f8',busyBg:'#2e3a48',roomName:'#2e3a48',clockTime:'#2e3a48',clockDate:'#6a7a8a',tlLine:'#c8d0da',tlTick:'#a0aab4',tlText:'#6a7a8a',fbBg:'#4a6080',fbIcon:'#ffffff',fbText:'#ffffff',mtgTitle:'#f0c040',mtgTime:'#c0d0e0',attendee:'#f0c040',bbBg:'#3a4a5a',bbIcon:'#e0e8f0',bbText:'#e0e8f0',ledFree:'#44dd88',ledBusy:'#ff5533',cornerIcon:'#8090a0' },
+  { name:'森林綠',     dot:'#1a3a22', topBg:'#e0f0e0',divider:'#80c080',freeBg:'#f0f8f0',busyBg:'#1a3a22',roomName:'#1a3a22',clockTime:'#1a3a22',clockDate:'#5a8a5a',tlLine:'#a0c8a0',tlTick:'#80a880',tlText:'#5a8a5a',fbBg:'#2a6a3a',fbIcon:'#c0f0c0',fbText:'#c0f0c0',mtgTitle:'#a0ff80',mtgTime:'#80c080',attendee:'#a0ff80',bbBg:'#224a2a',bbIcon:'#a0e0a0',bbText:'#a0e0a0',ledFree:'#44ff88',ledBusy:'#ff6622',cornerIcon:'#5a8a5a' },
+  { name:'金融深藍',   dot:'#0a1628', topBg:'#eef2f8',divider:'#8090c0',freeBg:'#f8fafc',busyBg:'#0a1628',roomName:'#0a1628',clockTime:'#0a1628',clockDate:'#6080a0',tlLine:'#c0ccd8',tlTick:'#a0b0c0',tlText:'#6080a0',fbBg:'#0a2848',fbIcon:'#80c0ff',fbText:'#80c0ff',mtgTitle:'#ffd700',mtgTime:'#a0b8d0',attendee:'#ffd700',bbBg:'#102040',bbIcon:'#80b8e8',bbText:'#80b8e8',ledFree:'#00ffcc',ledBusy:'#ff3322',cornerIcon:'#7090b0' },
+  { name:'霧霾紫灰',   dot:'#2a2038', topBg:'#e8e4f0',divider:'#a898c8',freeBg:'#f0eef4',busyBg:'#2a2038',roomName:'#2a2038',clockTime:'#2a2038',clockDate:'#7868a0',tlLine:'#c8c0d8',tlTick:'#a898b8',tlText:'#7868a0',fbBg:'#5a4878',fbIcon:'#e0d8f8',fbText:'#e0d8f8',mtgTitle:'#ffb8d8',mtgTime:'#b0a8c8',attendee:'#ffb8d8',bbBg:'#3a2858',bbIcon:'#c8b8e8',bbText:'#c8b8e8',ledFree:'#88ffcc',ledBusy:'#ff44aa',cornerIcon:'#8878a8' },
+  { name:'暖咖啡',     dot:'#2e1a08', topBg:'#f5ede0',divider:'#c09060',freeBg:'#fdf8f2',busyBg:'#2e1a08',roomName:'#2e1a08',clockTime:'#2e1a08',clockDate:'#806040',tlLine:'#d8c0a0',tlTick:'#b89878',tlText:'#806040',fbBg:'#7a4820',fbIcon:'#ffe8c8',fbText:'#ffe8c8',mtgTitle:'#ffcc66',mtgTime:'#c0a080',attendee:'#ffcc66',bbBg:'#5a3010',bbIcon:'#e8c898',bbText:'#e8c898',ledFree:'#66ff88',ledBusy:'#ff8833',cornerIcon:'#906040' },
+  { name:'極淺灰白',   dot:'#d0d0d8', topBg:'#f4f4f8',divider:'#d0d0dc',freeBg:'#ffffff',busyBg:'#f0f0f2',roomName:'#1a1a2a',clockTime:'#1a1a2a',clockDate:'#606070',tlLine:'#e0e0e8',tlTick:'#c0c0cc',tlText:'#808090',fbBg:'#d8d8e0',fbIcon:'#2a2a3a',fbText:'#2a2a3a',mtgTitle:'#cc4444',mtgTime:'#444450',attendee:'#cc4444',bbBg:'#e0e0e8',bbIcon:'#2a2a3a',bbText:'#2a2a3a',ledFree:'#22dd55',ledBusy:'#ee2222',cornerIcon:'#b0b0c0' },
+  { name:'霓虹暗黑',   dot:'#080810', topBg:'#050508',divider:'#00ffcc',freeBg:'#0a0a0e',busyBg:'#080810',roomName:'#00ffcc',clockTime:'#00ffcc',clockDate:'#008080',tlLine:'#001a1a',tlTick:'#003030',tlText:'#008080',fbBg:'#001a1a',fbIcon:'#00ffcc',fbText:'#00ffcc',mtgTitle:'#ff44cc',mtgTime:'#cc44ff',attendee:'#ff44cc',bbBg:'#1a001a',bbIcon:'#ff44cc',bbText:'#ff44cc',ledFree:'#00ffcc',ledBusy:'#ff0088',cornerIcon:'#006666' },
+  { name:'珊瑚橘',     dot:'#e85d3a', topBg:'#fff0ea',divider:'#e85d3a',freeBg:'#fff8f5',busyBg:'#c94a28',roomName:'#7a2010',clockTime:'#7a2010',clockDate:'#b06040',tlLine:'#f0c0a8',tlTick:'#d09878',tlText:'#a06040',fbBg:'#e85d3a',fbIcon:'#ffffff',fbText:'#ffffff',mtgTitle:'#ffe0a0',mtgTime:'#ffd0c0',attendee:'#ffe0a0',bbBg:'#b03a20',bbIcon:'#ffe0c0',bbText:'#ffe0c0',ledFree:'#44ffaa',ledBusy:'#ff6622',cornerIcon:'#c08060' },
+  { name:'冰湖藍灰',   dot:'#607d8b', topBg:'#dde4e8',divider:'#607d8b',freeBg:'#ecf0f3',busyBg:'#37474f',roomName:'#263238',clockTime:'#263238',clockDate:'#546e7a',tlLine:'#b0bec5',tlTick:'#90a4ae',tlText:'#607d8b',fbBg:'#607d8b',fbIcon:'#eceff1',fbText:'#eceff1',mtgTitle:'#80deea',mtgTime:'#b0bec5',attendee:'#80deea',bbBg:'#455a64',bbIcon:'#cfd8dc',bbText:'#cfd8dc',ledFree:'#00e5ff',ledBusy:'#ff5252',cornerIcon:'#90a4ae' },
+  { name:'玫瑰金',     dot:'#c2847a', topBg:'#f8e8e4',divider:'#c2847a',freeBg:'#fdf0ee',busyBg:'#8b4558',roomName:'#5a1a2a',clockTime:'#5a1a2a',clockDate:'#9a5060',tlLine:'#e8c0b8',tlTick:'#d09888',tlText:'#a07068',fbBg:'#c2847a',fbIcon:'#fff0ee',fbText:'#fff0ee',mtgTitle:'#ffe8d0',mtgTime:'#f0c0b0',attendee:'#ffe8d0',bbBg:'#7a3040',bbIcon:'#f8d0c8',bbText:'#f8d0c8',ledFree:'#ffcc88',ledBusy:'#ff6688',cornerIcon:'#c09088' },
+];
+
+// ============================================================
+// APPLIERS
+// ============================================================
+const appliers = {
+  topBg:      v => { if(!bgImg.top) { const p=document.getElementById('panel-top'); p.style.background=v; p.style.backgroundImage='none'; } },
+  divider:    v => { document.getElementById('panel-divider').style.background=v; },
+  freeBg:     v => { if(state==='free' && !bgImg.free) { const p=document.getElementById('panel-bot'); p.style.background=v; p.style.backgroundImage='none'; } },
+  busyBg:     v => { if(state==='busy' && !bgImg.busy) { const p=document.getElementById('panel-bot'); p.style.background=v; p.style.backgroundImage='none'; } },
+  roomName:   v => { document.getElementById('room-name').style.color=v; },
+  clockTime:  v => { document.getElementById('clk-time').style.color=v; },
+  clockDate:  v => { document.getElementById('clk-date').style.color=v; },
+  tlLine:     v => { document.getElementById('tl-line').style.background=v; },
+  tlTick:     v => { document.querySelectorAll('.tl-tick').forEach(e=>e.style.background=v); },
+  tlText:     v => { document.querySelectorAll('.tl-row').forEach(e=>e.style.color=v); },
+  fbBg:       v => { qsa('#fb-search,#fb-book', e=>e.style.background=v); },
+  fbIcon:     v => { qsa('#fb-search path,#fb-book path', e=>e.style.fill=v); },
+  fbText:     v => { qsa('#fb-search,#fb-book', e=>{e.style.color=v; e.querySelectorAll('span').forEach(s=>s.style.color=v);}); },
+  mtgTitle:   v => { document.getElementById('mtg-title').style.color=v; },
+  mtgTime:    v => { document.getElementById('mtg-time').style.color=v; },
+  attendee:   v => {
+    const a=document.getElementById('busy-attendee');
+    if(!a) return;
+    a.style.color=v;
+    a.querySelectorAll('path').forEach(p=>p.style.fill=v);
+  },
+  bbBg:       v => { qsa('#bb-checkin,#bb-end,#bb-extend', e=>e.style.background=v); },
+  bbIcon:     v => { qsa('#bb-checkin path,#bb-end path,#bb-extend path', e=>e.style.fill=v); },
+  bbText:     v => { qsa('#bb-checkin,#bb-end,#bb-extend', e=>{e.style.color=v; e.querySelectorAll('span').forEach(s=>s.style.color=v);}); },
+  ledFree:    v => { if(state==='free') setLED(v); },
+  ledBusy:    v => { if(state==='busy') setLED(v); },
+  cornerIcon: v => { qsa('#free-icon path,#busy-icon path', e=>e.style.fill=v); },
+};
+
+function qsa(sel,fn){ document.querySelectorAll(sel).forEach(fn); }
+
+function setLED(color){
+  ['led-l','led-r'].forEach(id=>{
+    const el=document.getElementById(id);
+    el.style.background=color;
+    el.style.boxShadow=`0 0 16px ${color}`;
+  });
+}
+
+// ============================================================
+// setColor
+// ============================================================
+function setColor(key, val, fromInput){
+  if(!isValidHex(val)) return;
+  const hex=normalizeHex(val);
+  C[key]=hex;
+  const cp=document.getElementById('cp-'+key);
+  if(cp) cp.style.background=hex;
+  const pk=document.getElementById('pk-'+key);
+  if(pk) pk.value=hex;
+  if(!fromInput){
+    const hi=document.getElementById('hi-'+key);
+    if(hi){ hi.value=hex.toUpperCase(); hi.classList.remove('invalid'); }
   }
+  if(appliers[key]) appliers[key](hex);
+}
 
-  function updateTime() {
-    const now = new Date();
-    let h = now.getHours();
-    const m = String(now.getMinutes()).padStart(2,'0');
-    const ampm = h >= 12 ? '下午' : '上午';
-    if (h > 12) h -= 12;
-    if (h === 0) h = 12;
-    const days = ['週日','週一','週二','週三','週四','週五','週六'];
-    document.querySelector('.time').textContent = `${ampm} ${String(h).padStart(2,'0')}:${m}`;
-    document.querySelector('.date').textContent = `${days[now.getDay()]}. ${now.getMonth()+1}月 ${now.getDate()}, ${now.getFullYear()}`;
+function isValidHex(v){ return /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test((v||'').trim()); }
+function normalizeHex(v){
+  v=v.trim();
+  if(v.length===4) return '#'+v[1]+v[1]+v[2]+v[2]+v[3]+v[3];
+  return v.toLowerCase();
+}
+function openPicker(key){ document.getElementById('pk-'+key).click(); }
+function onHexInput(key,el){
+  let v=el.value.trim();
+  if(!v.startsWith('#')) v='#'+v;
+  if(isValidHex(v)){ el.classList.remove('invalid'); setColor(key,v,true); }
+  else el.classList.add('invalid');
+}
+
+// ============================================================
+// BG IMAGE
+// ============================================================
+function triggerImgUpload(which){
+  document.getElementById('img-input-'+which).click();
+}
+function handleImgUpload(which, input){
+  const file=input.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    bgImg[which]=e.target.result;
+    document.getElementById(which+'-img-name').textContent=file.name;
+    document.getElementById(which+'-img-clear').style.display='inline-block';
+    applyPanelBg(which);
+  };
+  reader.readAsDataURL(file);
+}
+function clearImg(which){
+  bgImg[which]=null;
+  document.getElementById(which+'-img-name').textContent='';
+  document.getElementById(which+'-img-clear').style.display='none';
+  document.getElementById('img-input-'+which).value='';
+  applyPanelBg(which);
+}
+function applyPanelBg(which){
+  if(which==='top'){
+    const p=document.getElementById('panel-top');
+    if(bgImg.top){ p.style.backgroundImage=`url(${bgImg.top})`; p.style.backgroundSize='cover'; p.style.backgroundPosition='center'; p.style.backgroundColor='transparent'; }
+    else { p.style.backgroundImage='none'; p.style.background=C.topBg; }
+  } else {
+    // free or busy — only apply if it's the current state
+    const p=document.getElementById('panel-bot');
+    const activeWhich = state; // 'free' or 'busy'
+    if(which!==activeWhich) return;
+    const img=bgImg[which];
+    if(img){ p.style.backgroundImage=`url(${img})`; p.style.backgroundSize='cover'; p.style.backgroundPosition='center'; p.style.backgroundColor='transparent'; }
+    else { p.style.backgroundImage='none'; p.style.background=which==='free'?C.freeBg:C.busyBg; }
   }
-  updateTime();
-  setInterval(updateTime, 1000);
+}
 
-  pick(document.getElementById('default-btn'), '#AA5C5C');
+// ============================================================
+// State switch
+// ============================================================
+let state='free';
+function showState(s){
+  state=s;
+  document.getElementById('state-free').style.display=s==='free'?'block':'none';
+  document.getElementById('state-busy').style.display=s==='busy'?'block':'none';
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',(i===0&&s==='free')||(i===1&&s==='busy')));
+  // top panel always same bg
+  applyPanelBg('top');
+  // bottom panel depends on state
+  applyPanelBg(s);
+  setLED(s==='free'?C.ledFree:C.ledBusy);
+}
+
+// ============================================================
+// Build controls dynamically
+// ============================================================
+function buildControls(){
+  Object.keys(C).forEach(key=>{
+    const rr=document.getElementById('rr-'+key);
+    if(!rr) return;
+    const pk=document.createElement('input');
+    pk.type='color'; pk.id='pk-'+key; pk.value=C[key];
+    pk.oninput=()=>setColor(key,pk.value);
+    rr.appendChild(pk);
+    const cp=document.createElement('div');
+    cp.className='cp'; cp.id='cp-'+key; cp.style.background=C[key];
+    cp.onclick=()=>openPicker(key);
+    rr.appendChild(cp);
+    const hi=document.createElement('input');
+    hi.type='text'; hi.className='hex-input'; hi.id='hi-'+key;
+    hi.value=C[key].toUpperCase(); hi.maxLength=7; hi.placeholder='#RRGGBB';
+    hi.oninput=()=>onHexInput(key,hi);
+    hi.onblur=()=>{ if(!isValidHex(hi.value)){ hi.value=C[key].toUpperCase(); hi.classList.remove('invalid'); } };
+    rr.appendChild(hi);
+  });
+}
+
+// ============================================================
+// Timeline ticks
+// ============================================================
+function buildTicks(){
+  const c=document.getElementById('tl-rows'); c.innerHTML='';
+  [11,12,13,14,15,16,17,18].forEach(h=>{
+    const row=document.createElement('div');
+    row.className='tl-row';
+    row.style.cssText=`display:flex;align-items:center;height:26px;font-size:0.76rem;position:relative;color:${C.tlText};`;
+    const tick=document.createElement('div');
+    tick.className='tl-tick';
+    tick.style.cssText=`position:absolute;left:-18px;width:9px;height:1px;background:${C.tlTick};`;
+    row.appendChild(tick);
+    row.appendChild(document.createTextNode(`${h}:00`));
+    c.appendChild(row);
+  });
+}
+
+// ============================================================
+// Presets
+// ============================================================
+function buildPresets(){
+  const row=document.getElementById('preset-row');
+  presets.forEach(p=>{
+    const dot=document.createElement('div');
+    dot.className='preset-dot';
+    dot.style.background=p.dot;
+    const tip=document.createElement('span'); tip.className='ptip'; tip.textContent=p.name;
+    dot.appendChild(tip);
+    dot.onclick=()=>{
+      Object.keys(p).forEach(k=>{ if(k!=='name'&&k!=='dot') setColor(k,p[k]); });
+      // clear bg images on preset apply
+      bgImg.top=null; bgImg.free=null; bgImg.busy=null;
+      ['top','free','busy'].forEach(w=>{
+        document.getElementById(w+'-img-name').textContent='';
+        document.getElementById(w+'-img-clear').style.display='none';
+        document.getElementById('img-input-'+w).value='';
+      });
+      showState(state);
+    };
+    row.appendChild(dot);
+  });
+}
+
+// ============================================================
+// Clock
+// ============================================================
+function updateClock(){
+  const now=new Date();
+  let h=now.getHours(), m=String(now.getMinutes()).padStart(2,'0');
+  const ampm=h>=12?'下午':'上午';
+  if(h>12)h-=12; if(h===0)h=12;
+  const days=['週日','週一','週二','週三','週四','週五','週六'];
+  document.getElementById('clk-time').textContent=`${ampm} ${String(h).padStart(2,'0')}:${m}`;
+  document.getElementById('clk-date').textContent=`${days[now.getDay()]}. ${now.getMonth()+1}月 ${now.getDate()}, ${now.getFullYear()}`;
+}
+
+// ============================================================
+// SAVE SLOTS (in-memory, 5 slots)
+// ============================================================
+const SLOT_COUNT = 5;
+const slots = Array.from({length: SLOT_COUNT}, () => null);
+// slot = { name, colors: {...C}, date }
+
+function buildSaveSlots() {
+  const container = document.getElementById('save-slots');
+  container.innerHTML = '';
+  slots.forEach((slot, i) => {
+    const el = document.createElement('div');
+    el.className = 'save-slot' + (slot ? '' : ' slot-empty');
+    el.id = 'slot-' + i;
+
+    // Preview swatches (free bg, busy bg, btn color)
+    const preview = document.createElement('div');
+    preview.className = 'slot-preview';
+    const sw1 = document.createElement('div'); sw1.className = 'slot-swatch';
+    const sw2 = document.createElement('div'); sw2.className = 'slot-swatch';
+    const sw3 = document.createElement('div'); sw3.className = 'slot-swatch';
+    if (slot) {
+      sw1.style.background = slot.colors.freeBg;
+      sw2.style.background = slot.colors.busyBg;
+      sw3.style.background = slot.colors.bbBg;
+    } else {
+      sw1.style.background = sw2.style.background = sw3.style.background = 'rgba(255,255,255,0.05)';
+    }
+    preview.appendChild(sw1); preview.appendChild(sw2); preview.appendChild(sw3);
+
+    // Info (name + date)
+    const info = document.createElement('div');
+    info.className = 'slot-info';
+    const nameEl = document.createElement('input');
+    nameEl.type = 'text'; nameEl.className = 'slot-name';
+    nameEl.value = slot ? slot.name : `方案 ${i + 1}`;
+    nameEl.maxLength = 20;
+    nameEl.onchange = () => { if(slots[i]) slots[i].name = nameEl.value; };
+    const dateEl = document.createElement('div');
+    dateEl.className = 'slot-date';
+    dateEl.textContent = slot ? slot.date : '（空）';
+    info.appendChild(nameEl); info.appendChild(dateEl);
+
+    // Buttons
+    const actions = document.createElement('div');
+    actions.className = 'slot-actions';
+    const saveBtn = document.createElement('button');
+    saveBtn.className = 'slot-btn save-btn';
+    saveBtn.textContent = '儲存';
+    saveBtn.onclick = () => saveSlot(i, nameEl.value);
+    const loadBtn = document.createElement('button');
+    loadBtn.className = 'slot-btn load-btn';
+    loadBtn.textContent = '套用';
+    loadBtn.disabled = !slot;
+    loadBtn.onclick = () => { if(slots[i]) loadSlot(i); };
+    actions.appendChild(saveBtn); actions.appendChild(loadBtn);
+
+    el.appendChild(preview); el.appendChild(info); el.appendChild(actions);
+    container.appendChild(el);
+  });
+}
+
+function saveSlot(i, currentName) {
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  const dateStr = `${now.getMonth()+1}/${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  slots[i] = {
+    name: currentName || `方案 ${i+1}`,
+    colors: { ...C },
+    date: dateStr,
+  };
+  buildSaveSlots();
+  // flash feedback
+  const el = document.getElementById('slot-'+i);
+  el.style.borderColor = '#80e0a8';
+  setTimeout(() => { el.style.borderColor = ''; }, 800);
+}
+
+function loadSlot(i) {
+  const slot = slots[i];
+  if (!slot) return;
+  Object.keys(slot.colors).forEach(k => setColor(k, slot.colors[k]));
+  showState(state);
+  // flash feedback
+  const el = document.getElementById('slot-'+i);
+  el.style.borderColor = '#80b8ff';
+  setTimeout(() => { el.style.borderColor = ''; }, 800);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+buildControls();
+buildTicks();
+buildPresets();
+buildSaveSlots();
+Object.keys(C).forEach(k=>setColor(k,C[k]));
+showState('free');
+updateClock();
+setInterval(updateClock,1000);
 </script>
-
 </body>
 </html>
