@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>會議室 UI 顏色編輯器</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 body {
@@ -101,7 +102,7 @@ body {
 .attendee-inline svg { width:22px; height:22px; transition:fill 0.3s; }
 
 /* BUSY STATE */
-#state-busy { position:relative; min-height:180px; padding-bottom:36px; }
+#state-busy { position:relative; min-height:200px; padding-bottom:36px; }
 .busy-content { padding-right:80px; }
 .mtg-title { font-size:1.6rem; font-weight:700; margin:0 0 6px; transition:color 0.3s; }
 .mtg-time  { font-size:1.05rem; transition:color 0.3s; }
@@ -160,7 +161,7 @@ body {
 .row-right { display:flex; align-items:center; gap:7px; flex-shrink:0; }
 .cp { width:30px; height:30px; border-radius:7px; border:2px solid rgba(0,0,0,0.15); cursor:pointer; flex-shrink:0; transition:transform 0.15s; box-shadow:0 1px 4px rgba(0,0,0,0.15); }
 .cp:hover { transform:scale(1.1); }
-input[type=color] { width:0; height:0; opacity:0; position:absolute; pointer-events:none; }
+input[type=color] { width:0; height:0; opacity:0; position:fixed; top:50%; left:50%; pointer-events:none; }
 .hex-input {
   font-family:monospace; font-size:13px;
   background:#fff; border:1.5px solid #c8cce0;
@@ -193,6 +194,135 @@ input[type=color] { width:0; height:0; opacity:0; position:absolute; pointer-eve
 .preview-col::-webkit-scrollbar { width:4px; }
 .controls-col::-webkit-scrollbar-thumb,
 .preview-col::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.15); border-radius:2px; }
+
+/* ======== FULLSCREEN STATE OVERLAYS ======== */
+.fullstate {
+  display:none; position:absolute; inset:0;
+  border-radius:12px; z-index:10;
+  flex-direction:column; overflow:hidden;
+}
+
+/* CARD SCREEN */
+.card-screen {
+  flex:1; display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  position:relative; transition:background 0.3s;
+}
+.card-cancel-btn {
+  position:absolute; top:14px; right:14px;
+  padding:7px 16px; border-radius:8px; border:none;
+  font-size:0.85rem; font-family:inherit; cursor:default;
+  font-weight:600; transition:background 0.3s,color 0.3s;
+}
+.nfc-circle {
+  width:110px; height:110px; border-radius:50%;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:6px;
+  margin-bottom:8px; transition:background 0.3s;
+}
+.nfc-circle svg { width:44px; height:44px; }
+.nfc-label { font-size:1rem; font-weight:600; transition:color 0.3s; }
+.nfc-sub   { font-size:0.74rem; transition:color 0.3s; }
+
+/* QUERY / BOOK SHARED */
+.qs-header {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:12px 16px 10px; flex-shrink:0; transition:background 0.3s;
+}
+.qs-title { font-size:1.3rem; font-weight:700; transition:color 0.3s; }
+.qs-action-btn {
+  padding:7px 16px; border-radius:8px; border:none;
+  font-size:0.82rem; font-family:inherit; cursor:default;
+  font-weight:600; transition:background 0.3s,color 0.3s;
+}
+.qs-divider { height:2px; flex-shrink:0; transition:background 0.3s; }
+.qs-body {
+  flex:1; display:flex; gap:10px;
+  padding:10px 14px 12px; overflow:visible; transition:background 0.3s;
+}
+.qs-left { width:54%; display:flex; flex-direction:column; gap:5px; overflow:visible; }
+.qs-right { flex:1; display:flex; flex-direction:column; gap:6px; overflow:hidden; }
+.qs-room-label { font-size:0.78rem; font-weight:600; transition:color 0.3s; flex-shrink:0; }
+
+/* Room dropdown selector */
+.room-selector { position:relative; z-index:15; flex-shrink:0; }
+.room-sel-btn {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:5px 10px; border-radius:6px; cursor:pointer;
+  font-size:0.72rem; user-select:none; transition:background 0.2s;
+}
+.room-arrow { font-size:0.55rem; flex-shrink:0; margin-left:4px; transition:transform 0.2s; }
+.room-arrow.open { transform:rotate(180deg); }
+.room-dropdown {
+  display:none; position:absolute; top:100%; left:0; right:0;
+  max-height:calc(4 * 26px); overflow-y:auto;
+  border-radius:0 0 6px 6px; z-index:20;
+  box-shadow:0 4px 10px rgba(0,0,0,0.3);
+}
+.room-dropdown.open { display:block; }
+.room-opt { padding:5px 10px; font-size:0.7rem; cursor:pointer; transition:filter 0.15s; }
+.room-opt:hover { filter:brightness(0.88); }
+.room-opt.selected { font-weight:700; }
+
+/* Calendar */
+.cal-widget { border-radius:7px; padding:7px; flex-shrink:0; transition:background 0.3s; }
+.cal-header {
+  display:flex; justify-content:center; align-items:center;
+  font-size:0.75rem; font-weight:700; margin-bottom:5px; gap:8px; transition:color 0.3s;
+}
+.cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:1px; text-align:center; }
+.cal-day-hdr { font-size:0.58rem; font-weight:700; padding:2px 0; transition:color 0.3s; }
+.cal-day { font-size:0.6rem; padding:2px 1px; border-radius:3px; transition:color 0.3s,background 0.3s; }
+.cal-day.today { font-weight:700; border-radius:50%; }
+.cal-day.other-month { opacity:0.3; }
+.cal-day.sun { color:#e05050; }
+
+/* Book form fields */
+.book-field-row { display:flex; align-items:flex-start; gap:5px; }
+.book-field-label {
+  font-size:0.72rem; font-weight:600; flex-shrink:0;
+  min-width:56px; transition:color 0.3s; padding-top:3px;
+}
+.book-field-val {
+  flex:1; border-radius:5px; padding:3px 7px;
+  font-size:0.7rem; border:none; transition:background 0.3s,color 0.3s;
+}
+.book-confirm-btn {
+  margin-top:auto; align-self:flex-end;
+  padding:8px 20px; border-radius:8px; border:none;
+  font-size:0.85rem; font-weight:700; font-family:inherit; cursor:default;
+  transition:background 0.3s,color 0.3s;
+}
+
+/* ======== MGMT BUTTONS ======== */
+.mgmt-btn {
+  flex:1; min-width:80px; padding:7px 10px; border-radius:7px; border:none;
+  background:#4a5580; color:#fff; font-size:12px; cursor:pointer;
+  font-family:inherit; transition:background 0.2s; font-weight:600; white-space:nowrap;
+}
+.mgmt-btn:hover { background:#3a4570; }
+.mgmt-default-btn { background:#2a6a40; }
+.mgmt-default-btn:hover { background:#1d5530; }
+
+/* ======== DOWNLOAD BAR ======== */
+.dl-bar {
+  display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+  justify-content:center; width:100%; max-width:510px;
+  padding:6px 0 2px;
+}
+.dl-btn {
+  padding:6px 14px; border-radius:8px; border:none;
+  background:#4a5580; color:#fff; font-size:12px; cursor:pointer;
+  font-family:inherit; transition:background 0.2s; font-weight:600; white-space:nowrap;
+}
+.dl-btn:hover { background:#3a4570; }
+.dl-save-btn { background:#2a6a40; }
+.dl-save-btn:hover { background:#1d5530; }
+.dl-info {
+  font-size:11px; color:rgba(255,255,255,0.45);
+  max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  transition:color 0.3s;
+}
 
 /* ======== SAVE SLOTS ======== */
 .save-section { margin-top:4px; margin-bottom:22px; }
@@ -234,6 +364,9 @@ input[type=color] { width:0; height:0; opacity:0; position:absolute; pointer-eve
   <div class="tab-row">
     <button class="tab-btn active" onclick="showState('free')">無會議</button>
     <button class="tab-btn" onclick="showState('busy')">會議中</button>
+    <button class="tab-btn" onclick="showState('card')">刷卡</button>
+    <button class="tab-btn" onclick="showState('query')">查詢</button>
+    <button class="tab-btn" onclick="showState('book')">預約</button>
   </div>
 
   <div class="device-wrap">
@@ -314,17 +447,148 @@ input[type=color] { width:0; height:0; opacity:0; position:absolute; pointer-eve
           </div>
 
         </div><!-- panel-bot -->
+
+        <!-- CARD STATE -->
+        <div class="fullstate" id="state-card">
+          <div class="card-screen" id="card-bg">
+            <button class="card-cancel-btn" id="card-cancel-btn">✕ 取消</button>
+            <div class="nfc-circle" id="nfc-circle">
+              <svg viewBox="0 0 24 24" width="44" height="44">
+                <circle id="nfc-dot" cx="12" cy="18" r="1.5"/>
+                <path id="nfc-arc1" d="M8.46 14.46a5 5 0 0 1 7.08 0l1.42-1.42a7 7 0 0 0-9.9 0l1.4 1.42z"/>
+                <path id="nfc-arc2" d="M5.64 11.64A9 9 0 0 1 12 9a9 9 0 0 1 6.36 2.64l1.42-1.42A11 11 0 0 0 12 7a11 11 0 0 0-7.78 3.22l1.42 1.42z"/>
+              </svg>
+            </div>
+            <div class="nfc-label" id="nfc-label">識別卡登入</div>
+            <div class="nfc-sub" id="nfc-sub">（請直接感應登入）</div>
+          </div>
+        </div>
+
+        <!-- QUERY STATE -->
+        <div class="fullstate" id="state-query">
+          <div class="qs-header" id="query-header">
+            <div class="qs-title" id="query-title">會議室查詢</div>
+            <button class="qs-action-btn" id="query-book-btn">立即預約</button>
+          </div>
+          <div class="qs-divider" id="query-divider"></div>
+          <div class="qs-body" id="query-body">
+            <!-- 左欄：下拉選單 + 日曆 -->
+            <div class="qs-left">
+              <div class="qs-room-label" id="query-room-label">會議室：</div>
+              <div class="room-selector">
+                <div class="room-sel-btn" id="query-room-btn" onclick="toggleDropdown('query')">
+                  <span id="query-room-val">請選擇會議室</span>
+                  <span class="room-arrow" id="query-room-arrow">▼</span>
+                </div>
+                <div class="room-dropdown" id="query-room-drop">
+                  <div class="room-opt" onclick="pickRoom('query','R201會議室')">R201會議室</div>
+                  <div class="room-opt" onclick="pickRoom('query','R202會議室')">R202會議室</div>
+                  <div class="room-opt" onclick="pickRoom('query','R203會議室')">R203會議室</div>
+                  <div class="room-opt" onclick="pickRoom('query','R204會議室')">R204會議室</div>
+                  <div class="room-opt" onclick="pickRoom('query','R205會議室')">R205會議室</div>
+                  <div class="room-opt" onclick="pickRoom('query','R206會議室')">R206會議室</div>
+                  <div class="room-opt" onclick="pickRoom('query','R207會議室')">R207會議室</div>
+                  <div class="room-opt" onclick="pickRoom('query','R208會議室')">R208會議室</div>
+                  <div class="room-opt" onclick="pickRoom('query','R209會議室')">R209會議室</div>
+                  <div class="room-opt" onclick="pickRoom('query','R210會議室')">R210會議室</div>
+                  <div class="room-opt" onclick="pickRoom('query','階梯式會議室')">階梯式會議室</div>
+                  <div class="room-opt" onclick="pickRoom('query','多功能會議室')">多功能會議室</div>
+                </div>
+              </div>
+              <div class="cal-widget" id="query-cal" style="margin-top:auto;"></div>
+            </div>
+            <!-- 右欄：關閉按鈕 -->
+            <div class="qs-right" style="justify-content:flex-end;">
+              <button class="qs-action-btn" id="query-close-btn">✕ 關閉</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- BOOK STATE -->
+        <div class="fullstate" id="state-book">
+          <div class="qs-header" id="book-header">
+            <div class="qs-title" id="book-title">會議預約</div>
+            <button class="qs-action-btn" id="book-cancel-btn">取消</button>
+          </div>
+          <div class="qs-divider" id="book-divider"></div>
+          <div class="qs-body" id="book-body">
+            <!-- 左欄：下拉選單 + 日曆 -->
+            <div class="qs-left">
+              <div class="qs-room-label" id="book-room-label">會議室：</div>
+              <div class="room-selector">
+                <div class="room-sel-btn" id="book-room-btn" onclick="toggleDropdown('book')">
+                  <span id="book-room-val">請選擇會議室</span>
+                  <span class="room-arrow" id="book-room-arrow">▼</span>
+                </div>
+                <div class="room-dropdown" id="book-room-drop">
+                  <div class="room-opt" onclick="pickRoom('book','R201會議室')">R201會議室</div>
+                  <div class="room-opt" onclick="pickRoom('book','R202會議室')">R202會議室</div>
+                  <div class="room-opt" onclick="pickRoom('book','R203會議室')">R203會議室</div>
+                  <div class="room-opt" onclick="pickRoom('book','R204會議室')">R204會議室</div>
+                  <div class="room-opt" onclick="pickRoom('book','R205會議室')">R205會議室</div>
+                  <div class="room-opt" onclick="pickRoom('book','R206會議室')">R206會議室</div>
+                  <div class="room-opt" onclick="pickRoom('book','R207會議室')">R207會議室</div>
+                  <div class="room-opt" onclick="pickRoom('book','R208會議室')">R208會議室</div>
+                  <div class="room-opt" onclick="pickRoom('book','R209會議室')">R209會議室</div>
+                  <div class="room-opt" onclick="pickRoom('book','R210會議室')">R210會議室</div>
+                  <div class="room-opt" onclick="pickRoom('book','階梯式會議室')">階梯式會議室</div>
+                  <div class="room-opt" onclick="pickRoom('book','多功能會議室')">多功能會議室</div>
+                </div>
+              </div>
+              <div class="cal-widget" id="book-cal" style="margin-top:auto;"></div>
+            </div>
+            <!-- 右欄：表單 + 確認 -->
+            <div class="qs-right">
+              <div class="book-field-row">
+                <span class="book-field-label">會議名稱：</span>
+                <div class="book-field-val" id="book-f1">臨時預約會議 - 王○明</div>
+              </div>
+              <div class="book-field-row">
+                <span class="book-field-label">會議內容：</span>
+                <div class="book-field-val" id="book-f2">平板預約，由王○明預約</div>
+              </div>
+              <div class="book-field-row">
+                <span class="book-field-label">開始時間：</span>
+                <div class="book-field-val" id="book-f3">10:30 □現在時間</div>
+              </div>
+              <div class="book-field-row">
+                <span class="book-field-label">結束時間：</span>
+                <div class="book-field-val" id="book-f4">11:00</div>
+              </div>
+              <button class="book-confirm-btn" id="book-confirm-btn">○ 確認</button>
+            </div>
+          </div>
+        </div>
+
       </div><!-- screen -->
     </div><!-- device -->
   </div><!-- device-wrap -->
 
   <div class="preset-label">快速套用預設主題（共 13 種）</div>
   <div class="preset-row" id="preset-row"></div>
+
+  <div class="dl-bar">
+    <button class="dl-btn" onclick="pickFolder()">📂 選擇儲存資料夾</button>
+    <span class="dl-info" id="dl-info">未選擇資料夾</span>
+    <button class="dl-btn dl-save-btn" onclick="downloadScreen()">📥 下載此頁面</button>
+  </div>
 </div><!-- preview-col -->
 
 <!-- ===== RIGHT CONTROLS ===== -->
 <div class="controls-col">
   <h2>顏色編輯器 — 點色塊 或 直接輸入 Hex 色碼</h2>
+
+  <!-- IMPORT / EXPORT / DEFAULT -->
+  <div class="section" style="margin-bottom:16px;">
+    <div class="section-title">🗂️ 配色管理</div>
+    <div style="display:flex;gap:7px;flex-wrap:wrap;padding:6px 0 2px;">
+      <button class="mgmt-btn" onclick="exportSettings()">📤 匯出配色</button>
+      <button class="mgmt-btn" onclick="document.getElementById('import-input').click()">📥 匯入配色</button>
+      <input type="file" id="import-input" accept=".json" style="display:none" onchange="importSettings(this)">
+      <button class="mgmt-btn mgmt-default-btn" onclick="saveAsDefault()">💾 設為預設</button>
+    </div>
+    <div id="mgmt-info" style="font-size:11px;color:#6070a0;margin-top:3px;min-height:16px;"></div>
+  </div>
 
   <!-- SAVE SLOTS -->
   <div class="save-section">
@@ -427,6 +691,70 @@ input[type=color] { width:0; height:0; opacity:0; position:absolute; pointer-eve
     <div class="row"><span class="row-label">空閒 LED</span><div class="row-right" id="rr-ledFree"></div></div>
     <div class="row"><span class="row-label">使用中 LED</span><div class="row-right" id="rr-ledBusy"></div></div>
   </div>
+
+  <div class="section">
+    <div class="section-title">💳 刷卡畫面</div>
+    <div class="row"><span class="row-label">背景色</span><div class="row-right" id="rr-cardBg"></div></div>
+    <div class="row">
+      <span class="row-label">背景圖片</span>
+      <div class="row-right">
+        <button class="img-upload-btn" onclick="triggerImgUpload('card')">📁 選擇圖片</button>
+        <button class="img-clear-btn" onclick="clearImg('card')" id="card-img-clear" style="display:none">✕ 清除</button>
+        <input type="file" id="img-input-card" accept="image/*" style="display:none" onchange="handleImgUpload('card',this)">
+        <span class="img-filename" id="card-img-name"></span>
+      </div>
+    </div>
+    <div class="row"><span class="row-label">NFC 圓圈背景</span><div class="row-right" id="rr-nfcCircle"></div></div>
+    <div class="row"><span class="row-label">NFC 圖示 / 文字</span><div class="row-right" id="rr-nfcText"></div></div>
+    <div class="row"><span class="row-label">取消按鈕背景</span><div class="row-right" id="rr-cardCancelBg"></div></div>
+    <div class="row"><span class="row-label">取消按鈕文字</span><div class="row-right" id="rr-cardCancelText"></div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">🔍 會議室查詢畫面</div>
+    <div class="row"><span class="row-label">背景色</span><div class="row-right" id="rr-queryBg"></div></div>
+    <div class="row">
+      <span class="row-label">背景圖片</span>
+      <div class="row-right">
+        <button class="img-upload-btn" onclick="triggerImgUpload('query')">📁 選擇圖片</button>
+        <button class="img-clear-btn" onclick="clearImg('query')" id="query-img-clear" style="display:none">✕ 清除</button>
+        <input type="file" id="img-input-query" accept="image/*" style="display:none" onchange="handleImgUpload('query',this)">
+        <span class="img-filename" id="query-img-name"></span>
+      </div>
+    </div>
+    <div class="row"><span class="row-label">標題文字</span><div class="row-right" id="rr-queryTitle"></div></div>
+    <div class="row"><span class="row-label">分隔線</span><div class="row-right" id="rr-queryDivider"></div></div>
+    <div class="row"><span class="row-label">「立即預約」按鈕</span><div class="row-right" id="rr-queryBookBtn"></div></div>
+    <div class="row"><span class="row-label">「關閉」按鈕</span><div class="row-right" id="rr-queryCloseBtn"></div></div>
+    <div class="row"><span class="row-label">房間列表背景</span><div class="row-right" id="rr-queryRoomListBg"></div></div>
+    <div class="row"><span class="row-label">房間列表文字</span><div class="row-right" id="rr-queryRoomText"></div></div>
+    <div class="row"><span class="row-label">日曆背景</span><div class="row-right" id="rr-queryCalBg"></div></div>
+    <div class="row"><span class="row-label">日曆文字</span><div class="row-right" id="rr-queryCalText"></div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">📋 預約畫面</div>
+    <div class="row"><span class="row-label">背景色</span><div class="row-right" id="rr-bookBg"></div></div>
+    <div class="row">
+      <span class="row-label">背景圖片</span>
+      <div class="row-right">
+        <button class="img-upload-btn" onclick="triggerImgUpload('book')">📁 選擇圖片</button>
+        <button class="img-clear-btn" onclick="clearImg('book')" id="book-img-clear" style="display:none">✕ 清除</button>
+        <input type="file" id="img-input-book" accept="image/*" style="display:none" onchange="handleImgUpload('book',this)">
+        <span class="img-filename" id="book-img-name"></span>
+      </div>
+    </div>
+    <div class="row"><span class="row-label">標題文字</span><div class="row-right" id="rr-bookTitle"></div></div>
+    <div class="row"><span class="row-label">分隔線</span><div class="row-right" id="rr-bookDivider"></div></div>
+    <div class="row"><span class="row-label">「取消」按鈕</span><div class="row-right" id="rr-bookCancelBtn"></div></div>
+    <div class="row"><span class="row-label">「確認」按鈕</span><div class="row-right" id="rr-bookConfirmBtn"></div></div>
+    <div class="row"><span class="row-label">房間列表背景</span><div class="row-right" id="rr-bookRoomListBg"></div></div>
+    <div class="row"><span class="row-label">房間列表文字</span><div class="row-right" id="rr-bookRoomText"></div></div>
+    <div class="row"><span class="row-label">日曆背景</span><div class="row-right" id="rr-bookCalBg"></div></div>
+    <div class="row"><span class="row-label">日曆文字</span><div class="row-right" id="rr-bookCalText"></div></div>
+    <div class="row"><span class="row-label">欄位背景</span><div class="row-right" id="rr-bookFieldBg"></div></div>
+    <div class="row"><span class="row-label">欄位文字 / 標籤</span><div class="row-right" id="rr-bookFieldText"></div></div>
+  </div>
 </div>
 
 <script>
@@ -445,10 +773,24 @@ const C = {
   bbBg:'#6B2A2A', bbIcon:'#ffffff', bbText:'#ffffff',
   ledFree:'#22cc44', ledBusy:'#dd2222',
   cornerIcon:'#aaaaaa',
+  // Card screen
+  cardBg:'#f2f2f2', cardCancelBg:'#333333', cardCancelText:'#ffffff',
+  nfcCircle:'#8a8a8a', nfcText:'#ffffff',
+  // Query screen
+  queryBg:'#e5e9ed', queryTitle:'#1a6ab0', queryDivider:'#4a90d9',
+  queryBookBtn:'#c03030', queryCloseBtn:'#333333',
+  queryRoomListBg:'#c0c8d0', queryRoomText:'#1a1a2e',
+  queryCalBg:'#cdd3d9', queryCalText:'#1a1a2e',
+  // Book screen
+  bookBg:'#e5e9ed', bookTitle:'#1a6ab0', bookDivider:'#4a90d9',
+  bookCancelBtn:'#555555', bookConfirmBtn:'#c03030',
+  bookRoomListBg:'#c0c8d0', bookRoomText:'#1a1a2e',
+  bookCalBg:'#cdd3d9', bookCalText:'#1a1a2e',
+  bookFieldBg:'#ffffff', bookFieldText:'#1a1a2e',
 };
 
 // BG image data URLs — top panel + free/busy bottom panel
-const bgImg = { top: null, free: null, busy: null };
+const bgImg = { top: null, free: null, busy: null, card: null, query: null, book: null };
 
 // ============================================================
 // 13 PRESETS
@@ -500,6 +842,40 @@ const appliers = {
   ledFree:    v => { if(state==='free') setLED(v); },
   ledBusy:    v => { if(state==='busy') setLED(v); },
   cornerIcon: v => { qsa('#free-icon path,#busy-icon path', e=>e.style.fill=v); },
+  // Card screen
+  cardBg:         v => { if(!bgImg.card) document.getElementById('card-bg').style.background=v; },
+  cardCancelBg:   v => { document.getElementById('card-cancel-btn').style.background=v; },
+  cardCancelText: v => { document.getElementById('card-cancel-btn').style.color=v; },
+  nfcCircle:      v => { document.getElementById('nfc-circle').style.background=v; },
+  nfcText:        v => {
+    document.getElementById('nfc-label').style.color=v;
+    document.getElementById('nfc-sub').style.color=v;
+    ['nfc-dot','nfc-arc1','nfc-arc2'].forEach(id=>{
+      const el=document.getElementById(id); if(el) el.style.fill=v;
+    });
+  },
+  // Query screen
+  queryBg:          v => { document.getElementById('query-header').style.background=v; if(!bgImg.query) document.getElementById('query-body').style.background=v; },
+  queryTitle:       v => { document.getElementById('query-title').style.color=v; },
+  queryDivider:     v => { document.getElementById('query-divider').style.background=v; },
+  queryBookBtn:     v => { const b=document.getElementById('query-book-btn'); b.style.background=v; b.style.color='#fff'; },
+  queryCloseBtn:    v => { const b=document.getElementById('query-close-btn'); b.style.background=v; b.style.color='#fff'; },
+  queryRoomListBg:  v => { const b=document.getElementById('query-room-btn'); if(b) b.style.background=v; const d=document.getElementById('query-room-drop'); if(d) d.style.background=v; qsa('#query-room-drop .room-opt', e=>e.style.background=v); },
+  queryRoomText:    v => { const b=document.getElementById('query-room-btn'); if(b) b.style.color=v; qsa('#query-room-drop .room-opt,#query-room-val,#query-room-arrow', e=>e.style.color=v); },
+  queryCalBg:       v => { const c=document.getElementById('query-cal'); if(c) c.style.background=v; },
+  queryCalText:     v => { qsa('#query-cal .cal-day,#query-cal .cal-day-hdr,#query-cal .cal-header', e=>e.style.color=v); },
+  // Book screen
+  bookBg:           v => { document.getElementById('book-header').style.background=v; if(!bgImg.book) document.getElementById('book-body').style.background=v; },
+  bookTitle:        v => { document.getElementById('book-title').style.color=v; },
+  bookDivider:      v => { document.getElementById('book-divider').style.background=v; },
+  bookCancelBtn:    v => { const b=document.getElementById('book-cancel-btn'); b.style.background=v; b.style.color='#fff'; },
+  bookConfirmBtn:   v => { const b=document.getElementById('book-confirm-btn'); b.style.background=v; b.style.color='#fff'; },
+  bookRoomListBg:   v => { const b=document.getElementById('book-room-btn'); if(b) b.style.background=v; const d=document.getElementById('book-room-drop'); if(d) d.style.background=v; qsa('#book-room-drop .room-opt', e=>e.style.background=v); },
+  bookRoomText:     v => { const b=document.getElementById('book-room-btn'); if(b) b.style.color=v; qsa('#book-room-drop .room-opt,#book-room-val,#book-room-arrow', e=>e.style.color=v); },
+  bookCalBg:        v => { const c=document.getElementById('book-cal'); if(c) c.style.background=v; },
+  bookCalText:      v => { qsa('#book-cal .cal-day,#book-cal .cal-day-hdr,#book-cal .cal-header', e=>e.style.color=v); },
+  bookFieldBg:      v => { qsa('.book-field-val', e=>e.style.background=v); },
+  bookFieldText:    v => { qsa('.book-field-val,.book-field-label', e=>e.style.color=v); },
 };
 
 function qsa(sel,fn){ document.querySelectorAll(sel).forEach(fn); }
@@ -574,14 +950,24 @@ function applyPanelBg(which){
     const p=document.getElementById('panel-top');
     if(bgImg.top){ p.style.backgroundImage=`url(${bgImg.top})`; p.style.backgroundSize='cover'; p.style.backgroundPosition='center'; p.style.backgroundColor='transparent'; }
     else { p.style.backgroundImage='none'; p.style.background=C.topBg; }
-  } else {
-    // free or busy — only apply if it's the current state
+  } else if(which==='free'||which==='busy'){
     const p=document.getElementById('panel-bot');
-    const activeWhich = state; // 'free' or 'busy'
-    if(which!==activeWhich) return;
+    if(which!==state) return;
     const img=bgImg[which];
     if(img){ p.style.backgroundImage=`url(${img})`; p.style.backgroundSize='cover'; p.style.backgroundPosition='center'; p.style.backgroundColor='transparent'; }
     else { p.style.backgroundImage='none'; p.style.background=which==='free'?C.freeBg:C.busyBg; }
+  } else if(which==='card'){
+    const p=document.getElementById('card-bg');
+    if(bgImg.card){ p.style.backgroundImage=`url(${bgImg.card})`; p.style.backgroundSize='cover'; p.style.backgroundPosition='center'; p.style.backgroundColor='transparent'; }
+    else { p.style.backgroundImage='none'; p.style.background=C.cardBg; }
+  } else if(which==='query'){
+    const p=document.getElementById('query-body');
+    if(bgImg.query){ p.style.backgroundImage=`url(${bgImg.query})`; p.style.backgroundSize='cover'; p.style.backgroundPosition='center'; p.style.backgroundColor='transparent'; }
+    else { p.style.backgroundImage='none'; p.style.background=C.queryBg; }
+  } else if(which==='book'){
+    const p=document.getElementById('book-body');
+    if(bgImg.book){ p.style.backgroundImage=`url(${bgImg.book})`; p.style.backgroundSize='cover'; p.style.backgroundPosition='center'; p.style.backgroundColor='transparent'; }
+    else { p.style.backgroundImage='none'; p.style.background=C.bookBg; }
   }
 }
 
@@ -589,16 +975,26 @@ function applyPanelBg(which){
 // State switch
 // ============================================================
 let state='free';
+const ALL_STATES=['free','busy','card','query','book'];
 function showState(s){
   state=s;
-  document.getElementById('state-free').style.display=s==='free'?'block':'none';
+  const isFullscreen=s==='card'||s==='query'||s==='book';
+  // LED visibility
+  document.getElementById('led-l').style.display=isFullscreen?'none':'';
+  document.getElementById('led-r').style.display=isFullscreen?'none':'';
+  // Sub-states in panel-bot (keep state-free as height anchor for fullscreen overlays)
+  document.getElementById('state-free').style.display=s==='busy'?'none':'block';
   document.getElementById('state-busy').style.display=s==='busy'?'block':'none';
-  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',(i===0&&s==='free')||(i===1&&s==='busy')));
-  // top panel always same bg
+  // Fullscreen overlays (sit on top of screen via position:absolute)
+  ['card','query','book'].forEach(fs=>{
+    document.getElementById('state-'+fs).style.display=s===fs?'flex':'none';
+  });
+  // Tab buttons
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',ALL_STATES[i]===s));
+  // Always maintain underlying panel state
   applyPanelBg('top');
-  // bottom panel depends on state
-  applyPanelBg(s);
-  setLED(s==='free'?C.ledFree:C.ledBusy);
+  applyPanelBg(state==='busy'?'busy':'free');
+  if(!isFullscreen) setLED(s==='free'?C.ledFree:C.ledBusy);
 }
 
 // ============================================================
@@ -656,9 +1052,10 @@ function buildPresets(){
     dot.appendChild(tip);
     dot.onclick=()=>{
       Object.keys(p).forEach(k=>{ if(k!=='name'&&k!=='dot') setColor(k,p[k]); });
+      applyDerivedColors(p);
       // clear bg images on preset apply
-      bgImg.top=null; bgImg.free=null; bgImg.busy=null;
-      ['top','free','busy'].forEach(w=>{
+      bgImg.top=null; bgImg.free=null; bgImg.busy=null; bgImg.card=null; bgImg.query=null; bgImg.book=null;
+      ['top','free','busy','card','query','book'].forEach(w=>{
         document.getElementById(w+'-img-name').textContent='';
         document.getElementById(w+'-img-clear').style.display='none';
         document.getElementById('img-input-'+w).value='';
@@ -772,12 +1169,234 @@ function loadSlot(i) {
 }
 
 // ============================================================
+// Download as image
+// ============================================================
+let _dirHandle = null;
+
+async function pickFolder(){
+  if(!window.showDirectoryPicker){
+    alert('此瀏覽器不支援資料夾選擇，將改用預設下載位置。');
+    return;
+  }
+  try {
+    _dirHandle = await window.showDirectoryPicker({ mode:'readwrite' });
+    setDlInfo('📂 ' + _dirHandle.name, 'rgba(255,255,255,0.6)');
+  } catch(e){ /* 使用者取消 */ }
+}
+
+async function downloadScreen(){
+  if(typeof html2canvas === 'undefined'){
+    alert('html2canvas 尚未載入，請確認網路連線後重新整理頁面。');
+    return;
+  }
+  const names = { free:'無會議', busy:'會議中', card:'刷卡', query:'查詢', book:'預約' };
+  const filename = (names[state] || state) + '.png';
+  setDlInfo('⏳ 擷取中…', 'rgba(255,220,80,0.8)');
+
+  try {
+    const el = document.getElementById('screen');
+    const canvas = await html2canvas(el, {
+      scale:2, backgroundColor:null, useCORS:true, logging:false
+    });
+
+    if(_dirHandle){
+      try {
+        const fh = await _dirHandle.getFileHandle(filename, { create:true });
+        const writable = await fh.createWritable();
+        canvas.toBlob(async blob => {
+          await writable.write(blob);
+          await writable.close();
+          setDlInfo('✅ 已儲存：' + filename, '#88ffaa');
+          setTimeout(()=>setDlInfo('📂 '+_dirHandle.name,'rgba(255,255,255,0.6)'), 2500);
+        }, 'image/png');
+      } catch(e){
+        _dirHandle = null;
+        fallbackDl(canvas, filename);
+      }
+    } else {
+      fallbackDl(canvas, filename);
+    }
+  } catch(e){
+    setDlInfo('❌ 擷取失敗', '#ff8888');
+    setTimeout(()=>setDlInfo(_dirHandle?'📂 '+_dirHandle.name:'未選擇資料夾',''), 2500);
+  }
+}
+
+function fallbackDl(canvas, filename){
+  const a = document.createElement('a');
+  a.download = filename;
+  a.href = canvas.toDataURL('image/png');
+  a.click();
+  setDlInfo('✅ 已下載：' + filename, '#88ffaa');
+  setTimeout(()=>setDlInfo('未選擇資料夾',''), 2500);
+}
+
+function setDlInfo(msg, color){
+  const el = document.getElementById('dl-info');
+  el.textContent = msg;
+  el.style.color = color || 'rgba(255,255,255,0.45)';
+}
+
+// ============================================================
+// Import / Export / Default (localStorage)
+// ============================================================
+function exportSettings(){
+  const data = { version:1, colors:{...C} };
+  const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = '會議室配色方案.json';
+  a.click();
+  setMgmtInfo('✅ 已匯出配色方案', '#2a8a50');
+}
+
+function importSettings(input){
+  const file = input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      const colors = data.colors || data;
+      Object.keys(colors).forEach(k=>{ if(k in C) setColor(k, colors[k]); });
+      showState(state);
+      setMgmtInfo('✅ 已匯入：' + file.name, '#2a5a9a');
+    } catch(err) {
+      setMgmtInfo('❌ 匯入失敗：格式不正確', '#aa3030');
+    }
+    input.value = '';
+  };
+  reader.readAsText(file);
+}
+
+function saveAsDefault(){
+  try {
+    localStorage.setItem('navya_config', JSON.stringify(C));
+    setMgmtInfo('✅ 已設為預設！下次開啟自動套用', '#2a6a40');
+  } catch(e) {
+    setMgmtInfo('❌ 儲存失敗', '#aa3030');
+  }
+}
+
+function loadDefault(){
+  try {
+    const saved = localStorage.getItem('navya_config');
+    if(saved){
+      const colors = JSON.parse(saved);
+      Object.keys(colors).forEach(k=>{ if(k in C) C[k] = colors[k]; });
+      return true;
+    }
+  } catch(e) {}
+  return false;
+}
+
+function setMgmtInfo(msg, color){
+  const el = document.getElementById('mgmt-info');
+  el.textContent = msg;
+  el.style.color = color || '#6070a0';
+  clearTimeout(el._t);
+  el._t = setTimeout(()=>{ el.textContent=''; el.style.color=''; }, 3500);
+}
+
+// ============================================================
+// Room dropdown
+// ============================================================
+function toggleDropdown(which){
+  const drop=document.getElementById(which+'-room-drop');
+  const arrow=document.getElementById(which+'-room-arrow');
+  const btn=document.getElementById(which+'-room-btn');
+  const cal=document.getElementById(which+'-cal');
+  const isOpen=drop.classList.contains('open');
+  document.querySelectorAll('.room-dropdown').forEach(d=>d.classList.remove('open'));
+  document.querySelectorAll('.room-arrow').forEach(a=>a.classList.remove('open'));
+  if(!isOpen){
+    drop.classList.add('open');
+    arrow.classList.add('open');
+    // 動態計算：選單底部到日曆頂部的距離，設為 max-height
+    if(cal){
+      const available=cal.getBoundingClientRect().top - btn.getBoundingClientRect().bottom - 4;
+      drop.style.maxHeight=Math.max(available, 52)+'px';
+    }
+  }
+}
+function pickRoom(which, name){
+  document.getElementById(which+'-room-val').textContent=name;
+  document.getElementById(which+'-room-drop').classList.remove('open');
+  document.getElementById(which+'-room-arrow').classList.remove('open');
+  qsa('#'+which+'-room-drop .room-opt', o=>o.classList.toggle('selected', o.textContent===name));
+}
+document.addEventListener('click', e=>{
+  if(!e.target.closest('.room-selector')){
+    document.querySelectorAll('.room-dropdown').forEach(d=>d.classList.remove('open'));
+    document.querySelectorAll('.room-arrow').forEach(a=>a.classList.remove('open'));
+  }
+});
+
+// ============================================================
+// Derive new screen colors from a preset object
+// ============================================================
+function applyDerivedColors(p){
+  setColor('cardBg',          p.freeBg);
+  setColor('nfcCircle',       p.fbBg);
+  setColor('nfcText',         p.fbText);
+  setColor('cardCancelBg',    p.bbBg);
+  setColor('cardCancelText',  p.bbText);
+  setColor('queryBg',         p.freeBg);
+  setColor('queryTitle',      p.roomName);
+  setColor('queryDivider',    p.divider);
+  setColor('queryBookBtn',    p.fbBg);
+  setColor('queryCloseBtn',   p.bbBg);
+  setColor('queryRoomListBg', p.topBg);
+  setColor('queryRoomText',   p.tlText);
+  setColor('queryCalBg',      p.topBg);
+  setColor('queryCalText',    p.tlText);
+  setColor('bookBg',          p.freeBg);
+  setColor('bookTitle',       p.roomName);
+  setColor('bookDivider',     p.divider);
+  setColor('bookCancelBtn',   p.bbBg);
+  setColor('bookConfirmBtn',  p.fbBg);
+  setColor('bookRoomListBg',  p.topBg);
+  setColor('bookRoomText',    p.tlText);
+  setColor('bookCalBg',       p.topBg);
+  setColor('bookCalText',     p.tlText);
+  setColor('bookFieldBg',     p.freeBg);
+  setColor('bookFieldText',   p.tlText);
+}
+
+// ============================================================
+// Calendar builder
+// ============================================================
+function buildCal(containerId){
+  const container=document.getElementById(containerId);
+  if(!container) return;
+  const now=new Date();
+  const year=now.getFullYear(), month=now.getMonth(), today=now.getDate();
+  const firstDay=new Date(year,month,1).getDay();
+  const daysInMonth=new Date(year,month+1,0).getDate();
+  const dayNames=['日','一','二','三','四','五','六'];
+  let html=`<div class="cal-header"><span>${year} ${month+1}月</span></div><div class="cal-grid">`;
+  dayNames.forEach(d=>{ html+=`<div class="cal-day-hdr">${d}</div>`; });
+  for(let i=0;i<firstDay;i++) html+=`<div class="cal-day other-month"></div>`;
+  for(let d=1;d<=daysInMonth;d++){
+    const dow=(firstDay+d-1)%7;
+    html+=`<div class="cal-day${dow===0?' sun':''}${d===today?' today':''}">${d}</div>`;
+  }
+  const trailing=(firstDay+daysInMonth)%7;
+  if(trailing>0) for(let d=1;d<=7-trailing;d++) html+=`<div class="cal-day other-month">${d}</div>`;
+  html+=`</div>`;
+  container.innerHTML=html;
+}
+
+// ============================================================
 // INIT
 // ============================================================
+loadDefault();
 buildControls();
 buildTicks();
 buildPresets();
 buildSaveSlots();
+buildCal('query-cal');
+buildCal('book-cal');
 Object.keys(C).forEach(k=>setColor(k,C[k]));
 showState('free');
 updateClock();
