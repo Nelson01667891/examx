@@ -1241,13 +1241,14 @@ function setDlInfo(msg, color){
 // Import / Export / Default (localStorage)
 // ============================================================
 function exportSettings(){
-  const data = { version:1, colors:{...C} };
+  // 顏色 + 圖片（base64）全部打包
+  const data = { version:2, colors:{...C}, images:{...bgImg} };
   const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = '會議室配色方案.json';
   a.click();
-  setMgmtInfo('✅ 已匯出配色方案', '#2a8a50');
+  setMgmtInfo('✅ 已匯出（含背景圖片）', '#2a8a50');
 }
 
 function importSettings(input){
@@ -1257,8 +1258,17 @@ function importSettings(input){
   reader.onload = e => {
     try {
       const data = JSON.parse(e.target.result);
+      // 匯入顏色
       const colors = data.colors || data;
       Object.keys(colors).forEach(k=>{ if(k in C) setColor(k, colors[k]); });
+      // 匯入圖片
+      if(data.images){
+        Object.keys(data.images).forEach(which=>{
+          bgImg[which] = data.images[which] || null;
+          _updateImgUI(which, !!data.images[which]);
+          applyPanelBg(which);
+        });
+      }
       showState(state);
       setMgmtInfo('✅ 已匯入：' + file.name, '#2a5a9a');
     } catch(err) {
@@ -1270,24 +1280,41 @@ function importSettings(input){
 }
 
 function saveAsDefault(){
+  const data = { version:2, colors:{...C}, images:{...bgImg} };
   try {
-    localStorage.setItem('navya_config', JSON.stringify(C));
+    localStorage.setItem('navya_config', JSON.stringify(data));
     setMgmtInfo('✅ 已設為預設！下次開啟自動套用', '#2a6a40');
   } catch(e) {
-    setMgmtInfo('❌ 儲存失敗', '#aa3030');
+    // 圖片太大超過 localStorage 限制，只存顏色
+    try {
+      localStorage.setItem('navya_config', JSON.stringify({version:2, colors:{...C}, images:{}}));
+      setMgmtInfo('⚠️ 顏色已存，圖片過大請用「匯出配色」備份', '#aa7700');
+    } catch(e2) {
+      setMgmtInfo('❌ 儲存失敗', '#aa3030');
+    }
   }
 }
 
 function loadDefault(){
   try {
     const saved = localStorage.getItem('navya_config');
-    if(saved){
-      const colors = JSON.parse(saved);
-      Object.keys(colors).forEach(k=>{ if(k in C) C[k] = colors[k]; });
-      return true;
+    if(!saved) return false;
+    const data = JSON.parse(saved);
+    const colors = data.colors || data;
+    Object.keys(colors).forEach(k=>{ if(k in C) C[k] = colors[k]; });
+    if(data.images){
+      Object.keys(data.images).forEach(which=>{ bgImg[which] = data.images[which] || null; });
     }
-  } catch(e) {}
-  return false;
+    return true;
+  } catch(e) { return false; }
+}
+
+// 還原圖片後更新 UI（清除按鈕、檔名提示）
+function _updateImgUI(which, hasImg){
+  const nameEl = document.getElementById(which+'-img-name');
+  const clearEl = document.getElementById(which+'-img-clear');
+  if(nameEl) nameEl.textContent = hasImg ? '（已還原）' : '';
+  if(clearEl) clearEl.style.display = hasImg ? 'inline-block' : 'none';
 }
 
 function setMgmtInfo(msg, color){
